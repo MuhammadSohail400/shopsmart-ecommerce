@@ -16,7 +16,8 @@ export async function recordRedemption(
   orderId: string,
   discountApplied: number,
   userId?: string,
+  tx?: import('@prisma/client').Prisma.TransactionClient,
 ) {
   const { couponsService } = await import('./coupons.service');
-  return couponsService.recordRedemption(couponId, orderId, discountApplied, userId);
+  return couponsService.recordRedemption(couponId, orderId, discountApplied, userId, tx);
 }

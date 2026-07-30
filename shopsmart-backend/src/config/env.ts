@@ -1,4 +1,6 @@
+import 'dotenv/config';
 import { z } from 'zod';
+
 
 /**
  * All environment variables are declared here and parsed once at boot.
@@ -21,6 +23,12 @@ const envSchema = z.object({
 
   RATE_LIMIT_LOGIN_MAX: z.coerce.number().default(5),
   RATE_LIMIT_LOGIN_WINDOW_MIN: z.coerce.number().default(15),
+
+  // Payments (Phase 5) — optional so the app still boots without Stripe
+  // configured; the Payments adapter throws a clear error if a card
+  // payment is attempted without these set.
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent']).default('info'),
 });

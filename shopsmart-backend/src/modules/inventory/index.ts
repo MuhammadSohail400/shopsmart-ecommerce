@@ -4,22 +4,36 @@
  * Standards Section 4). No other module writes to Inventory directly.
  * Dependencies: none (products references it read-only).
  */
+import type { Prisma } from '@prisma/client';
+
 export { inventoryRoutes } from './inventory.routes';
-export { inventoryRepository } from './inventory.repository';
 
 export async function checkAvailability(productVariantId: string, quantity: number) {
   const { inventoryService } = await import('./inventory.service');
   return inventoryService.checkAvailability(productVariantId, quantity);
 }
 
-export async function decrementStock(productVariantId: string, quantity: number) {
+/**
+ * Accepts an optional transaction client so the Orders module can decrement
+ * stock as part of its own atomic order-creation transaction (DDD Section
+ * 14.5) rather than as a separate, non-atomic call.
+ */
+export async function decrementStock(
+  productVariantId: string,
+  quantity: number,
+  tx?: Prisma.TransactionClient,
+) {
   const { inventoryService } = await import('./inventory.service');
-  return inventoryService.decrementStock(productVariantId, quantity);
+  return inventoryService.decrementStock(productVariantId, quantity, tx);
 }
 
-export async function restoreStock(productVariantId: string, quantity: number) {
+export async function restoreStock(
+  productVariantId: string,
+  quantity: number,
+  tx?: Prisma.TransactionClient,
+) {
   const { inventoryService } = await import('./inventory.service');
-  return inventoryService.restoreStock(productVariantId, quantity);
+  return inventoryService.restoreStock(productVariantId, quantity, tx);
 }
 
 /** Called by the Products module when a new variant is created (Section 4). */

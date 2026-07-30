@@ -1,6 +1,6 @@
-# ShopSmart AI — Backend (Phase 1–4)
+# ShopSmart AI — Backend (Phase 1–3)
 
-Implements the **Foundation**, **Identity & Access**, **Product Catalog**, and **Cart & Promotions** phases per the
+Implements the **Foundation**, **Identity & Access**, and **Product Catalog** phases per the
 approved PRD → SRS → System Design → Database Design → API Design → Backend Standards docs.
 
 ## What's included
@@ -11,8 +11,6 @@ approved PRD → SRS → System Design → Database Design → API Design → Ba
   reuse detection, logout, sessions, password reset) and `users` module (profile + addresses)
 - **Phase 3 — Catalog:** `categories`, `brands`, `products` (+ variants + images), `inventory`
   (optimistic locking via `If-Match` header, per DDD Section 14)
-- **Phase 4 — Cart & Promotions:** `cart`, `wishlist`, `coupons` modules, supporting guest and
-  authenticated carts, wishlist management, coupon creation and application, plus cart-level pricing behavior.
 
 Every module follows the layered pattern from the Backend Standards doc:
 `routes → controller → service → repository`, with a single public `index.ts` per module.
@@ -35,16 +33,16 @@ npm run dev
 
 ## Scripts
 
-| Command                   | Purpose                                               |
-| ------------------------- | ----------------------------------------------------- |
-| `npm run dev`             | Start with hot reload (tsx watch)                     |
-| `npm run build`           | Compile TypeScript + resolve path aliases (tsc-alias) |
-| `npm start`               | Run the compiled build                                |
-| `npm run lint`            | ESLint                                                |
-| `npm run format`          | Prettier                                              |
-| `npm test`                | Vitest                                                |
-| `npm run prisma:generate` | Regenerate Prisma Client after schema changes         |
-| `npm run prisma:migrate`  | Create/apply a migration                              |
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Start with hot reload (tsx watch) |
+| `npm run build` | Compile TypeScript + resolve path aliases (tsc-alias) |
+| `npm start` | Run the compiled build |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier |
+| `npm test` | Vitest |
+| `npm run prisma:generate` | Regenerate Prisma Client after schema changes |
+| `npm run prisma:migrate` | Create/apply a migration |
 
 ## What's next (Phase 4+)
 

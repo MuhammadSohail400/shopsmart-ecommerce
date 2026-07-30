@@ -66,7 +66,13 @@ export const couponsService = {
   },
 
   // BR-013: non-stackable by default — recorded once at order confirmation (Phase 5)
-  async recordRedemption(couponId: string, orderId: string, discountApplied: number, userId?: string) {
-    return couponsRepository.recordRedemption({ couponId, orderId, discountApplied, userId });
+  async recordRedemption(
+    couponId: string,
+    orderId: string,
+    discountApplied: number,
+    userId?: string,
+    tx?: import('@prisma/client').Prisma.TransactionClient,
+  ) {
+    return couponsRepository.recordRedemption({ couponId, orderId, discountApplied, userId }, tx);
   },
 };

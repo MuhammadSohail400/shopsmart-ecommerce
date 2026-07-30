@@ -6,7 +6,8 @@ import pinoHttp from 'pino-http';
 import { env } from '@config/env';
 import { logger } from '@config/logger';
 import { correlationIdMiddleware } from '@shared/middleware/correlation-id.middleware';
-import { errorHandlerMiddleware } from '@shared/middleware/error-handler.middleware';
+import { errorHandlerMiddleware, asyncHandler } from '@shared/middleware/error-handler.middleware';
+import { paymentsWebhookController } from '@modules/payments';
 import { apiRouter } from './routes';
 
 export function createApp(): Express {
@@ -20,6 +21,16 @@ export function createApp(): Express {
       credentials: true, // required for the HttpOnly refresh-token cookie
     }),
   );
+
+  // Stripe webhook: MUST be mounted before express.json() with a raw-body
+  // parser, since signature verification (API Design Spec Section 17.1)
+  // needs the exact original payload bytes, not a re-serialized JSON object.
+  app.post(
+    `${env.API_BASE_PATH}/webhooks/stripe`,
+    express.raw({ type: 'application/json' }),
+    asyncHandler(paymentsWebhookController.stripeWebhook),
+  );
+
   app.use(express.json());
   app.use(cookieParser());
   app.use(correlationIdMiddleware);

@@ -16,7 +16,6 @@
     "resolveJsonModule": true,
     "declaration": false,
     "sourceMap": true,
-    "ignoreDeprecations": "6.0",
     "baseUrl": "src",
     "paths": {
       "@config/*": ["config/*"],

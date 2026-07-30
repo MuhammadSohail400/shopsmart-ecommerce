@@ -8,11 +8,16 @@ import { inventoryRoutes } from '@modules/inventory';
 import { cartRoutes } from '@modules/cart';
 import { wishlistRoutes } from '@modules/wishlist';
 import { couponsRoutes } from '@modules/coupons';
+import { shippingRoutes } from '@modules/shipping';
+import { ordersRoutes } from '@modules/orders';
+import { paymentsRoutes } from '@modules/payments';
+import { checkoutRoutes } from '@modules/checkout';
 
 /**
  * Single place every module's router is mounted under the versioned
- * /api/v1 prefix (Backend Standards Section 3). Additional modules
- * (checkout, orders, payments, ...) are added here in later phases.
+ * /api/v1 prefix (Backend Standards Section 3). The Stripe webhook route
+ * is NOT here — it's mounted directly in app.ts with a raw-body parser,
+ * before the global express.json() middleware (see app.ts comments).
  */
 const router = Router();
 
@@ -25,5 +30,9 @@ router.use('/inventory', inventoryRoutes);
 router.use('/cart', cartRoutes);
 router.use('/wishlist', wishlistRoutes);
 router.use('/coupons', couponsRoutes);
+router.use('/shipping', shippingRoutes);
+router.use('/orders', ordersRoutes);
+router.use('/orders', paymentsRoutes); // exposes /orders/:orderId/payments, /orders/:orderId/refunds
+router.use('/checkout', checkoutRoutes);
 
 export { router as apiRouter };

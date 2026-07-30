@@ -11,3 +11,9 @@ export async function getDefaultAddress(userId: string) {
   const addresses = await usersRepository.listAddresses(userId);
   return addresses.find((a: { isDefault: boolean }) => a.isDefault) ?? addresses[0] ?? null;
 }
+
+/** Used by Checkout to resolve and validate ownership of a selected address. */
+export async function getAddressForUser(userId: string, addressId: string) {
+  const { usersRepository } = await import('./users.repository');
+  return usersRepository.findAddress(addressId, userId);
+}

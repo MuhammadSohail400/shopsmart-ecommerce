@@ -91,6 +91,14 @@ export const productsRepository = {
     return prisma.productVariant.findFirst({ where: { id, productId, deletedAt: null } });
   },
 
+  /** Used by Cart's guest-cart resolution — needs title/price without the parent product's ID in hand. */
+  findVariantWithProduct(variantId: string) {
+    return prisma.productVariant.findFirst({
+      where: { id: variantId, deletedAt: null },
+      include: { product: true, inventory: true },
+    });
+  },
+
   findVariantBySku(sku: string) {
     return prisma.productVariant.findFirst({ where: { sku, deletedAt: null } });
   },

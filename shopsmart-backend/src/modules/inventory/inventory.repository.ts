@@ -1,8 +1,11 @@
 import { prisma } from '@config/database';
+import type { Prisma } from '@prisma/client';
+
+type Client = typeof prisma | Prisma.TransactionClient;
 
 export const inventoryRepository = {
-  findByVariantId(productVariantId: string) {
-    return prisma.inventory.findUnique({ where: { productVariantId } });
+  findByVariantId(productVariantId: string, client: Client = prisma) {
+    return client.inventory.findUnique({ where: { productVariantId } });
   },
 
   create(productVariantId: string, quantity: number, lowStockThreshold = 5) {
@@ -31,17 +34,19 @@ export const inventoryRepository = {
   /**
    * Atomic decrement guarded by a non-negative check at the DB level
    * (DDD Section 14.1/14.4 — prevents overselling under concurrency).
+   * Accepts an optional transaction client so Order creation can wrap
+   * this in the same atomic transaction (DDD Section 14.5).
    */
-  async decrementStock(productVariantId: string, quantity: number) {
-    const result = await prisma.inventory.updateMany({
+  async decrementStock(productVariantId: string, quantity: number, client: Client = prisma) {
+    const result = await client.inventory.updateMany({
       where: { productVariantId, quantity: { gte: quantity } },
       data: { quantity: { decrement: quantity }, version: { increment: 1 } },
     });
     return result.count > 0;
   },
 
-  async restoreStock(productVariantId: string, quantity: number) {
-    await prisma.inventory.update({
+  async restoreStock(productVariantId: string, quantity: number, client: Client = prisma) {
+    await client.inventory.update({
       where: { productVariantId },
       data: { quantity: { increment: quantity }, version: { increment: 1 } },
     });

@@ -3,6 +3,7 @@ import { guestCartStore } from './cart.guest-store';
 import { NotFoundError, ConflictError } from '@shared/errors';
 import { checkAvailability } from '@modules/inventory';
 import { validateCoupon } from '@modules/coupons';
+import { getVariantById } from '@modules/products';
 import type { CartView, CartLineItem } from './cart.types';
 
 interface CartContext {
@@ -21,20 +22,22 @@ async function buildGuestCartView(guestCartId: string): Promise<CartView> {
   const lineItems: CartLineItem[] = [];
 
   for (const item of data.items) {
-    // NOTE: getProductById expects a productId; in the raw cart we only
-    // store the variantId, so in this phase we resolve via inventory
-    // availability + a lightweight variant lookup would normally happen
-    // through a dedicated products.getVariantById() export. Kept minimal
-    // here and flagged for the Checkout phase to finalize.
-    const inStock = await checkAvailability(item.productVariantId, item.quantity);
+    const variant = await getVariantById(item.productVariantId);
+    if (!variant) continue; // silently drop items whose product/variant was removed since adding
+
+    const unitPrice = Number(variant.product.basePrice) + Number(variant.priceModifier);
+    const available = variant.inventory
+      ? variant.inventory.quantity - variant.inventory.reservedQuantity
+      : 0;
+
     lineItems.push({
       productVariantId: item.productVariantId,
-      title: '', // populated once products.getVariantById() lands in Phase 5 wiring
-      attributes: {},
-      unitPrice: 0,
+      title: variant.product.title,
+      attributes: variant.attributes as Record<string, string>,
+      unitPrice,
       quantity: item.quantity,
-      subtotal: 0,
-      inStock,
+      subtotal: Math.round(unitPrice * item.quantity * 100) / 100,
+      inStock: available >= item.quantity,
     });
   }
 

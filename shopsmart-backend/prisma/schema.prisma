@@ -33,6 +33,45 @@ enum DiscountType {
   flat
 }
 
+enum OrderStatus {
+  pending
+  confirmed
+  processing
+  shipped
+  delivered
+  cancelled
+  disputed
+  refunded
+}
+
+enum PaymentMethod {
+  card
+  cod
+  bank_transfer
+}
+
+enum PaymentStatus {
+  pending
+  succeeded
+  failed
+  refunded
+  partially_refunded
+}
+
+enum RefundStatus {
+  pending
+  succeeded
+  failed
+}
+
+enum ShipmentStatus {
+  pending
+  shipped
+  in_transit
+  delivered
+  failed
+}
+
 // ---------- Identity & Access (DDD Section 2.1) ----------
 
 model User {
@@ -51,6 +90,7 @@ model User {
   addresses     Address[]
   cart          Cart?
   wishlist      Wishlist?
+  orders        Order[]
 
   @@map("users")
 }
@@ -87,6 +127,7 @@ model Address {
   deletedAt  DateTime? @map("deleted_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
 
   @@index([userId])
   @@map("addresses")
@@ -159,6 +200,7 @@ model ProductVariant {
   product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   inventory Inventory?
   cartItems CartItem[]
+  orderItems OrderItem[]
 
   @@unique([productId, attributes])
   @@map("product_variants")
@@ -260,16 +302,168 @@ model Coupon {
 }
 
 model CouponRedemption {
-  id               String   @id @default(uuid())
-  couponId         String   @map("coupon_id")
-  userId           String?  @map("user_id") // nullable: guest checkout (BR-002)
-  orderId          String   @unique @map("order_id") // FK added when Order model lands in Phase 5
-  discountApplied  Decimal  @map("discount_applied") @db.Decimal(12, 2)
-  createdAt        DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid())
+  couponId        String   @map("coupon_id")
+  userId          String?  @map("user_id") // nullable: guest checkout (BR-002)
+  orderId         String   @unique @map("order_id")
+  discountApplied Decimal  @map("discount_applied") @db.Decimal(12, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
 
   coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Restrict)
 
   @@index([couponId, userId])
   @@map("coupon_redemptions")
+}
+
+// ---------- Checkout (DDD Section 2.10) — ephemeral orchestration state ----------
+
+model CheckoutSession {
+  id              String    @id @default(uuid())
+  userId          String?   @map("user_id") // nullable: guest checkout
+  guestCartId     String?   @map("guest_cart_id")
+  addressId       String?   @map("address_id")
+  guestAddress    Json?     @map("guest_address") // inline address for guest checkout
+  shippingMethod  String?   @map("shipping_method")
+  idempotencyKey  String    @unique @map("idempotency_key")
+  status          String    @default("pending") // pending | confirmed | expired
+  subtotal        Decimal   @default(0) @db.Decimal(12, 2)
+  taxAmount       Decimal   @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  shippingAmount  Decimal   @default(0) @map("shipping_amount") @db.Decimal(12, 2)
+  discountAmount  Decimal   @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  couponCode      String?   @map("coupon_code")
+  expiresAt       DateTime  @map("expires_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@map("checkout_sessions")
+}
+
+// ---------- Orders (DDD Section 2.11) — immutable once created, ----------
+// ---------- except for status transitions (append-only history)  ----------
+
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique @map("order_number")
+  userId          String?     @map("user_id") // nullable: guest order (BR-002)
+  addressId       String?     @map("address_id") // optional link back to a saved Address, for registered users only
+  shippingAddress Json        @map("shipping_address") // snapshot used for fulfillment — always present, guest or registered
+  subtotal        Decimal     @db.Decimal(12, 2)
+  taxAmount       Decimal     @map("tax_amount") @db.Decimal(12, 2)
+  shippingAmount  Decimal     @map("shipping_amount") @db.Decimal(12, 2)
+  discountAmount  Decimal     @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  totalAmount     Decimal     @map("total_amount") @db.Decimal(12, 2)
+  status          OrderStatus @default(pending)
+  shippedAt       DateTime?   @map("shipped_at")
+  deliveredAt     DateTime?   @map("delivered_at")
+  deliveryConfirmedBy String? @map("delivery_confirmed_by") // "buyer" | "auto"
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  user             User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  address          Address?           @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  items            OrderItem[]
+  statusHistory    OrderStatusHistory[]
+  payments         Payment[]
+  shipment         Shipment?
+  couponRedemption CouponRedemption?
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String  @id @default(uuid())
+  orderId          String  @map("order_id")
+  productVariantId String  @map("product_variant_id")
+  quantity         Int
+  priceAtPurchase  Decimal @map("price_at_purchase") @db.Decimal(12, 2)
+
+  order          Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(uuid())
+  orderId   String      @map("order_id")
+  status    OrderStatus
+  changedAt DateTime    @default(now()) @map("changed_at")
+  changedBy String?     @map("changed_by") // userId of staff, null if system/customer-triggered
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@map("order_status_history")
+}
+
+// ---------- Payments (DDD Section 2.12) ----------
+
+model Payment {
+  id                     String        @id @default(uuid())
+  orderId                String        @map("order_id")
+  gatewayPaymentIntentId String?       @unique @map("gateway_payment_intent_id")
+  amount                 Decimal       @db.Decimal(12, 2)
+  method                 PaymentMethod
+  status                 PaymentStatus @default(pending)
+  idempotencyKey         String        @unique @map("idempotency_key")
+  createdAt              DateTime      @default(now()) @map("created_at")
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  refunds Refund[]
+
+  @@map("payments")
+}
+
+model Refund {
+  id              String       @id @default(uuid())
+  paymentId       String       @map("payment_id")
+  gatewayRefundId String?      @unique @map("gateway_refund_id")
+  amount          Decimal      @db.Decimal(12, 2)
+  status          RefundStatus @default(pending)
+  reason          String?
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@map("refunds")
+}
+
+// ---------- Shipping (DDD Section 2.13) ----------
+
+model ShippingZone {
+  id        String    @id @default(uuid())
+  name      String
+  countries String[] // e.g. ["PK"]
+  deletedAt DateTime? @map("deleted_at")
+
+  rates ShippingRate[]
+
+  @@map("shipping_zones")
+}
+
+model ShippingRate {
+  id      String  @id @default(uuid())
+  zoneId  String  @map("zone_id")
+  method  String // "standard" | "express"
+  cost    Decimal @db.Decimal(12, 2)
+  etaDays Int     @map("eta_days")
+
+  zone ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([zoneId, method])
+  @@map("shipping_rates")
+}
+
+model Shipment {
+  id             String         @id @default(uuid())
+  orderId        String         @unique @map("order_id")
+  trackingNumber String?        @map("tracking_number")
+  courier        String?
+  status         ShipmentStatus @default(pending)
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@map("shipments")
 }
 

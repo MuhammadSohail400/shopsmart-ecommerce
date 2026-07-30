@@ -14,3 +14,9 @@ export async function isProductPurchasable(productId: string, variantId: string,
   const { productsService } = await import('./products.service');
   return productsService.isPurchasable(productId, variantId, quantity);
 }
+
+/** Used by Cart to resolve title/price for guest-cart line items (Redis stores only IDs). */
+export async function getVariantById(variantId: string) {
+  const { productsRepository } = await import('./products.repository');
+  return productsRepository.findVariantWithProduct(variantId);
+}

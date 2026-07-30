@@ -1,5 +1,8 @@
 import { prisma } from '@config/database';
+import type { Prisma } from '@prisma/client';
 import { DiscountType } from '@prisma/client';
+
+type Client = typeof prisma | Prisma.TransactionClient;
 
 export const couponsRepository = {
   findByCode(code: string) {
@@ -36,12 +39,15 @@ export const couponsRepository = {
     return prisma.couponRedemption.count({ where: { couponId, userId } });
   },
 
-  recordRedemption(data: {
-    couponId: string;
-    userId?: string;
-    orderId: string;
-    discountApplied: number;
-  }) {
-    return prisma.couponRedemption.create({ data });
+  recordRedemption(
+    data: {
+      couponId: string;
+      userId?: string;
+      orderId: string;
+      discountApplied: number;
+    },
+    client: Client = prisma,
+  ) {
+    return client.couponRedemption.create({ data });
   },
 };

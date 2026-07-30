@@ -12,6 +12,17 @@ export async function getCart(userId: string) {
   return cartService.getCart({ userId });
 }
 
+/** Used by Checkout, which must support both guest and registered carts. */
+export async function getCartView(ctx: { userId?: string; guestCartId?: string }) {
+  const { cartService } = await import('./cart.service');
+  return cartService.getCart(ctx);
+}
+
+export async function clearCartView(ctx: { userId?: string; guestCartId?: string }) {
+  const { cartService } = await import('./cart.service');
+  return cartService.clear(ctx);
+}
+
 export async function clearCart(userId: string) {
   const { cartService } = await import('./cart.service');
   return cartService.clear({ userId });
