@@ -5,9 +5,12 @@
 # Dependencies
 node_modules/
 
-# Build output
+# Build outputpg
 /dist/
 /build/
+
+docs/learning
+readmeconceptslearning.md
 
 # Logs
 *.log

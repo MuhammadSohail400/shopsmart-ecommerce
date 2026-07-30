@@ -1,0 +1,275 @@
+// ShopSmart AI - Prisma Schema
+// Phase 1-3 scope only: Identity & Access, User Management, Product Catalog,
+// Categories, Brands, Inventory (per DDD v1.0, Sections 2-5)
+// Remaining domains (Cart, Orders, Payments, etc.) are added in later phases.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums (DDD Section 11 naming convention) ----------
+
+enum Role {
+  customer
+  admin
+  inventory_manager
+  support_agent
+}
+
+enum ProductStatus {
+  draft
+  pending_review
+  approved
+  rejected
+}
+
+enum DiscountType {
+  percentage
+  flat
+}
+
+// ---------- Identity & Access (DDD Section 2.1) ----------
+
+model User {
+  id            String   @id @default(uuid())
+  email         String?  @unique
+  phone         String?  @unique
+  passwordHash  String   @map("password_hash")
+  role          Role     @default(customer)
+  emailVerified Boolean  @default(false) @map("email_verified")
+  phoneVerified Boolean  @default(false) @map("phone_verified")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  refreshTokens RefreshToken[]
+  addresses     Address[]
+  cart          Cart?
+  wishlist      Wishlist?
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  familyId  String   @map("family_id")
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+// ---------- User Management (DDD Section 2.2) ----------
+
+model Address {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  fullName   String   @map("full_name")
+  phone      String
+  line1      String
+  city       String
+  region     String
+  postalCode String?  @map("postal_code")
+  country    String
+  isDefault  Boolean  @default(false) @map("is_default")
+  deletedAt  DateTime? @map("deleted_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ---------- Categories (DDD Section 2.4) ----------
+
+model Category {
+  id       String    @id @default(uuid())
+  parentId String?   @map("parent_id")
+  name     String
+  slug     String    @unique
+  depth    Int       @default(0)
+  deletedAt DateTime? @map("deleted_at")
+
+  parent   Category?  @relation("CategoryToParent", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToParent")
+  products Product[]
+
+  @@map("categories")
+}
+
+// ---------- Brands (DDD Section 2.5) ----------
+
+model Brand {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  deletedAt DateTime? @map("deleted_at")
+
+  products Product[]
+
+  @@map("brands")
+}
+
+// ---------- Product Catalog (DDD Section 2.3) ----------
+
+model Product {
+  id          String        @id @default(uuid())
+  categoryId  String        @map("category_id")
+  brandId     String?       @map("brand_id")
+  title       String
+  slug        String        @unique
+  description String
+  basePrice   Decimal       @map("base_price") @db.Decimal(12, 2)
+  status      ProductStatus @default(draft)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+
+  category Category         @relation(fields: [categoryId], references: [id])
+  brand    Brand?           @relation(fields: [brandId], references: [id])
+  variants ProductVariant[]
+  images   ProductImage[]
+  wishlistItems WishlistItem[]
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@map("products")
+}
+
+model ProductVariant {
+  id             String    @id @default(uuid())
+  productId      String    @map("product_id")
+  sku            String    @unique
+  attributes     Json      @default("{}")
+  priceModifier  Decimal   @default(0) @map("price_modifier") @db.Decimal(12, 2)
+  deletedAt      DateTime? @map("deleted_at")
+
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  inventory Inventory?
+  cartItems CartItem[]
+
+  @@unique([productId, attributes])
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String @id @default(uuid())
+  productId String @map("product_id")
+  url       String
+  sortOrder Int    @default(0) @map("sort_order")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// ---------- Inventory (DDD Section 2.6, DDR-006: separate table) ----------
+
+model Inventory {
+  id                String @id @default(uuid())
+  productVariantId  String @unique @map("product_variant_id")
+  quantity          Int    @default(0)
+  reservedQuantity  Int    @default(0) @map("reserved_quantity")
+  lowStockThreshold Int    @default(5) @map("low_stock_threshold")
+  version           Int    @default(0) // optimistic locking counter (DDD Section 14.1)
+
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+
+  @@map("inventory")
+}
+
+// ---------- Shopping Cart (DDD Section 2.7) — registered users only; ----------
+// ---------- guest carts live in Redis per SDD Section 6, not here.    ----------
+
+model Cart {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id               String @id @default(uuid())
+  cartId           String @map("cart_id")
+  productVariantId String @map("product_variant_id")
+  quantity         Int
+
+  cart           Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, productVariantId])
+  @@map("cart_items")
+}
+
+// ---------- Wishlist (DDD Section 2.8) ----------
+
+model Wishlist {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items WishlistItem[]
+
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         String @id @default(uuid())
+  wishlistId String @map("wishlist_id")
+  productId  String @map("product_id")
+
+  wishlist Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([wishlistId, productId])
+  @@map("wishlist_items")
+}
+
+// ---------- Coupons (DDD Section 2.9) ----------
+
+model Coupon {
+  id                String       @id @default(uuid())
+  code              String       @unique
+  discountType      DiscountType @map("discount_type")
+  discountValue     Decimal      @map("discount_value") @db.Decimal(12, 2)
+  minOrderValue     Decimal      @default(0) @map("min_order_value") @db.Decimal(12, 2)
+  usageLimitPerUser Int?         @map("usage_limit_per_user")
+  startDate         DateTime     @map("start_date")
+  endDate           DateTime     @map("end_date")
+  deletedAt         DateTime?    @map("deleted_at")
+
+  redemptions CouponRedemption[]
+
+  @@map("coupons")
+}
+
+model CouponRedemption {
+  id               String   @id @default(uuid())
+  couponId         String   @map("coupon_id")
+  userId           String?  @map("user_id") // nullable: guest checkout (BR-002)
+  orderId          String   @unique @map("order_id") // FK added when Order model lands in Phase 5
+  discountApplied  Decimal  @map("discount_applied") @db.Decimal(12, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Restrict)
+
+  @@index([couponId, userId])
+  @@map("coupon_redemptions")
+}
+
