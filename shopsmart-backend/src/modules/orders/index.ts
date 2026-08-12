@@ -28,3 +28,30 @@ export async function getOrderById(orderId: string, requestingUser: { id: string
   const { ordersService } = await import('./orders.service');
   return ordersService.getById(orderId, requestingUser);
 }
+
+/** BR-006: used by Reviews to verify a customer has a delivered order containing this product. */
+export async function hasDeliveredOrderForProduct(userId: string, productId: string): Promise<{ orderId: string } | null> {
+  const { prisma } = await import('@config/database');
+  const orderItem = await prisma.orderItem.findFirst({
+    where: {
+      productVariant: { productId },
+      order: { userId, status: 'delivered' },
+    },
+    select: { orderId: true },
+  });
+  return orderItem ? { orderId: orderItem.orderId } : null;
+}
+
+/** Used by the Admin module's order management view — reuses the same role-aware listing logic. */
+export async function listOrders(
+  requestingUser: { id: string; role: string },
+  filters: { status?: import('@prisma/client').OrderStatus; cursor?: string; limit: number },
+) {
+  const { ordersService } = await import('./orders.service');
+  return ordersService.list(requestingUser, filters);
+}
+
+export async function updateOrderStatus(orderId: string, status: import('@prisma/client').OrderStatus, changedBy: string) {
+  const { ordersService } = await import('./orders.service');
+  return ordersService.updateStatus(orderId, status, changedBy);
+}

@@ -3,14 +3,20 @@ import { authRepository } from './auth.repository';
 import { hashPassword, verifyPassword } from '@shared/utils/password.util';
 import {
   signAccessToken,
+  verifyAccessToken,
   generateRefreshToken,
   hashRefreshToken,
+  generatePasswordResetToken,
+  hashPasswordResetToken,
 } from '@shared/utils/jwt.util';
 import { AuthenticationError, BusinessRuleError, NotFoundError } from '@shared/errors';
 import { env } from '@config/env';
-import { logger } from '@config/logger';
+import { redis } from '@config/redis';
+import { eventBus } from '@shared/events';
 import { Role } from '@prisma/client';
 import type { RegisterInput, LoginInput, AuthTokens } from './auth.types';
+
+const PHONE_OTP_TTL_SECONDS = 5 * 60; // FR-004: OTP expires after 5 minutes
 
 function refreshTokenExpiryDate(): Date {
   const expires = new Date();
@@ -33,6 +39,10 @@ async function issueTokenPair(userId: string, role: Role, familyId?: string): Pr
   return { accessToken, refreshTokenRaw: raw, refreshTokenExpiresAt: expiresAt };
 }
 
+function generateOtpCode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
+}
+
 export const authService = {
   // FR-001/FR-002: registration via email or phone
   async register(input: RegisterInput) {
@@ -52,12 +62,46 @@ export const authService = {
       passwordHash,
     });
 
-    // FR-003/FR-004: verification email/OTP dispatch is owned by the
-    // Notifications module (Phase 6). Logged here as a placeholder so the
-    // registration flow is complete and testable before that module exists.
-    logger.info({ userId: user.id }, 'TODO(Phase 6): dispatch verification email/OTP');
+    // FR-003: email verification dispatch is owned by the Notifications
+    // module — Auth only raises the event (Backend Standards Section 14.2).
+    if (user.email) {
+      eventBus.publish('user.registered', { userId: user.id, email: user.email });
+    }
+
+    // FR-004: phone OTP — generated here (Auth owns verification logic),
+    // but dispatched through Notifications' sendOtp so Auth never imports
+    // an SMS/email provider directly.
+    if (user.phone) {
+      const code = generateOtpCode();
+      await redis.set(`otp:phone:${user.id}`, code, 'EX', PHONE_OTP_TTL_SECONDS);
+      const { sendOtp } = await import('@modules/notifications');
+      await sendOtp(user.id, user.phone, code);
+    }
 
     return { userId: user.id, verificationRequired: true };
+  },
+
+  // FR-003: email verification via signed, time-limited token from the email link
+  async verifyEmail(token: string) {
+    let userId: string;
+    try {
+      userId = verifyAccessToken(token).sub;
+    } catch {
+      throw new AuthenticationError('VERIFICATION_TOKEN_INVALID', 'Invalid or expired verification link');
+    }
+    const user = await authRepository.findById(userId);
+    if (!user) throw new NotFoundError('User');
+    await authRepository.markEmailVerified(userId);
+  },
+
+  // FR-004: phone verification via OTP
+  async verifyPhoneOtp(userId: string, code: string) {
+    const stored = await redis.get(`otp:phone:${userId}`);
+    if (!stored || stored !== code) {
+      throw new AuthenticationError('OTP_INVALID', 'Invalid or expired verification code');
+    }
+    await redis.del(`otp:phone:${userId}`);
+    await authRepository.markPhoneVerified(userId);
   },
 
   // FR-005
@@ -121,23 +165,40 @@ export const authService = {
     await authRepository.revokeToken(session.tokenHash);
   },
 
-  // FR-006: password reset — token generation here; actual email dispatch
-  // deferred to the Notifications module (Phase 6)
-  async requestPasswordReset(identifier: string) {
+  // FR-006: password reset
+  async requestPasswordReset(identifier: string): Promise<void> {
     const user = await authRepository.findByEmailOrPhone(identifier);
     // Always respond as if successful, regardless of whether the account
     // exists, to avoid leaking account existence.
     if (!user) return;
 
-    const resetToken = signAccessToken({ sub: user.id, role: user.role });
-    logger.info({ userId: user.id }, 'TODO(Phase 6): dispatch password reset email/OTP');
-    return resetToken; // returned only for local/dev testing convenience
+    const { raw, hash } = generatePasswordResetToken();
+    const PASSWORD_RESET_TTL_SECONDS = 15 * 60; // 15 minutes TTL
+    await redis.set(`password-reset:${hash}`, user.id, 'EX', PASSWORD_RESET_TTL_SECONDS);
+
+    if (user.email) {
+      eventBus.publish('user.password_reset_requested', { userId: user.id, email: user.email, resetToken: raw });
+    }
   },
 
-  async confirmPasswordReset(userId: string, newPassword: string) {
+  async confirmPasswordReset(rawResetToken: string, newPassword: string): Promise<void> {
+    const tokenHash = hashPasswordResetToken(rawResetToken);
+    const userId = await redis.get(`password-reset:${tokenHash}`);
+
+    if (!userId) {
+      throw new AuthenticationError('RESET_TOKEN_INVALID', 'Invalid or expired reset token');
+    }
+
+    const user = await authRepository.findById(userId);
+    if (!user) {
+      throw new AuthenticationError('RESET_TOKEN_INVALID', 'Invalid or expired reset token');
+    }
+
     const passwordHash = await hashPassword(newPassword);
     await authRepository.updatePasswordHash(userId, passwordHash);
     // SEC-011: invalidate all outstanding sessions on password change
     await authRepository.revokeAllUserTokens(userId);
+    // Single-use credential: invalidate immediately after successful reset
+    await redis.del(`password-reset:${tokenHash}`);
   },
 };

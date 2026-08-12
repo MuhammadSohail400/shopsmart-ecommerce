@@ -1,0 +1,21 @@
+import { Request, Response } from 'express';
+import { settingsService } from './settings.service';
+import { sendSuccess } from '@shared/utils/response.util';
+
+export const settingsController = {
+  async list(_req: Request, res: Response) {
+    sendSuccess(res, await settingsService.list());
+  },
+
+  async update(req: Request, res: Response) {
+    sendSuccess(res, await settingsService.update(req.body.key, req.body.value));
+  },
+
+  async listTaxRules(_req: Request, res: Response) {
+    sendSuccess(res, await settingsService.listTaxRules());
+  },
+
+  async createTaxRule(req: Request, res: Response) {
+    sendSuccess(res, await settingsService.createTaxRule(req.body), 201);
+  },
+};

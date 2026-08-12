@@ -1,13 +1,16 @@
 import { couponsRepository } from './coupons.repository';
 import { NotFoundError, BusinessRuleError, ConflictError } from '@shared/errors';
+import { recordAuditLog } from '@modules/audit-logs';
 import { DiscountType } from '@prisma/client';
 import type { CreateCouponBody } from './coupons.validators';
 
 export const couponsService = {
-  async create(data: CreateCouponBody) {
+  async create(data: CreateCouponBody, actorId?: string) {
     const existing = await couponsRepository.findByCode(data.code);
     if (existing) throw new ConflictError('COUPON_CODE_EXISTS', 'A coupon with this code already exists');
-    return couponsRepository.create({ ...data, discountType: data.discountType as DiscountType });
+    const coupon = await couponsRepository.create({ ...data, discountType: data.discountType as DiscountType });
+    await recordAuditLog(actorId, 'coupon.created', 'Coupon', coupon.id, undefined, data as unknown as object);
+    return coupon;
   },
 
   async update(id: string, data: Record<string, unknown>) {
@@ -73,6 +76,24 @@ export const couponsService = {
     userId?: string,
     tx?: import('@prisma/client').Prisma.TransactionClient,
   ) {
+    // F-2 fix: re-check the per-user usage limit inside the same transaction
+    // that inserts the CouponRedemption row. This closes the TOCTOU race
+    // condition where two concurrent checkouts could both pass the pre-check
+    // (validateAndCompute) and then both insert, exceeding usageLimitPerUser.
+    // The DB-level @@unique([couponId, userId]) is the primary guard for
+    // usageLimitPerUser=1; this in-transaction re-check handles limits > 1.
+    if (userId && tx) {
+      const coupon = await couponsRepository.findById(couponId);
+      if (coupon && coupon.usageLimitPerUser) {
+        const usedCount = await couponsRepository.countRedemptionsByUser(couponId, userId, tx);
+        if (usedCount >= coupon.usageLimitPerUser) {
+          throw new BusinessRuleError(
+            'COUPON_USAGE_LIMIT_EXCEEDED',
+            "You've already used this coupon the maximum number of times",
+          );
+        }
+      }
+    }
     return couponsRepository.recordRedemption({ couponId, orderId, discountApplied, userId }, tx);
   },
 };

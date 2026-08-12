@@ -4,15 +4,18 @@ import { authMiddleware } from '@shared/middleware/auth.middleware';
 import { requireRole } from '@shared/middleware/rbac.middleware';
 import { validate } from '@shared/middleware/validate.middleware';
 import { asyncHandler } from '@shared/middleware/error-handler.middleware';
+import { rateLimit } from '@shared/middleware/rate-limit.middleware';
 import { issueRefundSchema } from './payments.validators';
 import { ROLES } from '@shared/constants/roles';
 
 const router = Router();
 router.use(authMiddleware);
+const refundLimit = rateLimit({ windowSeconds: 60, max: 5, keyPrefix: 'refunds' });
 
 router.get('/:orderId/payments', asyncHandler(paymentsController.listByOrder));
 router.post(
   '/:orderId/refunds',
+  refundLimit,
   requireRole(ROLES.ADMIN, ROLES.SUPPORT_AGENT),
   validate(issueRefundSchema),
   asyncHandler(paymentsController.issueRefund),

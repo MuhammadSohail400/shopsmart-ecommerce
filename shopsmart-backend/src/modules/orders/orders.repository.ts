@@ -16,7 +16,7 @@ export const ordersRepository = {
         orderNumber,
         userId: input.userId,
         addressId: input.addressId,
-        shippingAddress: input.shippingAddress as Prisma.InputJsonValue,
+        shippingAddress: input.shippingAddress as unknown as Prisma.InputJsonValue,
         subtotal: input.subtotal,
         taxAmount: input.taxAmount,
         shippingAmount: input.shippingAmount,

@@ -36,3 +36,8 @@ export const passwordResetConfirmSchema = z.object({
 export const verifyEmailSchema = z.object({
   token: z.string().min(1),
 });
+
+export const verifyPhoneSchema = z.object({
+  userId: z.string().uuid(),
+  code: z.string().length(6),
+});

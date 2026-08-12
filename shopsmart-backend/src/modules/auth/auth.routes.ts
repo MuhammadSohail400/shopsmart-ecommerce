@@ -9,6 +9,8 @@ import {
   loginSchema,
   passwordResetRequestSchema,
   passwordResetConfirmSchema,
+  verifyEmailSchema,
+  verifyPhoneSchema,
 } from './auth.validators';
 
 const router = Router();
@@ -17,6 +19,8 @@ const router = Router();
 const strictLimit = rateLimit({ windowSeconds: 900, max: 5, keyPrefix: 'auth-strict' });
 
 router.post('/register', strictLimit, validate(registerSchema), asyncHandler(authController.register));
+router.post('/verify-email', strictLimit, validate(verifyEmailSchema), asyncHandler(authController.verifyEmail));
+router.post('/verify-phone', strictLimit, validate(verifyPhoneSchema), asyncHandler(authController.verifyPhone));
 router.post('/login', strictLimit, validate(loginSchema), asyncHandler(authController.login));
 router.post('/refresh', asyncHandler(authController.refresh));
 router.post('/logout', authMiddleware, asyncHandler(authController.logout));

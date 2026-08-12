@@ -36,3 +36,19 @@ export function generateRefreshToken(): { raw: string; hash: string } {
 export function hashRefreshToken(raw: string): string {
   return crypto.createHash('sha256').update(raw).digest('hex');
 }
+
+/**
+ * Dedicated cryptographically secure random password reset token.
+ * Raw token is 64 hex characters (32 random bytes), never a JWT.
+ * Only the SHA-256 hash is stored in Redis.
+ */
+export function generatePasswordResetToken(): { raw: string; hash: string } {
+  const raw = crypto.randomBytes(32).toString('hex');
+  const hash = crypto.createHash('sha256').update(raw).digest('hex');
+  return { raw, hash };
+}
+
+export function hashPasswordResetToken(raw: string): string {
+  return crypto.createHash('sha256').update(raw).digest('hex');
+}
+

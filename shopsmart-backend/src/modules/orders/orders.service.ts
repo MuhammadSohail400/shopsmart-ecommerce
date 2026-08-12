@@ -5,6 +5,8 @@ import { NotFoundError, AuthorizationError, ConflictError, BusinessRuleError } f
 import { decrementStock, restoreStock } from '@modules/inventory';
 import { recordRedemption } from '@modules/coupons';
 import { createShipmentForOrder } from '@modules/shipping';
+import { eventBus } from '@shared/events';
+import { recordAuditLog } from '@modules/audit-logs';
 import type { CreateOrderInput } from './orders.types';
 
 function generateOrderNumber(): string {
@@ -60,6 +62,7 @@ export const ordersService = {
 
     // Not part of the money/inventory-critical transaction (SDD Section 18).
     await createShipmentForOrder(orderId);
+    eventBus.publish('order.confirmed', { orderId, userId: order.userId ?? undefined });
     return ordersRepository.findById(orderId);
   },
 
@@ -93,7 +96,7 @@ export const ordersService = {
     const isStaff = requestingUser.role === 'admin';
     if (!isStaff && order.userId !== requestingUser.id) throw new AuthorizationError();
 
-    if (![OrderStatus.pending, OrderStatus.confirmed].includes(order.status)) {
+    if (!([OrderStatus.pending, OrderStatus.confirmed] as OrderStatus[]).includes(order.status)) {
       throw new ConflictError(
         'CANCELLATION_WINDOW_CLOSED',
         'This order can no longer be cancelled as it has already begun processing',
@@ -126,11 +129,24 @@ export const ordersService = {
       );
     }
     await ordersRepository.markDelivered(orderId, 'buyer');
+    eventBus.publish('order.status_changed', {
+      orderId,
+      userId: order.userId ?? undefined,
+      previousStatus: order.status,
+      newStatus: OrderStatus.delivered,
+    });
   },
 
   async updateStatus(orderId: string, status: OrderStatus, changedBy: string) {
     const order = await ordersRepository.findById(orderId);
     if (!order) throw new NotFoundError('Order');
     await ordersRepository.updateStatus(orderId, status, changedBy);
+    await recordAuditLog(changedBy, 'order.status_overridden', 'Order', orderId, { status: order.status }, { status });
+    eventBus.publish('order.status_changed', {
+      orderId,
+      userId: order.userId ?? undefined,
+      previousStatus: order.status,
+      newStatus: status,
+    });
   },
 };

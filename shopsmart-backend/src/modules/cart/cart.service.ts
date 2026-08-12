@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { cartRepository } from './cart.repository';
 import { guestCartStore } from './cart.guest-store';
 import { NotFoundError, ConflictError } from '@shared/errors';
@@ -55,20 +56,15 @@ async function buildGuestCartView(guestCartId: string): Promise<CartView> {
   return { cartId: guestCartId, isGuest: true, items: lineItems, subtotal, appliedCoupon };
 }
 
+type RegisteredCartItem = Prisma.CartItemGetPayload<{
+  include: { productVariant: { include: { product: true; inventory: true } } };
+}>;
+
 async function buildRegisteredCartView(userId: string): Promise<CartView> {
   const cart = await cartRepository.findOrCreateForUser(userId);
 
   const lineItems: CartLineItem[] = cart.items.map(
-    (item: {
-      productVariantId: string;
-      quantity: number;
-      productVariant: {
-        attributes: Record<string, string>;
-        priceModifier: number;
-        product: { title: string; basePrice: number };
-        inventory: { quantity: number; reservedQuantity: number } | null;
-      };
-    }) => {
+    (item: RegisteredCartItem) => {
       const unitPrice = Number(item.productVariant.product.basePrice) + Number(item.productVariant.priceModifier);
       const available = item.productVariant.inventory
         ? item.productVariant.inventory.quantity - item.productVariant.inventory.reservedQuantity
@@ -76,7 +72,7 @@ async function buildRegisteredCartView(userId: string): Promise<CartView> {
       return {
         productVariantId: item.productVariantId,
         title: item.productVariant.product.title,
-        attributes: item.productVariant.attributes,
+        attributes: item.productVariant.attributes as Record<string, string>,
         unitPrice,
         quantity: item.quantity,
         subtotal: Math.round(unitPrice * item.quantity * 100) / 100,

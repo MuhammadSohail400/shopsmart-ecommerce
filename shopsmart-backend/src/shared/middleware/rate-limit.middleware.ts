@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { redis } from '@config/redis';
+import { logger } from '@config/logger';
 import { RateLimitError } from '@shared/errors';
 
 interface RateLimitOptions {
@@ -32,10 +33,14 @@ export function rateLimit(options: RateLimitOptions, keyFn?: (req: Request) => s
       }
 
       next();
-    } catch {
-      // If Redis is temporarily unavailable, degrade gracefully rather than
-      // hard-failing every request (SDD Section 18: graceful degradation)
+    } catch (err) {
+      // F-5 fix: If Redis is temporarily unavailable, degrade gracefully rather than
+      // hard-failing every request (SDD Section 18: graceful degradation).
+      // WARNING: This means brute-force protection is disabled during a Redis outage.
+      // This warn log makes the fail-open observable in monitoring/alerting.
+      logger.warn({ err, keyPrefix: options.keyPrefix }, 'Rate limiter Redis error — failing open (rate limit disabled for this request)');
       next();
     }
   };
 }
+

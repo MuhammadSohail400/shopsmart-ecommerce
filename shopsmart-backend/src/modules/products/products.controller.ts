@@ -22,15 +22,15 @@ export const productsController = {
   },
 
   async create(req: Request, res: Response) {
-    sendSuccess(res, await productsService.create(req.body), 201);
+    sendSuccess(res, await productsService.create(req.body, req.user?.id), 201);
   },
 
   async update(req: Request, res: Response) {
-    sendSuccess(res, await productsService.update(req.params.productId, req.body));
+    sendSuccess(res, await productsService.update(req.params.productId, req.body, req.user?.id));
   },
 
   async remove(req: Request, res: Response) {
-    await productsService.archive(req.params.productId);
+    await productsService.archive(req.params.productId, req.user?.id);
     res.status(204).send();
   },
 

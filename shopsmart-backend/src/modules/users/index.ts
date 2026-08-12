@@ -17,3 +17,11 @@ export async function getAddressForUser(userId: string, addressId: string) {
   const { usersRepository } = await import('./users.repository');
   return usersRepository.findAddress(addressId, userId);
 }
+
+/** Used by Notifications to resolve where to send order/account emails without duplicating email storage on event payloads. */
+export async function getUserContactInfo(userId: string) {
+  const { usersRepository } = await import('./users.repository');
+  const user = await usersRepository.findById(userId);
+  if (!user) return null;
+  return { email: user.email, phone: user.phone };
+}

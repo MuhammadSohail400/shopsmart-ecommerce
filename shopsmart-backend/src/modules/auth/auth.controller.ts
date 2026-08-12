@@ -52,17 +52,18 @@ export const authController = {
     sendSuccess(res, { message: 'If an account exists, a reset link has been sent.' });
   },
 
+  async verifyEmail(req: Request, res: Response) {
+    await authService.verifyEmail(req.body.token);
+    sendSuccess(res, { message: 'Email verified successfully.' });
+  },
+
+  async verifyPhone(req: Request, res: Response) {
+    await authService.verifyPhoneOtp(req.body.userId, req.body.code);
+    sendSuccess(res, { message: 'Phone verified successfully.' });
+  },
+
   async confirmPasswordReset(req: Request, res: Response) {
-    // In Phase 1-3 the reset token is a signed access token (see service);
-    // real implementation swaps this for a dedicated reset-token verify.
-    const { verifyAccessToken } = await import('@shared/utils/jwt.util');
-    let userId: string;
-    try {
-      userId = verifyAccessToken(req.body.token).sub;
-    } catch {
-      throw new AuthenticationError('RESET_TOKEN_INVALID', 'Invalid or expired reset token');
-    }
-    await authService.confirmPasswordReset(userId, req.body.newPassword);
+    await authService.confirmPasswordReset(req.body.token, req.body.newPassword);
     sendSuccess(res, { message: 'Password updated successfully.' });
   },
 

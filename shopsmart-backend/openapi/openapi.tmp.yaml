@@ -1,0 +1,1398 @@
+openapi: 3.1.0
+info:
+  title: ShopSmart AI API
+  version: "1.0.0"
+  description: >
+    REST API for the ShopSmart AI e-commerce platform. This document covers
+    the critical shopping path (auth, catalog, cart, checkout, orders,
+    payments) in full detail per the API Design Specification. The
+    remaining modules (wishlist, coupons, shipping, reviews, notifications,
+    admin, analytics, cms, settings, audit-logs) follow the identical
+    request/response/error conventions established here — see each
+    module's *.routes.ts for their exact paths.
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                email: { type: string, format: email }
+                phone: { type: string }
+                password: { type: string, minLength: 8 }
+      responses:
+        "201":
+          description: Registered successfully
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier: { type: string }
+                password: { type: string }
+      responses:
+        "200":
+          description: Logged in — access token returned, refresh token set as HttpOnly cookie
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+        "401":
+          $ref: "#/components/responses/AuthError"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh the access token using the HttpOnly refresh cookie
+      security: []
+      responses:
+        "200": { description: New access token issued }
+        "401": { $ref: "#/components/responses/AuthError" }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out (revokes the current refresh token family)
+      responses:
+        "204": { description: Logged out }
+
+  /products:
+    get:
+      tags: [Products]
+      summary: List/search products
+      security: []
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: "filter[category]", in: query, schema: { type: string } }
+        - { name: "filter[brand]", in: query, schema: { type: string } }
+        - { name: "filter[minPrice]", in: query, schema: { type: number } }
+        - { name: "filter[maxPrice]", in: query, schema: { type: number } }
+        - { name: sort, in: query, schema: { type: string } }
+        - { $ref: "#/components/parameters/PageCursorParam" }
+        - { $ref: "#/components/parameters/PageLimitParam" }
+      responses:
+        "200":
+          description: Paginated product list
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaginatedEnvelope" }
+    post:
+      tags: [Products]
+      summary: Create a product (admin/inventory_manager)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateProductRequest" }
+      responses:
+        "201": { description: Product created }
+        "403": { $ref: "#/components/responses/ForbiddenError" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /products/{productId}:
+    get:
+      tags: [Products]
+      summary: Get product detail
+      security: []
+      parameters:
+        - { $ref: "#/components/parameters/ProductIdParam" }
+      responses:
+        "200":
+          description: Product detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+
+  /cart:
+    get:
+      tags: [Cart]
+      summary: Get the current cart (guest via X-Guest-Cart-Id, or registered via Bearer token)
+      parameters:
+        - { $ref: "#/components/parameters/GuestCartIdHeader" }
+      responses:
+        "200":
+          description: Cart contents
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+    delete:
+      tags: [Cart]
+      summary: Clear the cart
+      responses:
+        "204": { description: Cart cleared }
+
+  /cart/items:
+    post:
+      tags: [Cart]
+      summary: Add an item to the cart
+      parameters:
+        - { $ref: "#/components/parameters/GuestCartIdHeader" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productVariantId, quantity]
+              properties:
+                productVariantId: { type: string, format: uuid }
+                quantity: { type: integer, minimum: 1 }
+      responses:
+        "201": { description: Item added }
+        "409": { $ref: "#/components/responses/ConflictError" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /checkout/sessions:
+    post:
+      tags: [Checkout]
+      summary: Create a checkout session (computes tax/shipping/total preview)
+      parameters:
+        - { $ref: "#/components/parameters/GuestCartIdHeader" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [shippingMethod]
+              properties:
+                addressId: { type: string, format: uuid }
+                shippingMethod: { type: string, enum: [standard, express] }
+      responses:
+        "201": { description: Checkout session created with computed totals }
+        "409": { $ref: "#/components/responses/ConflictError" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /checkout/sessions/{sessionId}/confirm:
+    post:
+      tags: [Checkout]
+      summary: Confirm checkout — creates the order and initiates payment
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - { $ref: "#/components/parameters/GuestCartIdHeader" }
+        - { $ref: "#/components/parameters/IdempotencyKeyHeader" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentMethod]
+              properties:
+                paymentMethod: { type: string, enum: [card, cod, bank_transfer] }
+      responses:
+        "201":
+          description: Order created (pending or confirmed, depending on payment method)
+          headers:
+            Location: { schema: { type: string }, description: "/orders/{orderId}" }
+        "409": { $ref: "#/components/responses/ConflictError" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /orders:
+    get:
+      tags: [Orders]
+      summary: List orders (own orders for customers, all for staff)
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+        - { $ref: "#/components/parameters/PageCursorParam" }
+        - { $ref: "#/components/parameters/PageLimitParam" }
+      responses:
+        "200":
+          description: Paginated order list
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaginatedEnvelope" }
+
+  /orders/{orderId}:
+    get:
+      tags: [Orders]
+      summary: Get order detail (owner or staff only)
+      parameters:
+        - { $ref: "#/components/parameters/OrderIdParam" }
+      responses:
+        "200":
+          description: Order detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+        "403": { $ref: "#/components/responses/ForbiddenError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+
+  /orders/{orderId}/cancellation:
+    post:
+      tags: [Orders]
+      summary: Cancel an order (BR-005 — only while pending/confirmed)
+      parameters:
+        - { $ref: "#/components/parameters/OrderIdParam" }
+      responses:
+        "204": { description: Order cancelled }
+        "409": { $ref: "#/components/responses/ConflictError" }
+
+  /orders/{orderId}/payments:
+    get:
+      tags: [Payments]
+      summary: List payment attempts for an order
+      parameters:
+        - { $ref: "#/components/parameters/OrderIdParam" }
+      responses:
+        "200":
+          description: Payment records
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+
+  /orders/{orderId}/refunds:
+    post:
+      tags: [Payments]
+      summary: Issue a refund (admin/support_agent only, BR-004)
+      parameters:
+        - { $ref: "#/components/parameters/OrderIdParam" }
+        - { $ref: "#/components/parameters/IdempotencyKeyHeader" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: number }
+                reason: { type: string }
+      responses:
+        "201": { description: Refund issued }
+        "403": { $ref: "#/components/responses/ForbiddenError" }
+
+  /webhooks/stripe:
+    post:
+      tags: [Payments]
+      summary: Stripe webhook receiver (signature-verified, not user-authenticated)
+      security: []
+      responses:
+        "200": { description: Event processed }
+        "400": { description: Invalid signature or malformed payload }
+
+
+  /users/me/addresses:
+    get:
+      tags: [Users]
+      summary: List saved addresses for authenticated user
+      responses:
+        '200': { description: Addresses list }
+    post:
+      tags: [Users]
+      summary: Add a new saved address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullName, phone, line1, city, region, country]
+              properties:
+                fullName: { type: string }
+                phone: { type: string }
+                line1: { type: string }
+                city: { type: string }
+                region: { type: string }
+                postalCode: { type: string }
+                country: { type: string }
+                isDefault: { type: boolean }
+      responses:
+        '201': { description: Address created }
+
+  /users/me/addresses/{addressId}:
+    patch:
+      tags: [Users]
+      summary: Update a saved address
+      parameters:
+        - { name: addressId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Address updated }
+    delete:
+      tags: [Users]
+      summary: Soft-delete an address
+      parameters:
+        - { name: addressId, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Address deleted }
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List category hierarchy (public)
+      security: []
+      responses:
+        '200': { description: List of categories }
+    post:
+      tags: [Categories]
+      summary: Create category (admin/inventory_manager)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                parentId: { type: string }
+      responses:
+        '201': { description: Category created }
+
+  /categories/{slug}:
+    get:
+      tags: [Categories]
+      summary: Get category by slug
+      security: []
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Category details }
+
+  /categories/{id}:
+    patch:
+      tags: [Categories]
+      summary: Update category
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Category updated }
+    delete:
+      tags: [Categories]
+      summary: Soft-delete category
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Category deleted }
+
+  /brands:
+    get:
+      tags: [Brands]
+      summary: List all active brands
+      security: []
+      responses:
+        '200': { description: List of brands }
+    post:
+      tags: [Brands]
+      summary: Create a brand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+      responses:
+        '201': { description: Brand created }
+
+  /brands/{slug}:
+    get:
+      tags: [Brands]
+      summary: Get brand details by slug
+      security: []
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Brand details }
+
+  /brands/{id}:
+    patch:
+      tags: [Brands]
+      summary: Update a brand
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Brand updated }
+    delete:
+      tags: [Brands]
+      summary: Soft-delete a brand
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Brand deleted }
+
+  /inventory/{productVariantId}:
+    get:
+      tags: [Inventory]
+      summary: Get stock level for a product variant
+      parameters:
+        - { name: productVariantId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Inventory details }
+    patch:
+      tags: [Inventory]
+      summary: Update inventory level (optimistic locking enabled)
+      parameters:
+        - { name: productVariantId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity: { type: integer }
+                lowStockThreshold: { type: integer }
+                version: { type: integer }
+      responses:
+        '200': { description: Inventory updated }
+
+  /wishlist:
+    get:
+      tags: [Wishlist]
+      summary: Get user wishlist
+      responses:
+        '200': { description: User wishlist }
+
+  /wishlist/items:
+    post:
+      tags: [Wishlist]
+      summary: Add item to wishlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productId]
+              properties:
+                productId: { type: string }
+      responses:
+        '201': { description: Item added to wishlist }
+
+  /wishlist/items/{productId}:
+    delete:
+      tags: [Wishlist]
+      summary: Remove item from wishlist
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Item removed }
+
+  /wishlist/merge:
+    post:
+      tags: [Wishlist]
+      summary: Merge guest local wishlist into registered user wishlist
+      responses:
+        '200': { description: Wishlist merged }
+
+  /coupons:
+    get:
+      tags: [Coupons]
+      summary: List coupons
+      responses:
+        '200': { description: List of coupons }
+    post:
+      tags: [Coupons]
+      summary: Create a coupon
+      responses:
+        '201': { description: Coupon created }
+
+  /coupons/validate:
+    post:
+      tags: [Coupons]
+      summary: Validate a coupon code against cart total
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, cartSubtotal]
+              properties:
+                code: { type: string }
+                cartSubtotal: { type: number }
+      responses:
+        '200': { description: Coupon validation result }
+
+  /coupons/{id}:
+    patch:
+      tags: [Coupons]
+      summary: Update a coupon
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Coupon updated }
+    delete:
+      tags: [Coupons]
+      summary: Soft-delete a coupon
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Coupon deleted }
+
+  /shipping/zones:
+    get:
+      tags: [Shipping]
+      summary: List shipping zones and rates
+      responses:
+        '200': { description: Shipping zones }
+    post:
+      tags: [Shipping]
+      summary: Create a shipping zone
+      responses:
+        '201': { description: Zone created }
+
+  /shipping/zones/{zoneId}/rates:
+    post:
+      tags: [Shipping]
+      summary: Add a rate to a shipping zone
+      parameters:
+        - { name: zoneId, in: path, required: true, schema: { type: string } }
+      responses:
+        '201': { description: Rate added }
+
+  /shipping/zones/{zoneId}/rates/{rateId}:
+    delete:
+      tags: [Shipping]
+      summary: Delete a shipping rate
+      parameters:
+        - { name: zoneId, in: path, required: true, schema: { type: string } }
+        - { name: rateId, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Rate deleted }
+
+  /products/{productId}/reviews:
+    get:
+      tags: [Reviews]
+      summary: List product reviews (public)
+      security: []
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Reviews list }
+    post:
+      tags: [Reviews]
+      summary: Create review for a delivered order item (BR-006)
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, rating]
+              properties:
+                orderId: { type: string }
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string }
+      responses:
+        '201': { description: Review created }
+
+  /reviews/{reviewId}/hide:
+    patch:
+      tags: [Reviews]
+      summary: "Moderation: hide or unhide a review (staff role required)"
+      parameters:
+        - { name: reviewId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Review visibility updated }
+
+  /users/me/notification-preferences:
+    get:
+      tags: [Notifications]
+      summary: Get notification preferences
+      responses:
+        '200': { description: Notification preferences }
+    patch:
+      tags: [Notifications]
+      summary: Update marketing email preferences
+      responses:
+        '200': { description: Preferences updated }
+
+  /admin/notification-logs:
+    get:
+      tags: [Notifications]
+      summary: List notification logs (staff role required)
+      responses:
+        '200': { description: Notification logs }
+
+  /admin/settings:
+    get:
+      tags: [Settings]
+      summary: Get platform settings
+      responses:
+        '200': { description: Platform settings }
+    patch:
+      tags: [Settings]
+      summary: Update platform settings
+      responses:
+        '200': { description: Settings updated }
+
+  /admin/audit-logs:
+    get:
+      tags: [AuditLogs]
+      summary: Query system audit logs
+      responses:
+        '200': { description: Audit logs list }
+
+  /admin/dashboard/summary:
+    get:
+      tags: [Admin]
+      summary: Get admin dashboard metrics summary
+      responses:
+        '200': { description: Dashboard metrics }
+
+  /admin/orders:
+    get:
+      tags: [Admin]
+      summary: List all orders across platform with filters
+      responses:
+        '200': { description: Admin orders list }
+
+  /admin/staff/{staffId}/role:
+    patch:
+      tags: [Admin]
+      summary: Change staff user role (admin protection applied)
+      parameters:
+        - { name: staffId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Staff role updated }
+
+  /admin/analytics/sales-summary:
+    get:
+      tags: [Analytics]
+      summary: Get sales summary metrics
+      responses:
+        '200': { description: Sales summary metrics }
+
+  /admin/analytics/top-products:
+    get:
+      tags: [Analytics]
+      summary: Get top selling products
+      responses:
+        '200': { description: Top products list }
+
+  /admin/analytics/customer-growth:
+    get:
+      tags: [Analytics]
+      summary: Get customer growth metrics
+      responses:
+        '200': { description: Customer growth metrics }
+
+  /admin/analytics/repeat-customers:
+    get:
+      tags: [Analytics]
+      summary: Get repeat customer rate
+      responses:
+        '200': { description: Repeat customer metrics }
+
+  /admin/analytics/abandoned-carts:
+    get:
+      tags: [Analytics]
+      summary: List abandoned cart snapshots
+      responses:
+        '200': { description: Abandoned cart snapshots }
+
+  /cms/pages/{slug}:
+    get:
+      tags: [CMS]
+      summary: Get CMS page by slug
+      security: []
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: CMS page content }
+
+  /cms/pages:
+    post:
+      tags: [CMS]
+      summary: Create CMS page
+      responses:
+        '201': { description: Page created }
+
+  /cms/pages/{id}:
+    patch:
+      tags: [CMS]
+      summary: Update CMS page
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Page updated }
+    delete:
+      tags: [CMS]
+      summary: Delete CMS page
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Page deleted }
+
+  /cms/banners:
+    get:
+      tags: [CMS]
+      summary: List active promo banners
+      security: []
+      responses:
+        '200': { description: Banners list }
+    post:
+      tags: [CMS]
+      summary: Create banner
+      responses:
+        '201': { description: Banner created }
+
+  /cms/faqs:
+    get:
+      tags: [CMS]
+      summary: List active FAQ entries
+      security: []
+      responses:
+        '200': { description: FAQ entries list }
+
+
+  /users/me/addresses:
+    get:
+      tags: [Users]
+      summary: "List saved addresses for authenticated user"
+      responses:
+        '200': { description: Addresses list }
+    post:
+      tags: [Users]
+      summary: "Add a new saved address"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullName, phone, line1, city, region, country]
+              properties:
+                fullName: { type: string }
+                phone: { type: string }
+                line1: { type: string }
+                city: { type: string }
+                region: { type: string }
+                postalCode: { type: string }
+                country: { type: string }
+                isDefault: { type: boolean }
+      responses:
+        '201': { description: Address created }
+
+  /users/me/addresses/{addressId}:
+    patch:
+      tags: [Users]
+      summary: "Update a saved address"
+      parameters:
+        - { name: addressId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Address updated }
+    delete:
+      tags: [Users]
+      summary: "Soft-delete an address"
+      parameters:
+        - { name: addressId, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Address deleted }
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: "List category hierarchy (public)"
+      security: []
+      responses:
+        '200': { description: List of categories }
+    post:
+      tags: [Categories]
+      summary: "Create category (admin/inventory_manager)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                parentId: { type: string }
+      responses:
+        '201': { description: Category created }
+
+  /categories/{slug}:
+    get:
+      tags: [Categories]
+      summary: "Get category by slug"
+      security: []
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Category details }
+
+  /categories/{id}:
+    patch:
+      tags: [Categories]
+      summary: "Update category"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Category updated }
+    delete:
+      tags: [Categories]
+      summary: "Soft-delete category"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Category deleted }
+
+  /brands:
+    get:
+      tags: [Brands]
+      summary: "List all active brands"
+      security: []
+      responses:
+        '200': { description: List of brands }
+    post:
+      tags: [Brands]
+      summary: "Create a brand"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+      responses:
+        '201': { description: Brand created }
+
+  /brands/{slug}:
+    get:
+      tags: [Brands]
+      summary: "Get brand details by slug"
+      security: []
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Brand details }
+
+  /brands/{id}:
+    patch:
+      tags: [Brands]
+      summary: "Update a brand"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Brand updated }
+    delete:
+      tags: [Brands]
+      summary: "Soft-delete a brand"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Brand deleted }
+
+  /inventory/{productVariantId}:
+    get:
+      tags: [Inventory]
+      summary: "Get stock level for a product variant"
+      parameters:
+        - { name: productVariantId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Inventory details }
+    patch:
+      tags: [Inventory]
+      summary: "Update inventory level (optimistic locking enabled)"
+      parameters:
+        - { name: productVariantId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity: { type: integer }
+                lowStockThreshold: { type: integer }
+                version: { type: integer }
+      responses:
+        '200': { description: Inventory updated }
+
+  /wishlist:
+    get:
+      tags: [Wishlist]
+      summary: "Get user wishlist"
+      responses:
+        '200': { description: User wishlist }
+
+  /wishlist/items:
+    post:
+      tags: [Wishlist]
+      summary: "Add item to wishlist"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productId]
+              properties:
+                productId: { type: string }
+      responses:
+        '201': { description: Item added to wishlist }
+
+  /wishlist/items/{productId}:
+    delete:
+      tags: [Wishlist]
+      summary: "Remove item from wishlist"
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Item removed }
+
+  /wishlist/merge:
+    post:
+      tags: [Wishlist]
+      summary: "Merge guest local wishlist into registered user wishlist"
+      responses:
+        '200': { description: Wishlist merged }
+
+  /coupons:
+    get:
+      tags: [Coupons]
+      summary: "List coupons"
+      responses:
+        '200': { description: List of coupons }
+    post:
+      tags: [Coupons]
+      summary: "Create a coupon"
+      responses:
+        '201': { description: Coupon created }
+
+  /coupons/validate:
+    post:
+      tags: [Coupons]
+      summary: "Validate a coupon code against cart total"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, cartSubtotal]
+              properties:
+                code: { type: string }
+                cartSubtotal: { type: number }
+      responses:
+        '200': { description: Coupon validation result }
+
+  /coupons/{id}:
+    patch:
+      tags: [Coupons]
+      summary: "Update a coupon"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Coupon updated }
+    delete:
+      tags: [Coupons]
+      summary: "Soft-delete a coupon"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Coupon deleted }
+
+  /shipping/zones:
+    get:
+      tags: [Shipping]
+      summary: "List shipping zones and rates"
+      responses:
+        '200': { description: Shipping zones }
+    post:
+      tags: [Shipping]
+      summary: "Create a shipping zone"
+      responses:
+        '201': { description: Zone created }
+
+  /shipping/zones/{zoneId}/rates:
+    post:
+      tags: [Shipping]
+      summary: "Add a rate to a shipping zone"
+      parameters:
+        - { name: zoneId, in: path, required: true, schema: { type: string } }
+      responses:
+        '201': { description: Rate added }
+
+  /shipping/zones/{zoneId}/rates/{rateId}:
+    delete:
+      tags: [Shipping]
+      summary: "Delete a shipping rate"
+      parameters:
+        - { name: zoneId, in: path, required: true, schema: { type: string } }
+        - { name: rateId, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Rate deleted }
+
+  /products/{productId}/reviews:
+    get:
+      tags: [Reviews]
+      summary: "List product reviews (public)"
+      security: []
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Reviews list }
+    post:
+      tags: [Reviews]
+      summary: "Create review for a delivered order item (BR-006)"
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, rating]
+              properties:
+                orderId: { type: string }
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string }
+      responses:
+        '201': { description: Review created }
+
+  /reviews/{reviewId}/hide:
+    patch:
+      tags: [Reviews]
+      summary: "Moderation: hide or unhide a review (staff role required)"
+      parameters:
+        - { name: reviewId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Review visibility updated }
+
+  /users/me/notification-preferences:
+    get:
+      tags: [Notifications]
+      summary: "Get notification preferences"
+      responses:
+        '200': { description: Notification preferences }
+    patch:
+      tags: [Notifications]
+      summary: "Update marketing email preferences"
+      responses:
+        '200': { description: Preferences updated }
+
+  /admin/notification-logs:
+    get:
+      tags: [Notifications]
+      summary: "List notification logs (staff role required)"
+      responses:
+        '200': { description: Notification logs }
+
+  /admin/settings:
+    get:
+      tags: [Settings]
+      summary: "Get platform settings"
+      responses:
+        '200': { description: Platform settings }
+    patch:
+      tags: [Settings]
+      summary: "Update platform settings"
+      responses:
+        '200': { description: Settings updated }
+
+  /admin/audit-logs:
+    get:
+      tags: [AuditLogs]
+      summary: "Query system audit logs"
+      responses:
+        '200': { description: Audit logs list }
+
+  /admin/dashboard/summary:
+    get:
+      tags: [Admin]
+      summary: "Get admin dashboard metrics summary"
+      responses:
+        '200': { description: Dashboard metrics }
+
+  /admin/orders:
+    get:
+      tags: [Admin]
+      summary: "List all orders across platform with filters"
+      responses:
+        '200': { description: Admin orders list }
+
+  /admin/staff/{staffId}/role:
+    patch:
+      tags: [Admin]
+      summary: "Change staff user role (admin protection applied)"
+      parameters:
+        - { name: staffId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Staff role updated }
+
+  /admin/analytics/sales-summary:
+    get:
+      tags: [Analytics]
+      summary: "Get sales summary metrics"
+      responses:
+        '200': { description: Sales summary metrics }
+
+  /admin/analytics/top-products:
+    get:
+      tags: [Analytics]
+      summary: "Get top selling products"
+      responses:
+        '200': { description: Top products list }
+
+  /admin/analytics/customer-growth:
+    get:
+      tags: [Analytics]
+      summary: "Get customer growth metrics"
+      responses:
+        '200': { description: Customer growth metrics }
+
+  /admin/analytics/repeat-customers:
+    get:
+      tags: [Analytics]
+      summary: "Get repeat customer rate"
+      responses:
+        '200': { description: Repeat customer metrics }
+
+  /admin/analytics/abandoned-carts:
+    get:
+      tags: [Analytics]
+      summary: "List abandoned cart snapshots"
+      responses:
+        '200': { description: Abandoned cart snapshots }
+
+  /cms/pages/{slug}:
+    get:
+      tags: [CMS]
+      summary: "Get CMS page by slug"
+      security: []
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: CMS page content }
+
+  /cms/pages:
+    post:
+      tags: [CMS]
+      summary: "Create CMS page"
+      responses:
+        '201': { description: Page created }
+
+  /cms/pages/{id}:
+    patch:
+      tags: [CMS]
+      summary: "Update CMS page"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Page updated }
+    delete:
+      tags: [CMS]
+      summary: "Delete CMS page"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Page deleted }
+
+  /cms/banners:
+    get:
+      tags: [CMS]
+      summary: "List active promo banners"
+      security: []
+      responses:
+        '200': { description: Banners list }
+    post:
+      tags: [CMS]
+      summary: "Create banner"
+      responses:
+        '201': { description: Banner created }
+
+  /cms/faqs:
+    get:
+      tags: [CMS]
+      summary: "List active FAQ entries"
+      security: []
+      responses:
+        '200': { description: FAQ entries list }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    ProductIdParam:
+      name: productId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    OrderIdParam:
+      name: orderId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PageCursorParam:
+      name: page[cursor]
+      in: query
+      schema: { type: string }
+    PageLimitParam:
+      name: page[limit]
+      in: query
+      schema: { type: integer, default: 20, maximum: 100 }
+    GuestCartIdHeader:
+      name: X-Guest-Cart-Id
+      in: header
+      required: false
+      schema: { type: string }
+      description: Required for guest cart/checkout operations when not authenticated
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string }
+
+  schemas:
+    SuccessEnvelope:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data: {}
+        meta:
+          type: object
+          properties:
+            requestId: { type: string, format: uuid }
+            timestamp: { type: string, format: date-time }
+
+    PaginatedEnvelope:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data: { type: array, items: {} }
+        pagination:
+          type: object
+          properties:
+            nextCursor: { type: string, nullable: true }
+            hasMore: { type: boolean }
+            limit: { type: integer }
+        meta:
+          type: object
+          properties:
+            requestId: { type: string, format: uuid }
+            timestamp: { type: string, format: date-time }
+
+    ProblemDetails:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        error:
+          type: object
+          properties:
+            type: { type: string, format: uri }
+            title: { type: string }
+            status: { type: integer }
+            code: { type: string }
+            detail: { type: string }
+            userMessage: { type: string }
+            instance: { type: string }
+            requestId: { type: string, format: uuid }
+            timestamp: { type: string, format: date-time }
+            validationErrors:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  message: { type: string }
+
+    CreateProductRequest:
+      type: object
+      required: [title, slug, description, basePrice, categoryId]
+      properties:
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        basePrice: { type: number }
+        categoryId: { type: string, format: uuid }
+        brandId: { type: string, format: uuid }
+
+  responses:
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    AuthError:
+      description: Authentication failed
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    ForbiddenError:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    ConflictError:
+      description: State conflict (stock, business rule, etc.)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+
+tags:
+  - name: Users
+  - name: Categories
+  - name: Brands
+  - name: Inventory
+  - name: Wishlist
+  - name: Coupons
+  - name: Shipping
+  - name: Reviews
+  - name: Notifications
+  - name: Settings
+  - name: AuditLogs
+  - name: Admin
+  - name: Analytics
+  - name: CMS
+  - name: Auth
+  - name: Products
+  - name: Cart
+  - name: Checkout
+  - name: Orders
+  - name: Payments

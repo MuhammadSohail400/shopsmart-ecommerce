@@ -12,6 +12,13 @@ import { shippingRoutes } from '@modules/shipping';
 import { ordersRoutes } from '@modules/orders';
 import { paymentsRoutes } from '@modules/payments';
 import { checkoutRoutes } from '@modules/checkout';
+import { reviewsRoutes } from '@modules/reviews';
+import { notificationsRoutes } from '@modules/notifications';
+import { settingsRoutes } from '@modules/settings';
+import { auditLogsRoutes } from '@modules/audit-logs';
+import { adminRoutes } from '@modules/admin';
+import { analyticsRoutes } from '@modules/analytics';
+import { cmsRoutes } from '@modules/cms';
 
 /**
  * Single place every module's router is mounted under the versioned
@@ -34,5 +41,12 @@ router.use('/shipping', shippingRoutes);
 router.use('/orders', ordersRoutes);
 router.use('/orders', paymentsRoutes); // exposes /orders/:orderId/payments, /orders/:orderId/refunds
 router.use('/checkout', checkoutRoutes);
+router.use('/', reviewsRoutes); // exposes /products/:productId/reviews, /reviews/:reviewId
+router.use('/', notificationsRoutes); // exposes /users/me/notification-preferences, /admin/notification-logs
+router.use('/admin/settings', settingsRoutes);
+router.use('/admin/audit-logs', auditLogsRoutes);
+router.use('/admin/analytics', analyticsRoutes);
+router.use('/admin', adminRoutes); // exposes /admin/dashboard/summary, /admin/orders, /admin/staff — mounted last since it's the broadest /admin/* prefix
+router.use('/cms', cmsRoutes);
 
 export { router as apiRouter };

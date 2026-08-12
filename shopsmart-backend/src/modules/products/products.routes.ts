@@ -12,6 +12,7 @@ import {
   createVariantSchema,
   updateVariantSchema,
   addImageSchema,
+  reorderImageSchema,
 } from './products.validators';
 import { CATALOG_MANAGER_ROLES } from '@shared/constants/roles';
 
@@ -63,6 +64,7 @@ router.delete('/:productId/images/:imageId', ...catalogWrite, asyncHandler(produ
 router.patch(
   '/:productId/images/:imageId/reorder',
   ...catalogWrite,
+  validate(reorderImageSchema),
   asyncHandler(productsController.reorderImage),
 );
 

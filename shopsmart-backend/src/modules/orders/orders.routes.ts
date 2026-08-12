@@ -4,7 +4,7 @@ import { authMiddleware } from '@shared/middleware/auth.middleware';
 import { requireRole } from '@shared/middleware/rbac.middleware';
 import { validate } from '@shared/middleware/validate.middleware';
 import { asyncHandler } from '@shared/middleware/error-handler.middleware';
-import { updateOrderStatusSchema, listOrdersQuerySchema } from './orders.validators';
+import { updateOrderStatusSchema, listOrdersQuerySchema, cancelOrderSchema } from './orders.validators';
 import { ROLES } from '@shared/constants/roles';
 
 const router = Router();
@@ -12,7 +12,7 @@ router.use(authMiddleware); // every order endpoint requires auth (owner or staf
 
 router.get('/', validate(listOrdersQuerySchema, 'query'), asyncHandler(ordersController.list));
 router.get('/:orderId', asyncHandler(ordersController.getById));
-router.post('/:orderId/cancellation', asyncHandler(ordersController.cancel));
+router.post('/:orderId/cancellation', validate(cancelOrderSchema), asyncHandler(ordersController.cancel));
 router.post('/:orderId/delivery-confirmation', asyncHandler(ordersController.confirmDelivery));
 
 router.patch(

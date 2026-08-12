@@ -5,14 +5,14 @@ import { calculateShippingCost } from '@modules/shipping';
 import { validateCoupon } from '@modules/coupons';
 import { createPendingOrder } from '@modules/orders';
 import { initiatePayment } from '@modules/payments';
+import { getTaxRateForRegion } from '@modules/settings';
 import { PaymentMethod } from '@prisma/client';
 import { BusinessRuleError, ConflictError, NotFoundError } from '@shared/errors';
 import type { CheckoutContext } from './checkout.types';
 import type { CreateSessionBody, ConfirmSessionBody } from './checkout.validators';
 
-// TODO(Phase 7 — Settings module): replace with TaxRule lookup by region (BR-010).
-// Flat placeholder rate so checkout totals are correct end-to-end today.
-const FLAT_TAX_RATE = 0;
+// TODO(Phase 7 done): tax rate now comes from the Settings module's
+// TaxRule lookup (BR-010) — see resolveAddress/createSession below.
 
 interface ResolvedAddress {
   fullName: string;
@@ -59,7 +59,8 @@ export const checkoutService = {
     // BR-011: throws SHIPPING_ZONE_UNSUPPORTED if the destination isn't covered
     const shipping = await calculateShippingCost(address.country, body.shippingMethod);
 
-    const taxAmount = Math.round(cart.subtotal * FLAT_TAX_RATE * 100) / 100;
+    const taxRate = await getTaxRateForRegion(address.country, address.region);
+    const taxAmount = Math.round(cart.subtotal * taxRate * 100) / 100;
 
     let discountAmount = 0;
     let couponCode: string | undefined;

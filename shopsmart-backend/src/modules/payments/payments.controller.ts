@@ -21,6 +21,7 @@ export const paymentsController = {
       req.body.amount,
       req.body.reason,
       idempotencyKey,
+      req.user?.id,
     );
     sendSuccess(res, refund, 201);
   },

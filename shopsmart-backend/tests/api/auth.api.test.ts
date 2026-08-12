@@ -134,3 +134,78 @@ describe('POST /api/v1/auth/login (SRS FR-005, API Design Spec Section 3.2)', ()
     expect(cookies?.some((c) => c.includes('refreshToken') && c.includes('HttpOnly'))).toBe(true);
   });
 });
+
+describe('POST /api/v1/auth/password-reset (P0 & P1-1 Security Fix Verification)', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('requestPasswordReset preserves anti-user-enumeration for non-existent users', async () => {
+    (authRepository.findByEmailOrPhone as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const res = await request(app)
+      .post('/api/v1/auth/password-reset/request')
+      .send({ identifier: 'nonexistent@example.com' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.message).toContain('If an account exists');
+    // Raw reset token is NOT returned in API response (P1-1 fix)
+    expect(res.body.data.resetToken).toBeUndefined();
+  });
+
+  it('rejects password reset when attempted with a normal JWT access token (P0 Fix)', async () => {
+    const { signAccessToken } = await import('@shared/utils/jwt.util');
+    const validAccessJwt = signAccessToken({ sub: 'user-123', role: 'customer' });
+
+    (authRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'user-123' });
+    const { redis } = await import('@config/redis');
+    (redis.get as ReturnType<typeof vi.fn>).mockResolvedValue(null); // Redis has no key for access JWT hash
+
+    const res = await request(app)
+      .post('/api/v1/auth/password-reset/confirm')
+      .send({ token: validAccessJwt, newPassword: 'NewStrongPassword123!' });
+
+    expect(res.status).toBe(401);
+    expect(res.body.error.code).toBe('RESET_TOKEN_INVALID');
+  });
+
+  it('successfully resets password with a valid dedicated reset token and revokes sessions', async () => {
+    const { generatePasswordResetToken } = await import('@shared/utils/jwt.util');
+    const { raw, hash } = generatePasswordResetToken();
+    const { redis } = await import('@config/redis');
+
+    (redis.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+      if (key === `password-reset:${hash}`) return Promise.resolve('user-123');
+      return Promise.resolve(null);
+    });
+    (authRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'user-123' });
+    (authRepository.updatePasswordHash as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (authRepository.revokeAllUserTokens as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    const res = await request(app)
+      .post('/api/v1/auth/password-reset/confirm')
+      .send({ token: raw, newPassword: 'NewStrongPassword123!' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.message).toBe('Password updated successfully.');
+    expect(authRepository.updatePasswordHash).toHaveBeenCalledWith('user-123', expect.any(String));
+    expect(authRepository.revokeAllUserTokens).toHaveBeenCalledWith('user-123');
+    expect(redis.del).toHaveBeenCalledWith(`password-reset:${hash}`);
+  });
+
+  it('rejects reset token on second use (single-use enforcement)', async () => {
+    const { generatePasswordResetToken } = await import('@shared/utils/jwt.util');
+    const { raw } = generatePasswordResetToken();
+    const { redis } = await import('@config/redis');
+
+    // Key has been deleted after first use, so redis.get returns null
+    (redis.get as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const res = await request(app)
+      .post('/api/v1/auth/password-reset/confirm')
+      .send({ token: raw, newPassword: 'AnotherPassword123!' });
+
+    expect(res.status).toBe(401);
+    expect(res.body.error.code).toBe('RESET_TOKEN_INVALID');
+  });
+});
+

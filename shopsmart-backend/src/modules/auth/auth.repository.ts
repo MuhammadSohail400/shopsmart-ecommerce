@@ -46,6 +46,10 @@ export const authRepository = {
     return prisma.user.update({ where: { id: userId }, data: { emailVerified: true } });
   },
 
+  markPhoneVerified(userId: string) {
+    return prisma.user.update({ where: { id: userId }, data: { phoneVerified: true } });
+  },
+
   // --- Refresh token family management (SDD Section 9.2) ---
 
   createRefreshToken(data: {

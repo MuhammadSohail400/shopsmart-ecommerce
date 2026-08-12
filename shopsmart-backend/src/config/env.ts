@@ -1,6 +1,5 @@
-import 'dotenv/config';
 import { z } from 'zod';
-
+import 'dotenv/config';
 
 /**
  * All environment variables are declared here and parsed once at boot.
@@ -29,6 +28,11 @@ const envSchema = z.object({
   // payment is attempted without these set.
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+
+  // Email (Phase 6) — optional so the app still boots without Resend
+  // configured; the adapter logs instead of sending if unset (dev-friendly).
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM_ADDRESS: z.string().default('no-reply@shopsmart.ai'),
 
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent']).default('info'),
 });

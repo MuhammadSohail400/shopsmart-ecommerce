@@ -6,6 +6,7 @@ import { ProductStatus } from '@prisma/client';
 import { getCategoryTree } from '@modules/categories';
 import { getBrandById } from '@modules/brands';
 import { initializeStock, checkAvailability } from '@modules/inventory';
+import { recordAuditLog } from '@modules/audit-logs';
 import type { CreateProductBody, CreateVariantBody, AddImageBody } from './products.validators';
 
 const MAX_VARIANT_ATTRIBUTES_STRING = (attrs: Record<string, string>) => JSON.stringify(attrs);
@@ -41,7 +42,7 @@ export const productsService = {
     return product;
   },
 
-  async create(data: CreateProductBody) {
+  async create(data: CreateProductBody, actorId?: string) {
     const existingSlug = await productsRepository.findBySlug(data.slug);
     if (existingSlug) throw new ConflictError('SLUG_ALREADY_EXISTS', 'A product with this slug already exists');
 
@@ -55,19 +56,24 @@ export const productsService = {
       if (!brand) throw new NotFoundError('Brand');
     }
 
-    return productsRepository.create(data);
+    const product = await productsRepository.create(data);
+    await recordAuditLog(actorId, 'product.created', 'Product', product.id, undefined, data as unknown as object);
+    return product;
   },
 
-  async update(id: string, data: Partial<CreateProductBody> & { status?: ProductStatus }) {
+  async update(id: string, data: Partial<CreateProductBody> & { status?: ProductStatus }, actorId?: string) {
     const existing = await productsRepository.findByIdAnyStatus(id);
     if (!existing) throw new NotFoundError('Product');
-    return productsRepository.update(id, data);
+    const updated = await productsRepository.update(id, data);
+    await recordAuditLog(actorId, 'product.updated', 'Product', id, existing as unknown as object, data as unknown as object);
+    return updated;
   },
 
-  async archive(id: string) {
+  async archive(id: string, actorId?: string) {
     const existing = await productsRepository.findByIdAnyStatus(id);
     if (!existing) throw new NotFoundError('Product');
     await productsRepository.softDelete(id); // FR-020: soft delete, order history unaffected
+    await recordAuditLog(actorId, 'product.archived', 'Product', id);
   },
 
   // --- Variants ---

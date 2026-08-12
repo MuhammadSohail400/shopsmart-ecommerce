@@ -3,6 +3,10 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import pinoHttp from 'pino-http';
+import swaggerUi from 'swagger-ui-express';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import yaml from 'js-yaml';
 import { env } from '@config/env';
 import { logger } from '@config/logger';
 import { correlationIdMiddleware } from '@shared/middleware/correlation-id.middleware';
@@ -57,6 +61,15 @@ export function createApp(): Express {
       res.status(503).json({ status: 'not ready' });
     }
   });
+
+  // --- API documentation (Phase 8) ---
+  try {
+    const openapiDoc = yaml.load(readFileSync(join(__dirname, '../openapi/openapi.yaml'), 'utf8'));
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDoc as object));
+  } catch {
+    // openapi.yaml missing in this environment — docs endpoint simply
+    // won't be available; never let this block the app from starting.
+  }
 
   // --- API routes (versioned per API Design Specification Section 4) ---
   app.use(env.API_BASE_PATH, apiRouter);

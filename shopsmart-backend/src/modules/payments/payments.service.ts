@@ -1,6 +1,7 @@
 import { paymentsRepository } from './payments.repository';
 import { stripeAdapter } from './stripe.adapter';
 import { confirmPendingOrder } from '@modules/orders';
+import { recordAuditLog } from '@modules/audit-logs';
 import { PaymentMethod, PaymentStatus } from '@prisma/client';
 import { NotFoundError, ConflictError, BusinessRuleError } from '@shared/errors';
 
@@ -97,7 +98,7 @@ export const paymentsService = {
   },
 
   // BR-004/FR-116: full or partial refund, issued to the original payment method
-  async issueRefund(orderId: string, amount: number, reason: string | undefined, idempotencyKey: string) {
+  async issueRefund(orderId: string, amount: number, reason: string | undefined, idempotencyKey: string, actorId?: string) {
     const payments = await paymentsRepository.findByOrderId(orderId);
     const succeededPayment = payments.find((p: { status: PaymentStatus }) => p.status === PaymentStatus.succeeded);
     if (!succeededPayment) {
@@ -124,6 +125,7 @@ export const paymentsService = {
         reason,
       });
       await paymentsRepository.updateStatus(succeededPayment.id, PaymentStatus.refunded);
+      await recordAuditLog(actorId, 'refund.issued', 'Payment', succeededPayment.id, undefined, { amount, reason, orderId });
       return refund;
     }
 
@@ -135,6 +137,7 @@ export const paymentsService = {
       reason,
     });
     await paymentsRepository.updateStatus(succeededPayment.id, PaymentStatus.refunded);
+    await recordAuditLog(actorId, 'refund.issued', 'Payment', succeededPayment.id, undefined, { amount, reason, orderId });
     return refund;
   },
 };

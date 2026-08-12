@@ -4,7 +4,7 @@ import { sendSuccess } from '@shared/utils/response.util';
 
 export const couponsController = {
   async create(req: Request, res: Response) {
-    sendSuccess(res, await couponsService.create(req.body), 201);
+    sendSuccess(res, await couponsService.create(req.body, req.user?.id), 201);
   },
 
   async update(req: Request, res: Response) {

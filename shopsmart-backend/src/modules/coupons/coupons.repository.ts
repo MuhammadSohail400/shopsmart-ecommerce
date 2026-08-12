@@ -35,8 +35,8 @@ export const couponsRepository = {
     return prisma.coupon.update({ where: { id }, data: { deletedAt: new Date() } });
   },
 
-  countRedemptionsByUser(couponId: string, userId: string) {
-    return prisma.couponRedemption.count({ where: { couponId, userId } });
+  countRedemptionsByUser(couponId: string, userId: string, client: Client = prisma) {
+    return client.couponRedemption.count({ where: { couponId, userId } });
   },
 
   recordRedemption(

@@ -3,10 +3,17 @@ import { env } from '@config/env';
 import { logger } from '@config/logger';
 import { connectDatabase, disconnectDatabase } from '@config/database';
 import { redis } from '@config/redis';
+import { registerNotificationListeners } from '@modules/notifications';
+import { startScheduledJobs } from '@shared/jobs/scheduler';
 
 async function bootstrap(): Promise<void> {
   await connectDatabase();
   logger.info('Database connected');
+
+  // Domain event listeners must be registered before the app starts
+  // accepting traffic (Backend Standards Section 14.2).
+  registerNotificationListeners();
+  startScheduledJobs();
 
   const app = createApp();
   const server = app.listen(env.PORT, () => {

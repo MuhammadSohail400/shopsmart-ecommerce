@@ -47,3 +47,7 @@ export const addImageSchema = z.object({
   sortOrder: z.number().int().min(0).default(0),
 });
 export type AddImageBody = z.infer<typeof addImageSchema>;
+
+export const reorderImageSchema = z.object({
+  sortOrder: z.number().int().min(0),
+});
