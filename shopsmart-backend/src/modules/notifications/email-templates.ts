@@ -3,6 +3,8 @@
  * templating engine (MJML, react-email, etc.) can replace this file later
  * without touching any caller, since callers only see rendered HTML strings.
  */
+import { env } from '@config/env';
+
 export const emailTemplates = {
   verification(userId: string): { subject: string; html: string } {
     return {
@@ -13,10 +15,11 @@ export const emailTemplates = {
   },
 
   passwordReset(resetToken: string): { subject: string; html: string } {
+    const frontendUrl = env.CORS_ORIGIN || 'https://shopsmart.ai';
     return {
       subject: 'Reset your ShopSmart AI password',
       html: `<p>We received a request to reset your password.</p>
-             <p>Use this link to continue: https://shopsmart.ai/reset-password?token=${resetToken}</p>
+             <p>Use this link to continue: ${frontendUrl}/reset-password?token=${resetToken}</p>
              <p>If you didn't request this, you can safely ignore this email.</p>`,
     };
   },

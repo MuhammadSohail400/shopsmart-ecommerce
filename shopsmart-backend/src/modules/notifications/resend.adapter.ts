@@ -23,6 +23,9 @@ export const resendAdapter = {
       // Dev-friendly fallback: no API key configured, log instead of failing
       // the whole request chain (SDD Section 18: graceful degradation).
       logger.info({ to, subject }, 'RESEND_API_KEY not set — email logged instead of sent');
+      if (env.NODE_ENV === 'development') {
+        logger.info(`\n=== EMAIL TO: ${to} ===\nSUBJECT: ${subject}\n\n${html}\n=======================\n`);
+      }
       return { sent: true };
     }
 
