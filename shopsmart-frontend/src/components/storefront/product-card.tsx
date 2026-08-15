@@ -63,9 +63,9 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="group flex flex-col overflow-hidden transition-all hover:shadow-lg border-muted bg-card hover:-translate-y-1 duration-300 relative">
-      {/* Fallback Image Area */}
-      <Link href={`/products/${product.slug}`} className="relative aspect-square w-full bg-gradient-to-br from-muted/50 to-muted flex items-center justify-center overflow-hidden">
+    <Card className="group flex flex-col overflow-hidden transition-all hover:shadow-md border-border bg-card relative rounded-lg">
+      {/* Image Area - strict 4/5 aspect ratio for fashion/e-com standard */}
+      <Link href={`/products/${product.slug}`} className="relative aspect-[4/5] w-full bg-muted/30 flex items-center justify-center overflow-hidden">
         {/* Placeholder for missing images */}
         {product.images?.[0] ? (
           <img src={product.images[0].url} alt={product.title} className="w-full h-full object-cover absolute inset-0 z-0" />
@@ -75,9 +75,9 @@ export function ProductCard({ product }: ProductCardProps) {
             <span className="text-4xl font-bold tracking-tighter opacity-40">{initials}</span>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-br from-background/20 to-background/60 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
-          <Button variant="secondary" size="sm" className="shadow-xl scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 delay-75">
-            Quick View
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col items-center justify-end pb-4">
+          <Button variant="secondary" size="sm" className="shadow-sm translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 h-8 text-xs px-4 rounded-full">
+            View Details
           </Button>
         </div>
         
@@ -96,41 +96,40 @@ export function ProductCard({ product }: ProductCardProps) {
           <Button 
             variant="ghost" 
             size="icon" 
-            className={`absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-background/50 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background ${isInWishlist ? 'text-primary opacity-100' : 'hover:text-primary'}`}
+            className={`absolute top-2 right-2 z-20 h-8 w-8 rounded-full bg-background/80 shadow-sm backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background ${isInWishlist ? 'text-primary opacity-100' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={handleToggleWishlist}
             disabled={addToWishlist.isPending || removeFromWishlist.isPending}
           >
-            <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
+            <Heart className={`h-4 w-4 transition-colors ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
             <span className="sr-only">Toggle wishlist</span>
           </Button>
         )}
       </Link>
 
-      <CardContent className="flex flex-col gap-2 p-4 pt-5 flex-1">
-        <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+      <CardContent className="flex flex-col gap-1 p-3 flex-1">
+        <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
           {product.brand?.name || 'Generic'}
         </div>
         <Link href={`/products/${product.slug}`} className="hover:underline line-clamp-2">
-          <h3 className="font-semibold text-lg leading-tight tracking-tight text-card-foreground">
+          <h3 className="font-medium text-sm leading-snug tracking-tight text-foreground">
             {product.title}
           </h3>
         </Link>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex items-end justify-between">
+      <CardFooter className="p-3 pt-0 flex items-end justify-between">
         <div className="flex flex-col">
-          <span className="text-lg font-bold text-primary">{formattedPrice}</span>
-          {/* Discount placeholder if needed in future */}
+          <span className="text-base font-semibold text-foreground">{formattedPrice}</span>
         </div>
         
         <Button 
           size="icon" 
-          variant={isOutOfStock ? 'outline' : 'default'} 
+          variant={isOutOfStock ? 'outline' : 'secondary'} 
           disabled={isOutOfStock || addToCart.isPending} 
-          className="h-10 w-10 rounded-full transition-transform hover:scale-105 active:scale-95 shadow-sm"
+          className="h-8 w-8 rounded-full transition-transform hover:bg-primary hover:text-primary-foreground shadow-sm"
           onClick={handleAddToCart}
         >
-          <ShoppingBag className="h-4 w-4" />
+          <ShoppingBag className="h-3.5 w-3.5" />
           <span className="sr-only">Add to cart</span>
         </Button>
       </CardFooter>

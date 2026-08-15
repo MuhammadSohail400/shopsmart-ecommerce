@@ -4,11 +4,11 @@ import { ShoppingBag } from 'lucide-react';
 export function Footer() {
   return (
     <footer className="w-full border-t bg-background">
-      <div className="container py-10 md:py-16">
+      <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-primary transition-opacity hover:opacity-80">
-              <ShoppingBag className="h-6 w-6" />
+              <ShoppingBag className="h-5 w-5" />
               <span className="text-xl">ShopSmart</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">

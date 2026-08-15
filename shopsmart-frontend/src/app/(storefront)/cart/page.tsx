@@ -68,19 +68,19 @@ export default function CartPage() {
 
   return (
     <div className="container py-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Shopping Cart</h1>
-        <span className="text-muted-foreground">{items.length} {items.length === 1 ? 'item' : 'items'}</span>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Shopping Cart</h1>
+        <span className="text-sm text-muted-foreground">{items.length} {items.length === 1 ? 'item' : 'items'}</span>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Cart Items List */}
         <div className="flex-1">
-          <div className="space-y-8">
+          <div className="space-y-6">
             {items.map((item) => (
-              <div key={item.productVariantId} className="flex flex-col sm:flex-row gap-6 pb-8 border-b">
+              <div key={item.productVariantId} className="flex flex-col sm:flex-row gap-4 pb-6 border-b">
                 {/* Image */}
-                <div className="w-24 h-24 sm:w-32 sm:h-32 bg-muted rounded-md border flex-shrink-0 relative overflow-hidden">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-muted rounded-md border flex-shrink-0 relative overflow-hidden">
                   {item.imageUrl ? (
                     <img 
                       src={item.imageUrl} 
@@ -100,14 +100,14 @@ export default function CartPage() {
                     <div className="flex justify-between items-start gap-4">
                       <Link 
                         href={item.productSlug ? `/products/${item.productSlug}` : '#'} 
-                        className="font-semibold text-lg hover:underline line-clamp-2"
+                        className="font-semibold text-base hover:underline line-clamp-2"
                       >
                         {item.title}
                       </Link>
                       <span className="font-bold whitespace-nowrap">{formatPrice(item.unitPrice)}</span>
                     </div>
 
-                    <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                    <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
                       {Object.entries(item.attributes).map(([k, v]) => (
                         <div key={k} className="capitalize">{k}: {v}</div>
                       ))}
@@ -119,22 +119,22 @@ export default function CartPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center border rounded-md h-10">
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center border rounded-md h-8">
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-full rounded-none w-10"
+                        className="h-full rounded-none w-8"
                         onClick={() => updateQuantity.mutate({ itemId: item.productVariantId, quantity: item.quantity - 1 })}
                         disabled={item.quantity <= 1 || updateQuantity.isPending}
                       >
                         <Minus className="h-3 w-3" />
                       </Button>
-                      <div className="w-10 text-center text-sm font-medium">{item.quantity}</div>
+                      <div className="w-8 text-center text-sm font-medium">{item.quantity}</div>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-full rounded-none w-10"
+                        className="h-full rounded-none w-8"
                         onClick={() => updateQuantity.mutate({ itemId: item.productVariantId, quantity: item.quantity + 1 })}
                         disabled={!item.inStock || updateQuantity.isPending}
                       >

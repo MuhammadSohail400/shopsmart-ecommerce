@@ -1,6 +1,6 @@
 "use client";
 
-import { useWishlist, useRemoveFromWishlist, useMoveToCart } from '@/features/wishlist/hooks/use-wishlist';
+import { useWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/use-wishlist';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -69,8 +69,8 @@ function WishlistContent() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {items.map((item) => (
-          <div key={item.productId} className="group flex flex-col gap-3 rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden p-4 relative">
-            <div className="aspect-square w-full rounded-md bg-muted overflow-hidden relative">
+          <div key={item.productId} className="group flex flex-col gap-1 rounded-lg border border-border bg-card text-card-foreground shadow-sm overflow-hidden relative transition-all hover:shadow-md">
+            <div className="aspect-[4/5] w-full bg-muted/30 flex items-center justify-center relative overflow-hidden">
               {item.product.images && item.product.images.length > 0 ? (
                 <img 
                   src={item.product.images[0].url} 
@@ -86,7 +86,7 @@ function WishlistContent() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-2 bg-background/50 hover:bg-background/80 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 bg-background/80 shadow-sm backdrop-blur-sm h-8 w-8 hover:bg-background/90 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={(e) => {
                   e.preventDefault();
                   remove.mutate(item.productId);
@@ -98,18 +98,18 @@ function WishlistContent() {
               </Button>
             </div>
 
-            <div className="flex flex-col flex-1">
-              <Link href={`/products/${item.product.slug}`} className="font-semibold text-base hover:underline line-clamp-1 mb-1">
+            <div className="flex flex-col flex-1 p-3">
+              <Link href={`/products/${item.product.slug}`} className="font-medium text-sm hover:underline line-clamp-2 mb-1">
                 {item.product.title}
               </Link>
-              <div className="font-bold text-primary mb-4">{formatPrice(item.product.basePrice)}</div>
+              <div className="font-semibold text-base mb-4">{formatPrice(item.product.basePrice)}</div>
               
               <div className="mt-auto">
                 <Link 
                   href={`/products/${item.product.slug}`}
-                  className={buttonVariants({ variant: "secondary", className: "w-full" })}
+                  className={buttonVariants({ variant: "secondary", size: "sm", className: "w-full" })}
                 >
-                  <ShoppingBag className="mr-2 h-4 w-4" />
+                  <ShoppingBag className="mr-2 h-3.5 w-3.5" />
                   Select Options
                 </Link>
               </div>

@@ -18,18 +18,18 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   return (
     <ProductGrid>
       {Array.from({ length: count }).map((_, i) => (
-        <Card key={i} className="flex flex-col overflow-hidden border-muted">
-          <div className="aspect-square w-full bg-muted/50 flex items-center justify-center">
+        <Card key={i} className="flex flex-col overflow-hidden border-border bg-card rounded-lg">
+          <div className="aspect-[4/5] w-full bg-muted/50 flex items-center justify-center">
             <Skeleton className="h-full w-full rounded-none" />
           </div>
-          <CardContent className="flex flex-col gap-2 p-4 pt-5 flex-1">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-5 w-1/2" />
+          <CardContent className="flex flex-col gap-1 p-3 flex-1">
+            <Skeleton className="h-2 w-12" />
+            <Skeleton className="h-4 w-3/4 mt-1" />
+            <Skeleton className="h-4 w-1/2" />
           </CardContent>
-          <CardFooter className="p-4 pt-0 flex justify-between items-end">
-            <Skeleton className="h-6 w-20" />
-            <Skeleton className="h-10 w-10 rounded-full" />
+          <CardFooter className="p-3 pt-0 flex justify-between items-end">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-8 w-8 rounded-full" />
           </CardFooter>
         </Card>
       ))}

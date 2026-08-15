@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { checkoutService } from '@/services/checkout.service';
 import { CreateSessionPayload, ConfirmSessionPayload } from '@/types/checkout.types';
-import { ApiError } from '@/lib/api-client';
 
 export const checkoutKeys = {
   all: ['checkout'] as const,

@@ -18,23 +18,23 @@ export default function HomePage() {
   const activeBanner = banners && banners.length > 0 ? banners[0] : null;
 
   return (
-    <div className="flex flex-col gap-12 pb-12">
+    <div className="flex flex-col gap-0 pb-16">
       {/* Hero Section */}
       <section className="relative bg-muted overflow-hidden">
         {isLoadingBanners ? (
-          <Skeleton className="w-full h-[500px]" />
+          <Skeleton className="w-full h-[400px] md:h-[480px]" />
         ) : activeBanner ? (
-          <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] flex items-center bg-zinc-900">
+          <div className="relative w-full h-[400px] md:h-[480px] flex items-center bg-zinc-900">
             {/* The backend provides imageUrl but due to Phase 4 mock/limitations, we use it directly or fallback */}
             <div 
               className="absolute inset-0 z-0 opacity-40 bg-cover bg-center"
               style={{ backgroundImage: `url(${activeBanner.imageUrl})` }}
             />
             <div className="container relative z-10 flex flex-col items-start justify-center text-white">
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 max-w-2xl leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-2xl leading-tight">
                 Discover Your Next Favorite Thing
               </h1>
-              <p className="text-lg md:text-xl text-zinc-300 mb-8 max-w-lg">
+              <p className="text-base md:text-lg text-zinc-300 mb-8 max-w-lg">
                 Browse our latest arrivals and find the perfect addition to your life&apos;s journey.
               </p>
               {activeBanner.linkUrl ? (
@@ -50,13 +50,13 @@ export default function HomePage() {
           </div>
         ) : (
           // Fallback Hero if no banners are returned from backend
-          <div className="relative w-full h-[400px] md:h-[500px] flex items-center bg-gradient-to-tr from-primary/10 via-primary/5 to-background">
+          <div className="relative w-full h-[400px] md:h-[480px] flex items-center bg-gradient-to-tr from-primary/10 via-primary/5 to-background">
             <div className="container flex flex-col items-start justify-center">
               <Badge className="mb-4 bg-primary/20 text-primary hover:bg-primary/20 pointer-events-none">New Arrivals</Badge>
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 max-w-2xl leading-tight text-foreground">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-2xl leading-tight text-foreground">
                 Welcome to ShopSmart
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-lg">
+              <p className="text-base md:text-lg text-muted-foreground mb-8 max-w-lg">
                 The intelligent way to shop online. Get the best products at the smartest prices.
               </p>
               <Link href="/products" className={buttonVariants({ size: "lg", className: "text-md h-12 px-8" })}>
@@ -68,8 +68,8 @@ export default function HomePage() {
       </section>
 
       {/* Featured Categories */}
-      <section className="container">
-        <div className="flex items-center justify-between mb-8">
+      <section className="container py-16">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <h2 className="text-2xl font-bold tracking-tight">Shop by Category</h2>
           <Link href="/categories" className={buttonVariants({ variant: "ghost" })}>View All</Link>
         </div>
@@ -100,10 +100,10 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Recently Added Products */}
-      <section className="container">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold tracking-tight">New Arrivals</h2>
+      {/* Featured Products */}
+      <section className="container py-16 border-t">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <h2 className="text-2xl font-bold tracking-tight">Featured Products</h2>
           <Link href="/products" className={buttonVariants({ variant: "ghost" })}>View All Products</Link>
         </div>
         

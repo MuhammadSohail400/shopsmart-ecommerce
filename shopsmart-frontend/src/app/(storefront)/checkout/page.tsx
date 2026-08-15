@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ShoppingBag, AlertCircle, ChevronRight, Check } from 'lucide-react';
+import { ChevronRight, AlertCircle, ShoppingBag } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -49,12 +49,7 @@ export default function CheckoutPage() {
   const createSession = useCreateCheckoutSession();
   const confirmSession = useConfirmCheckoutSession();
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<ShippingFormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<ShippingFormData>({
     resolver: zodResolver(shippingSchema),
     defaultValues: {
       shippingMethod: 'standard',
@@ -265,7 +260,7 @@ export default function CheckoutPage() {
               <CardContent>
                 <RadioGroup 
                   value={paymentMethod} 
-                  onValueChange={(val: any) => setPaymentMethod(val)}
+                  onValueChange={(val: string) => setPaymentMethod(val)}
                   className="space-y-4"
                 >
                   <div className="flex items-center space-x-3 border p-4 rounded-lg">
@@ -285,7 +280,7 @@ export default function CheckoutPage() {
                 <div className="mt-8 bg-muted p-4 rounded-lg flex items-start gap-3 text-sm">
                   <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0" />
                   <p className="text-muted-foreground">
-                    This is a development environment. No actual payment will be processed. Clicking "Confirm Order" will simulate a successful transaction based on the selected method.
+                    This is a development environment. No actual payment will be processed. Clicking &quot;Confirm Order&quot; will simulate a successful transaction based on the selected method.
                   </p>
                 </div>
               </CardContent>

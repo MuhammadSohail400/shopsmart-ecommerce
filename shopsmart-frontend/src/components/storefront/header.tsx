@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
 import { useCurrentUser, useLogout } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/features/cart/hooks/use-cart';
@@ -36,19 +37,21 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center gap-4">
+    <header className="sticky top-0 z-50 w-full h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center gap-4">
         {/* Mobile Nav */}
         <div className="md:hidden">
           <Sheet>
-            <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden" />}>
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle navigation menu</span>
-            </SheetTrigger>
+            <SheetTrigger render={
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            } />
             <SheetContent side="left">
               <nav className="grid gap-6 text-lg font-medium">
                 <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
-                  <ShoppingBag className="h-6 w-6" />
+                  <ShoppingBag className="h-5 w-5" />
                   <span>ShopSmart</span>
                 </Link>
                 <Link href="/products" className="text-muted-foreground hover:text-foreground">
@@ -64,7 +67,7 @@ export function Header() {
 
         {/* Logo (Desktop & Mobile) */}
         <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-primary transition-opacity hover:opacity-80">
-          <ShoppingBag className="h-6 w-6" />
+          <ShoppingBag className="h-5 w-5" />
           <span className="hidden md:inline-block text-xl">ShopSmart</span>
         </Link>
 
@@ -87,56 +90,61 @@ export function Header() {
                 name="q"
                 type="search"
                 placeholder="Search products..."
-                className="w-full bg-muted/50 pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+                className="h-9 w-full bg-muted/50 pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
               />
             </form>
           </div>
 
           {/* Account */}
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="ghost" className="hidden md:flex gap-2 relative" />}>
-              <User className="h-5 w-5" />
-              <span className="text-sm font-medium">{user.firstName}</span>
-            </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger render={
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                    <User className="h-5 w-5" />
+                    <span className="sr-only">Toggle user menu</span>
+                  </Button>
+                } />
+                <DropdownMenuContent align="end">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-muted-foreground">{user.email}</DropdownMenuItem>
+                  </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-muted-foreground">{user.email}</DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/wishlist')}>
-                  Wishlist
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => logout.mutate()}>Log out</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuItem onClick={() => router.push('/wishlist')}>
+                    Wishlist
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => logout.mutate()}>Log out</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <Link href="/wishlist">
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Heart className="h-5 w-5" />
+                  <span className="sr-only">Wishlist</span>
+                </Button>
+              </Link>
+
+              {/* Cart */}
+              <Link href="/cart">
+                <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="sr-only">Cart</span>
+                  {cartItemCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
+                      {cartItemCount}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+            </div>
           ) : (
             <Link href="/login" className={buttonVariants({ variant: "ghost", className: "hidden md:flex" })}>
               Log in
             </Link>
           )}
-
-          {/* Wishlist Link (if authenticated) */}
-          {user && (
-            <Link href="/wishlist" className={buttonVariants({ variant: "ghost", size: "icon" })}>
-              <Heart className="h-5 w-5" />
-              <span className="sr-only">Wishlist</span>
-            </Link>
-          )}
-
-          {/* Cart */}
-          <Link href="/cart" className={buttonVariants({ variant: "outline", size: "icon", className: "relative" })}>
-            <ShoppingCart className="h-5 w-5" />
-            <span className="sr-only">Open cart</span>
-            {cartItemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                {cartItemCount}
-              </span>
-            )}
-          </Link>
         </div>
       </div>
     </header>

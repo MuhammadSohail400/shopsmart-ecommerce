@@ -1,4 +1,4 @@
-import type { Product } from '@/types/product.types';
+import type { Product } from '@/services/products.service';
 
 export interface WishlistItem {
   productId: string;

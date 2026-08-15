@@ -28,7 +28,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   if (isLoading) {
     return (
       <div className="container py-8 flex flex-col md:flex-row gap-12">
-        <div className="w-full md:w-1/2 aspect-square">
+        <div className="w-full md:w-1/2 aspect-[4/5] max-w-lg mx-auto md:mx-0">
           <Skeleton className="w-full h-full rounded-2xl" />
         </div>
         <div className="w-full md:w-1/2 space-y-6">
@@ -127,8 +127,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
       <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
         {/* Images Gallery */}
-        <div className="w-full lg:w-1/2 flex flex-col gap-4">
-          <div className="aspect-square w-full rounded-2xl overflow-hidden bg-muted border relative flex items-center justify-center">
+        <div className="w-full lg:w-1/2 flex flex-col gap-4 max-w-xl mx-auto lg:mx-0">
+          <div className="aspect-[4/5] w-full rounded-2xl overflow-hidden bg-muted border relative flex items-center justify-center">
             {product.images && product.images.length > 0 ? (
               <img 
                 src={product.images[0].url} 
