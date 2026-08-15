@@ -19,24 +19,14 @@ export interface ConfirmSessionPayload {
 }
 
 export interface CheckoutSession {
-  id: string;
-  cartId: string;
-  userId?: string | null;
-  guestCartId?: string | null;
-  status: string;
-  expiresAt: string;
-  
-  subtotal: string;
-  tax: string;
-  shippingTotal: string;
-  total: string;
-  
+  sessionId: string;
+  subtotal: number;
+  taxAmount: number;
+  shippingAmount: number;
+  discountAmount: number;
+  totalAmount: number;
   shippingMethod: string;
-  guestAddress?: GuestAddress | null;
-  addressId?: string | null;
-  
-  createdAt: string;
-  updatedAt: string;
+  expiresAt: string;
 }
 
 export interface OrderResult {

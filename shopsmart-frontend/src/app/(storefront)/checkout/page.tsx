@@ -91,7 +91,7 @@ export default function CheckoutPage() {
     
     confirmSession.mutate(
       { 
-        sessionId: checkoutSessionData.id, 
+        sessionId: checkoutSessionData.sessionId, 
         data: { paymentMethod }, 
         idempotencyKey 
       },
@@ -294,7 +294,7 @@ export default function CheckoutPage() {
                   Back to Shipping
                 </Button>
                 <Button size="lg" onClick={onConfirmPayment} disabled={confirmSession.isPending}>
-                  {confirmSession.isPending ? 'Processing...' : `Confirm Order • $${checkoutSessionData.total}`}
+                  {confirmSession.isPending ? 'Processing...' : `Confirm Order • $${checkoutSessionData.totalAmount.toFixed(2)}`}
                 </Button>
               </CardFooter>
             </Card>
@@ -338,17 +338,17 @@ export default function CheckoutPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>${step === 2 && checkoutSessionData ? checkoutSessionData.subtotal : cart.subtotal}</span>
+                  <span>${step === 2 && checkoutSessionData ? checkoutSessionData.subtotal.toFixed(2) : cart.subtotal.toFixed(2)}</span>
                 </div>
                 {step === 2 && checkoutSessionData && (
                   <>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Shipping</span>
-                      <span>${checkoutSessionData.shippingTotal}</span>
+                      <span>${checkoutSessionData.shippingAmount.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Tax</span>
-                      <span>${checkoutSessionData.tax}</span>
+                      <span>${checkoutSessionData.taxAmount.toFixed(2)}</span>
                     </div>
                   </>
                 )}
@@ -360,7 +360,7 @@ export default function CheckoutPage() {
                 <Separator className="my-2" />
                 <div className="flex justify-between text-base font-bold">
                   <span>Total</span>
-                  <span>${step === 2 && checkoutSessionData ? checkoutSessionData.total : cart.subtotal}</span>
+                  <span>${step === 2 && checkoutSessionData ? checkoutSessionData.totalAmount.toFixed(2) : cart.subtotal.toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
