@@ -260,7 +260,7 @@ export default function CheckoutPage() {
               <CardContent>
                 <RadioGroup 
                   value={paymentMethod} 
-                  onValueChange={(val: string) => setPaymentMethod(val)}
+                  onValueChange={(val: 'card' | 'bank_transfer' | 'cod') => setPaymentMethod(val)}
                   className="space-y-4"
                 >
                   <div className="flex items-center space-x-3 border p-4 rounded-lg">
