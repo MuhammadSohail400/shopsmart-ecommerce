@@ -34,6 +34,8 @@ async function buildGuestCartView(guestCartId: string): Promise<CartView> {
     lineItems.push({
       productVariantId: item.productVariantId,
       title: variant.product.title,
+      productSlug: variant.product.slug,
+      imageUrl: variant.product.images?.[0]?.url ?? null,
       attributes: variant.attributes as Record<string, string>,
       unitPrice,
       quantity: item.quantity,
@@ -57,7 +59,7 @@ async function buildGuestCartView(guestCartId: string): Promise<CartView> {
 }
 
 type RegisteredCartItem = Prisma.CartItemGetPayload<{
-  include: { productVariant: { include: { product: true; inventory: true } } };
+  include: { productVariant: { include: { product: { include: { images: true } }; inventory: true } } };
 }>;
 
 async function buildRegisteredCartView(userId: string): Promise<CartView> {
@@ -72,6 +74,8 @@ async function buildRegisteredCartView(userId: string): Promise<CartView> {
       return {
         productVariantId: item.productVariantId,
         title: item.productVariant.product.title,
+        productSlug: item.productVariant.product.slug,
+        imageUrl: item.productVariant.product.images?.[0]?.url ?? null,
         attributes: item.productVariant.attributes as Record<string, string>,
         unitPrice,
         quantity: item.quantity,

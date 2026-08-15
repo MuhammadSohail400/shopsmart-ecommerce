@@ -1,13 +1,13 @@
 export interface CartLineItem {
   productVariantId: string;
   title: string;
-  productSlug: string;
-  imageUrl: string | null;
   attributes: Record<string, string>;
   unitPrice: number;
   quantity: number;
   subtotal: number;
   inStock: boolean;
+  productSlug?: string;
+  imageUrl?: string | null;
 }
 
 export interface CartView {
@@ -16,10 +16,4 @@ export interface CartView {
   items: CartLineItem[];
   subtotal: number;
   appliedCoupon: { code: string; discountAmount: number } | null;
-}
-
-/** Internal storage shape for a guest cart, persisted in Redis (SDD Section 6). */
-export interface GuestCartData {
-  items: Array<{ productVariantId: string; quantity: number }>;
-  couponCode?: string;
 }

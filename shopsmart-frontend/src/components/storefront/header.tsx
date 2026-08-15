@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ShoppingBag, Search, Menu, ShoppingCart, User } from 'lucide-react';
+import { ShoppingBag, Search, Menu, ShoppingCart, User, Heart } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -16,11 +16,15 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useCurrentUser, useLogout } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { useCart } from '@/features/cart/hooks/use-cart';
 
 export function Header() {
   const { data: user } = useCurrentUser();
   const logout = useLogout();
   const router = useRouter();
+  const { data: cart } = useCart();
+  
+  const cartItemCount = cart?.items.reduce((total, item) => total + item.quantity, 0) || 0;
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -102,6 +106,10 @@ export function Header() {
                   <DropdownMenuItem className="text-muted-foreground">{user.email}</DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('/wishlist')}>
+                  Wishlist
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => logout.mutate()}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -111,15 +119,24 @@ export function Header() {
             </Link>
           )}
 
-          {/* Cart (Phase 5 Placeholder) */}
-          <Button variant="outline" size="icon" className="relative">
+          {/* Wishlist Link (if authenticated) */}
+          {user && (
+            <Link href="/wishlist" className={buttonVariants({ variant: "ghost", size: "icon" })}>
+              <Heart className="h-5 w-5" />
+              <span className="sr-only">Wishlist</span>
+            </Link>
+          )}
+
+          {/* Cart */}
+          <Link href="/cart" className={buttonVariants({ variant: "outline", size: "icon", className: "relative" })}>
             <ShoppingCart className="h-5 w-5" />
             <span className="sr-only">Open cart</span>
-            {/* Badge Placeholder */}
-            <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-              0
-            </span>
-          </Button>
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                {cartItemCount}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
     </header>

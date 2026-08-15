@@ -1,5 +1,6 @@
 import { env } from '@/config/env';
 import { useAuthStore } from '@/store/auth-store';
+import { useCartStore } from '@/store/cart-store';
 
 export class ApiError extends Error {
   status: number;
@@ -41,10 +42,15 @@ export async function apiClient<T>(endpoint: string, options: FetchOptions = {})
     headers.set('Content-Type', 'application/json');
   }
 
-  // Inject Access Token
+  // Inject Access Token or Guest Cart ID
   const { accessToken } = useAuthStore.getState();
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
+  } else {
+    const { guestCartId } = useCartStore.getState();
+    if (guestCartId) {
+      headers.set('X-Guest-Cart-Id', guestCartId);
+    }
   }
 
   const config: RequestInit = {

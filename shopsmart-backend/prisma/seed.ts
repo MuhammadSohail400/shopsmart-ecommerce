@@ -14,7 +14,7 @@ async function main() {
     { name: 'Accessories', slug: 'accessories' },
   ];
 
-  const categories = {};
+  const categories: Record<string, any> = {};
   for (const c of categoriesData) {
     categories[c.slug] = await prisma.category.upsert({
       where: { slug: c.slug },
@@ -33,7 +33,7 @@ async function main() {
     { name: 'Sony', slug: 'sony' },
   ];
 
-  const brands = {};
+  const brands: Record<string, any> = {};
   for (const b of brandsData) {
     brands[b.slug] = await prisma.brand.upsert({
       where: { slug: b.slug },
@@ -375,6 +375,7 @@ async function main() {
 main()
   .catch((e) => {
     console.error(e);
+    // @ts-ignore
     process.exit(1);
   })
   .finally(async () => {

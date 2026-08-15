@@ -5,13 +5,22 @@ import { useProduct } from '@/hooks/use-catalog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, Star, Package, ChevronRight, Home, Shield, Truck, RefreshCw } from 'lucide-react';
+import { ShoppingBag, Star, Package, ChevronRight, Home, Shield, Truck, RefreshCw, Heart } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { useAddToCart } from '@/features/cart/hooks/use-cart';
+import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/use-wishlist';
+import { useCurrentUser } from '@/hooks/use-auth';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
+  const { data: user } = useCurrentUser();
   const { data: product, isLoading, isError } = useProduct(resolvedParams.id);
+  
+  const addToCartMutation = useAddToCart();
+  const { data: wishlist } = useWishlist();
+  const addToWishlistMutation = useAddToWishlist();
+  const removeFromWishlistMutation = useRemoveFromWishlist();
   
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -71,8 +80,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const isOutOfStock = availableStock <= 0;
   
   const handleAddToCart = () => {
-    // Phase 5 Placeholder
-    alert(`Added ${quantity}x ${product.title} to cart! (Phase 5 functionality)`);
+    if (!selectedVariantId) return;
+    addToCartMutation.mutate({ productVariantId: selectedVariantId, quantity });
+  };
+
+  const isInWishlist = wishlist?.items?.some(item => item.productId === product.id) ?? false;
+
+  const handleToggleWishlist = () => {
+    if (!user) return;
+    if (isInWishlist) {
+      removeFromWishlistMutation.mutate(product.id);
+    } else {
+      addToWishlistMutation.mutate(product.id);
+    }
   };
 
   // Group attributes for VariantSelector
@@ -235,12 +255,23 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <Button 
               size="lg" 
               className="flex-1 h-12 text-lg shadow-lg transition-transform active:scale-95" 
-              disabled={isOutOfStock}
+              disabled={isOutOfStock || addToCartMutation.isPending}
               onClick={handleAddToCart}
             >
               <ShoppingBag className="mr-2 h-5 w-5" />
-              {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+              {addToCartMutation.isPending ? 'Adding...' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
             </Button>
+            {user && (
+              <Button
+                variant={isInWishlist ? 'secondary' : 'outline'}
+                size="icon"
+                className="h-12 w-12"
+                onClick={handleToggleWishlist}
+                disabled={addToWishlistMutation.isPending || removeFromWishlistMutation.isPending}
+              >
+                <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
+              </Button>
+            )}
           </div>
 
           <p className="text-sm text-muted-foreground mb-8">

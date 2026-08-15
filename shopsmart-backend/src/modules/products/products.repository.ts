@@ -48,16 +48,22 @@ export const productsRepository = {
     return { items: items.slice(0, filters.limit), hasMore };
   },
 
-  findById(id: string, includeUnapproved = false) {
+  findById(idOrSlug: string, includeUnapproved = false) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+    const whereCondition = isUuid ? { id: idOrSlug } : { slug: idOrSlug };
+
     return prisma.product.findFirst({
-      where: { id, deletedAt: null, ...(includeUnapproved ? {} : { status: ProductStatus.approved }) },
+      where: { ...whereCondition, deletedAt: null, ...(includeUnapproved ? {} : { status: ProductStatus.approved }) },
       include: { category: true, brand: true, variants: { include: { inventory: true } }, images: true },
     });
   },
 
-  findByIdAnyStatus(id: string) {
+  findByIdAnyStatus(idOrSlug: string) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+    const whereCondition = isUuid ? { id: idOrSlug } : { slug: idOrSlug };
+
     return prisma.product.findFirst({
-      where: { id, deletedAt: null },
+      where: { ...whereCondition, deletedAt: null },
       include: { category: true, brand: true, variants: { include: { inventory: true } }, images: true },
     });
   },
@@ -95,7 +101,7 @@ export const productsRepository = {
   findVariantWithProduct(variantId: string) {
     return prisma.productVariant.findFirst({
       where: { id: variantId, deletedAt: null },
-      include: { product: true, inventory: true },
+      include: { product: { include: { images: true } }, inventory: true },
     });
   },
 

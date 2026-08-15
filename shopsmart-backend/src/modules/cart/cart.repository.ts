@@ -4,13 +4,13 @@ export const cartRepository = {
   async findOrCreateForUser(userId: string) {
     const existing = await prisma.cart.findUnique({
       where: { userId },
-      include: { items: { include: { productVariant: { include: { product: true, inventory: true } } } } },
+      include: { items: { include: { productVariant: { include: { product: { include: { images: { orderBy: { sortOrder: 'asc' } } } }, inventory: true } } } } },
     });
     if (existing) return existing;
 
     return prisma.cart.create({
       data: { userId },
-      include: { items: { include: { productVariant: { include: { product: true, inventory: true } } } } },
+      include: { items: { include: { productVariant: { include: { product: { include: { images: { orderBy: { sortOrder: 'asc' } } } }, inventory: true } } } } },
     });
   },
 
