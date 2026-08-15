@@ -5,7 +5,10 @@ import { buttonVariants } from '@/components/ui/button';
 import { CheckCircle2, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 
-export default function CheckoutSuccessPage() {
+import { Suspense } from 'react';
+import { Spinner } from '@/components/ui/spinner';
+
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
 
@@ -28,5 +31,13 @@ export default function CheckoutSuccessPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={<div className="container py-20 text-center"><Spinner className="mx-auto" /></div>}>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }

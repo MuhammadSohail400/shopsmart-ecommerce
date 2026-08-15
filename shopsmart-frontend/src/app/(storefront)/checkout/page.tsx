@@ -69,7 +69,7 @@ export default function CheckoutPage() {
           setStep(2);
           window.scrollTo(0, 0);
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
           setGlobalError(err.message || 'Failed to create checkout session.');
           toast.error('Checkout Error', { description: err.message || 'Could not proceed to payment.' });
         }
@@ -100,7 +100,7 @@ export default function CheckoutPage() {
             }
           });
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
           setGlobalError(err.message || 'Payment failed.');
           toast.error('Payment Error', { description: err.message || 'Could not complete your order.' });
         }
