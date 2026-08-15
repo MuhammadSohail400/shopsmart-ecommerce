@@ -6,8 +6,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, Trash2, Plus, Minus, PackageX } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
+  const router = useRouter();
   const { data: cart, isLoading, isError, refetch } = useCart();
   const updateQuantity = useUpdateCartItem();
   const removeItem = useRemoveCartItem();
@@ -204,7 +206,12 @@ export default function CartPage() {
               </div>
             </div>
 
-            <Button className="w-full mt-8" size="lg" disabled={!items.some(i => i.inStock)}>
+            <Button 
+              className="w-full mt-8" 
+              size="lg" 
+              disabled={!items.some(i => i.inStock)}
+              onClick={() => router.push('/checkout')}
+            >
               Proceed to Checkout
             </Button>
             
