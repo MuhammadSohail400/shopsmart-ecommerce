@@ -134,8 +134,11 @@ async function processSuccessfulResponse<T>(response: Response): Promise<T> {
   
   const json = await response.json();
   
-  // Unwrap the { success, data, meta } envelope if present
+  // Unwrap the { success, data, pagination } envelope if present
   if (json && typeof json === 'object' && 'data' in json && 'success' in json) {
+    if ('pagination' in json) {
+      return { data: json.data, pagination: json.pagination } as unknown as T;
+    }
     return json.data as T;
   }
   
