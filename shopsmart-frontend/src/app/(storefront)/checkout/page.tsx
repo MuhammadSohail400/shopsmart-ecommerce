@@ -311,10 +311,10 @@ export default function CheckoutPage() {
             <CardContent className="space-y-4">
               <div className="space-y-4 max-h-[300px] overflow-auto pr-2">
                 {cart.items.map((item) => (
-                  <div key={item.id} className="flex gap-4">
+                  <div key={item.productVariantId} className="flex gap-4">
                     <div className="h-16 w-16 bg-muted rounded-md overflow-hidden shrink-0">
                       {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.productTitle} className="w-full h-full object-cover" />
+                        <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-secondary">
                           <ShoppingBag className="h-6 w-6 text-muted-foreground" />
@@ -322,11 +322,11 @@ export default function CheckoutPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium truncate">{item.productTitle}</h4>
+                      <h4 className="text-sm font-medium truncate">{item.title}</h4>
                       <p className="text-xs text-muted-foreground mt-1">Qty: {item.quantity}</p>
                     </div>
                     <div className="text-sm font-medium text-right">
-                      ${(Number(item.priceAtAdd) * item.quantity).toFixed(2)}
+                      ${item.subtotal.toFixed(2)}
                     </div>
                   </div>
                 ))}
