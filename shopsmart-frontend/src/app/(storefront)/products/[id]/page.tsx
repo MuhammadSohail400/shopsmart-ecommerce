@@ -230,22 +230,22 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           )}
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <div className="flex items-center border rounded-md h-12">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-8">
+            <div className="flex items-center border rounded-md h-12 w-full sm:w-32 shrink-0">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-none h-full"
+                className="rounded-none h-full w-10 shrink-0"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={isOutOfStock || quantity <= 1}
               >
                 -
               </Button>
-              <div className="w-12 text-center font-medium">{quantity}</div>
+              <div className="flex-1 text-center font-medium">{quantity}</div>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-none h-full"
+                className="rounded-none h-full w-10 shrink-0"
                 onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
                 disabled={isOutOfStock || quantity >= availableStock}
               >
@@ -254,7 +254,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
             <Button 
               size="lg" 
-              className="flex-1 h-12 text-lg shadow-lg transition-transform active:scale-95" 
+              className="flex-1 h-12 text-base font-semibold shadow-sm transition-transform active:scale-95" 
               disabled={isOutOfStock || addToCartMutation.isPending}
               onClick={handleAddToCart}
             >

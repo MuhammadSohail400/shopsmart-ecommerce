@@ -109,7 +109,9 @@ export function Header() {
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-muted-foreground">{user.email}</DropdownMenuItem>
+                    <DropdownMenuItem className="text-muted-foreground flex items-center">
+                      <span className="truncate max-w-[200px]" title={user.email || undefined}>{user.email}</span>
+                    </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => router.push('/wishlist')}>
