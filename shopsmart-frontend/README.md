@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ShopSmart AI — Frontend
 
-## Getting Started
+This is the Next.js 15 frontend application for ShopSmart AI, providing the public storefront, customer account area, and internal admin console. It consumes the ShopSmart REST API.
 
-First, run the development server:
+## Project Status
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The frontend is being built in phases according to the Frontend Architecture specifications.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Phase | Status | Modules/Features |
+|---|---|---|
+| 1 — Foundation | **COMPLETE** | Next.js 15 App Router, TypeScript strict, ESLint/Prettier, API Client (fetch-based), React Query setup, Zustand store setup |
+| 2 — Design System | **COMPLETE** | Tailwind CSS v3, Shadcn UI + Base UI components, Lucide icons, Dark mode support, globals.css |
+| 3 — Authentication | **COMPLETE** | Login, Register, Password Reset, Email/Phone Verification, JWT Rotation, Protected Routes |
+| 4 — Product Catalog | **COMPLETE** | Homepage, Categories, Brands, Product Grid, Product Details (Variants, Images), Search, Filtering, Pagination |
+| 5 — Shopping | Pending | Cart, Checkout, Stripe Elements, Shipping, Wishlist |
+| 6 — Post-Purchase | Pending | Orders list, Order details, Reviews |
+| 7 — Operations | Pending | Admin Dashboard, Product Management, CMS Management, Analytics |
+| 8 — Hardening | Pending | Final performance optimizations, Lighthouse testing, E2E testing |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui + `@base-ui/react`
+- **Server State**: TanStack Query (React Query)
+- **Client State**: Zustand
+- **Forms & Validation**: React Hook Form + Zod
+- **Icons**: Lucide React
 
-## Learn More
+## Setup & Local Development
 
-To learn more about Next.js, take a look at the following resources:
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Configure environment**:
+   Copy `.env.example` to `.env.local` and configure your API URL.
+   ```bash
+   cp .env.example .env.local
+   ```
+   *Required variables*:
+   - `NEXT_PUBLIC_API_URL`: The URL of the backend API (default: `http://localhost:4000/api/v1`)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+4. **Open the browser**:
+   Visit [http://localhost:3000](http://localhost:3000)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Code Quality
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run the following commands to validate the codebase:
+
+- **Typecheck**: `npm run typecheck`
+- **Lint**: `npm run lint`
+- **Build**: `npm run build`
+
+## Architecture Highlights
+
+- **API Client**: Uses a custom, strongly-typed `fetch` wrapper rather than Axios to take full advantage of Next.js 15's native caching and request deduplication.
+- **State Management**: TanStack query handles all asynchronous server state (products, user data). Zustand is reserved exclusively for ephemeral client UI state (e.g., active filters, mobile menu toggles).
+- **Security**: The frontend does NOT use NextAuth; it implements a strict adherence to the backend's JWT-in-memory and HttpOnly-refresh-cookie design. Protected routes utilize Next.js middleware and Higher Order Components.

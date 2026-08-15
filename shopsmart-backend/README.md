@@ -7,16 +7,16 @@ CI-wired.
 
 ## What's included
 
-| Phase | Modules |
-|---|---|
-| 1 — Foundation | env validation, Prisma/Redis/Pino config, error handling, middleware |
-| 2 — Identity & Access | `auth` (register, login, refresh rotation, real email/phone verification), `users` |
-| 3 — Catalog | `categories`, `brands`, `products` (+variants+images), `inventory` (optimistic locking) |
-| 4 — Shopping | `cart` (guest + registered), `wishlist`, `coupons` |
-| 5 — Transactions | `checkout`, `orders`, `payments` (Stripe), `shipping` |
-| 6 — Post-Purchase | `reviews`, `notifications` (Resend, domain events, scheduled jobs) |
-| 7 — Operations | `settings`, `audit-logs`, `admin`, `analytics`, `cms` |
-| 8 — Hardening | test coverage, OpenAPI/Swagger docs, Docker/Nginx/CI-CD, security review, load test |
+| Phase | Modules | Frontend Integration Status |
+|---|---|---|
+| 1 — Foundation | env validation, Prisma/Redis/Pino config, error handling, middleware | **Integrated** |
+| 2 — Identity & Access | `auth` (register, login, refresh rotation, real email/phone verification), `users` | **Integrated** |
+| 3 — Catalog | `categories`, `brands`, `products` (+variants+images), `inventory` (optimistic locking) | **Integrated** |
+| 4 — Shopping | `cart` (guest + registered), `wishlist`, `coupons` | Pending (Phase 5) |
+| 5 — Transactions | `checkout`, `orders`, `payments` (Stripe), `shipping` | Pending (Phase 5) |
+| 6 — Post-Purchase | `reviews`, `notifications` (Resend, domain events, scheduled jobs) | Pending |
+| 7 — Operations | `settings`, `audit-logs`, `admin`, `analytics`, `cms` | Pending |
+| 8 — Hardening | test coverage, OpenAPI/Swagger docs, Docker/Nginx/CI-CD, security review, load test | Backend Complete |
 
 Every module follows the identical layered pattern: `routes -> controller -> service -> repository`,
 with a single public `index.ts` per module — no module ever imports another module's internals.
