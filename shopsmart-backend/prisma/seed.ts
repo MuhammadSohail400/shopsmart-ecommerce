@@ -369,6 +369,26 @@ async function main() {
     console.log(`CMS banners already exist, skipping.`);
   }
 
+  // --- 5. Shipping Zones ---
+  const existingZones = await prisma.shippingZone.count();
+  if (existingZones === 0) {
+    await prisma.shippingZone.create({
+      data: {
+        name: 'Global',
+        countries: ['US', 'CA', 'UK', 'PK', 'AU', 'IN', 'DE', 'FR'],
+        rates: {
+          create: [
+            { method: 'standard', cost: 10.00, etaDays: 5 },
+            { method: 'express', cost: 25.00, etaDays: 2 }
+          ]
+        }
+      }
+    });
+    console.log(`Created 1 Global Shipping Zone with rates.`);
+  } else {
+    console.log(`Shipping zones already exist, skipping.`);
+  }
+
   console.log('Seeding complete!');
 }
 
