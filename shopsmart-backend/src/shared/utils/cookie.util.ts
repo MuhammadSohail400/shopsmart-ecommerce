@@ -9,18 +9,30 @@ const REFRESH_COOKIE_NAME = 'refreshToken';
  * controller ever touches cookies (Backend Standards Section 10.3).
  */
 export function setRefreshTokenCookie(res: Response, token: string, expiresAt: Date): void {
+  const isProduction = env.NODE_ENV === 'production';
+  const isCrossDomain = isProduction && (!env.COOKIE_DOMAIN || env.COOKIE_DOMAIN === 'localhost');
+
   res.cookie(REFRESH_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    domain: env.COOKIE_DOMAIN,
+    secure: isProduction,
+    sameSite: isCrossDomain ? 'none' : 'strict',
+    ...(env.COOKIE_DOMAIN && env.COOKIE_DOMAIN !== 'localhost' ? { domain: env.COOKIE_DOMAIN } : {}),
     path: '/api/v1/auth',
     expires: expiresAt,
   });
 }
 
 export function clearRefreshTokenCookie(res: Response): void {
-  res.clearCookie(REFRESH_COOKIE_NAME, { path: '/api/v1/auth' });
+  const isProduction = env.NODE_ENV === 'production';
+  const isCrossDomain = isProduction && (!env.COOKIE_DOMAIN || env.COOKIE_DOMAIN === 'localhost');
+
+  res.clearCookie(REFRESH_COOKIE_NAME, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isCrossDomain ? 'none' : 'strict',
+    ...(env.COOKIE_DOMAIN && env.COOKIE_DOMAIN !== 'localhost' ? { domain: env.COOKIE_DOMAIN } : {}),
+    path: '/api/v1/auth',
+  });
 }
 
 export function getRefreshTokenFromCookie(cookies: Record<string, string>): string | undefined {
