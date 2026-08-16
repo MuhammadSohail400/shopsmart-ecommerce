@@ -73,7 +73,7 @@ export const checkoutService = {
       userId: ctx.userId,
       guestCartId: ctx.guestCartId,
       addressId: address.addressId,
-      guestAddress: ctx.userId ? undefined : (address as unknown as object),
+      guestAddress: address.addressId ? undefined : (address as unknown as object),
       shippingMethod: body.shippingMethod,
       subtotal: cart.subtotal,
       taxAmount,
@@ -127,8 +127,8 @@ export const checkoutService = {
       couponInfo = { couponId: coupon!.id, discountApplied: discountAmount, userId: ctx.userId };
     }
 
-    const shippingAddress = session.addressId
-      ? await getAddressForUser(ctx.userId!, session.addressId)
+    const shippingAddress = (session.addressId && ctx.userId)
+      ? await getAddressForUser(ctx.userId, session.addressId)
       : (session.guestAddress as unknown as ResolvedAddress);
     if (!shippingAddress) throw new NotFoundError('Shipping address');
 
