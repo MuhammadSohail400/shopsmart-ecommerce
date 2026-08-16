@@ -41,7 +41,7 @@ export const productsRepository = {
       take: filters.limit + 1, // fetch one extra to determine hasMore
       ...(filters.cursor ? { cursor: { id: filters.cursor }, skip: 1 } : {}),
       orderBy: { createdAt: 'desc' },
-      include: { category: true, brand: true, variants: { include: { inventory: true } } },
+      include: { category: true, brand: true, variants: { include: { inventory: true } }, images: true },
     });
 
     const hasMore = items.length > filters.limit;
