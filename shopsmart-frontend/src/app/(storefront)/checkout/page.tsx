@@ -73,13 +73,13 @@ type ShippingFormData = z.infer<typeof shippingSchema>;
 // ─── Stripe Payment Form (inner component, used inside <Elements>) ────────────
 function StripePaymentForm({
   sessionData,
-  idempotencyKey,
+  createdOrder,
   onSuccess,
   onError,
   onBack,
 }: {
   sessionData: CheckoutSession;
-  idempotencyKey: string;
+  createdOrder: ConfirmCheckoutResult | null;
   onSuccess: (result: ConfirmCheckoutResult) => void;
   onError: (message: string) => void;
   onBack: () => void;
@@ -87,14 +87,13 @@ function StripePaymentForm({
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
-  const confirmSession = useConfirmCheckoutSession();
 
   const handleStripeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements || isProcessing) return;
     setIsProcessing(true);
 
-    // First: confirm the Stripe payment on the client side
+    // Confirm the Stripe payment on the client side
     const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
       elements,
       redirect: 'if_required',
@@ -107,24 +106,11 @@ function StripePaymentForm({
       return;
     }
 
-    if (paymentIntent?.status === 'succeeded') {
-      // The webhook will confirm the order on the backend.
-      // We optimistically move the user to the success page with order data.
-      // The backend's /orders/:id endpoint will reflect the real status.
-      confirmSession.mutate(
-        { sessionId: sessionData.sessionId, data: { paymentMethod: 'card' }, idempotencyKey },
-        {
-          onSuccess: (result) => {
-            setIsProcessing(false);
-            onSuccess(result);
-          },
-          onError: (err) => {
-            setIsProcessing(false);
-            const message = err instanceof ApiError ? err.userMessage : err.message;
-            onError(message);
-          },
-        }
-      );
+    if (paymentIntent?.status === 'succeeded' || paymentIntent?.status === 'processing') {
+      setIsProcessing(false);
+      if (createdOrder) {
+        onSuccess(createdOrder);
+      }
     } else {
       setIsProcessing(false);
       onError('Payment was not completed. Please try again.');
@@ -192,6 +178,7 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [sessionData, setSessionData] = useState<CheckoutSession | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [createdOrder, setCreatedOrder] = useState<ConfirmCheckoutResult | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'cod' | 'bank_transfer'>('card');
   const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -581,6 +568,7 @@ export default function CheckoutPage() {
                                 onSuccess: (result) => {
                                   const secret = result.payment?.clientSecret;
                                   if (secret) {
+                                    setCreatedOrder(result);
                                     setClientSecret(secret);
                                   } else {
                                     setGlobalError('Unable to initialize payment. Please try again.');
@@ -623,11 +611,12 @@ export default function CheckoutPage() {
                     >
                       <StripePaymentForm
                         sessionData={sessionData}
-                        idempotencyKey={idempotencyKeyRef.current}
+                        createdOrder={createdOrder}
                         onSuccess={onCardSuccess}
                         onError={onCardError}
                         onBack={() => {
                           setClientSecret(null);
+                          setCreatedOrder(null);
                           setStep(1);
                         }}
                       />
