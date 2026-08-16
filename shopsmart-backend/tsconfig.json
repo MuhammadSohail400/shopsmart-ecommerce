@@ -21,7 +21,8 @@
     "paths": {
       "@config/*": ["config/*"],
       "@shared/*": ["shared/*"],
-      "@modules/*": ["modules/*"]
+      "@modules/*": ["modules/*"],
+      "@prisma/client": ["generated/client"]
     }
   },
   "include": ["src/**/*.ts"],

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useProduct } from '@/hooks/use-catalog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -13,12 +13,21 @@ import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/features
 import { useCurrentUser } from '@/hooks/use-auth';
 import { useProductReviewSummary } from '@/features/reviews/hooks/use-reviews';
 import { ProductReviewsSection } from '@/features/reviews/components/product-reviews-section';
+import { useRecentlyViewed } from '@/features/products/hooks/use-recently-viewed';
+import { RecentlyViewedSection } from '@/components/storefront/recently-viewed-section';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const { data: user } = useCurrentUser();
   const { data: product, isLoading, isError } = useProduct(resolvedParams.id);
   const { data: reviewSummary } = useProductReviewSummary(product?.id || '');
+  const { addProduct } = useRecentlyViewed();
+  
+  useEffect(() => {
+    if (product) {
+      addProduct(product);
+    }
+  }, [product, addProduct]);
   
   const addToCartMutation = useAddToCart();
   const { data: wishlist } = useWishlist();
@@ -335,6 +344,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Product Reviews & Ratings Section */}
       <ProductReviewsSection productId={product.id} productTitle={product.title} />
+
+      {/* Recently Viewed Products */}
+      <RecentlyViewedSection currentProductId={product.id} />
     </div>
   );
 }

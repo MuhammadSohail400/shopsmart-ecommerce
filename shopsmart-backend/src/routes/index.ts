@@ -19,6 +19,8 @@ import { auditLogsRoutes } from '@modules/audit-logs';
 import { adminRoutes } from '@modules/admin';
 import { analyticsRoutes } from '@modules/analytics';
 import { cmsRoutes } from '@modules/cms';
+import { newsletterRoutes } from '@modules/marketing';
+import { contactRoutes } from '@modules/contact';
 
 /**
  * Single place every module's router is mounted under the versioned
@@ -48,5 +50,7 @@ router.use('/admin/audit-logs', auditLogsRoutes);
 router.use('/admin/analytics', analyticsRoutes);
 router.use('/admin', adminRoutes); // exposes /admin/dashboard/summary, /admin/orders, /admin/staff — mounted last since it's the broadest /admin/* prefix
 router.use('/cms', cmsRoutes);
+router.use('/newsletter', newsletterRoutes); // exposes /newsletter/subscribe
+router.use('/contact', contactRoutes); // exposes /contact
 
 export { router as apiRouter };

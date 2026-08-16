@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ArrowRight, ShoppingBag, Sparkles } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Sparkles, Truck, ShieldCheck, RefreshCw, Zap } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/storefront/product-card';
@@ -9,16 +9,18 @@ import { ProductGrid, ProductGridSkeleton } from '@/components/storefront/produc
 import { useBanners, useCategories, useProducts } from '@/hooks/use-catalog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
+import { NewsletterSection } from '@/components/storefront/newsletter-section';
+import { RecentlyViewedSection } from '@/components/storefront/recently-viewed-section';
 
 export default function HomePage() {
   const { data: banners, isLoading: isLoadingBanners } = useBanners();
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
-  const { data: productsData, isLoading: isLoadingProducts } = useProducts({ limit: 10 });
+  const { data: productsData, isLoading: isLoadingProducts } = useProducts({ limit: 12 });
 
   const activeBanner = banners && banners.length > 0 ? banners[0] : null;
 
   return (
-    <div className="flex flex-col gap-0 pb-16">
+    <div className="flex flex-col gap-0 pb-12">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-background">
         {isLoadingBanners ? (
@@ -30,7 +32,7 @@ export default function HomePage() {
               style={{ backgroundImage: `url(${activeBanner.imageUrl})` }}
             />
             {/* Rich gradient overlay for premium depth */}
-            <div className="absolute inset-0 z-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+            <div className="absolute inset-0 z-0 bg-gradient-to-r from-background via-background/85 to-transparent" />
             
             <div className="container relative z-10 flex flex-col items-start justify-center pt-20">
               <Badge className="mb-6 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 pointer-events-none px-4 py-1.5 text-sm">
@@ -41,7 +43,7 @@ export default function HomePage() {
                 Discover Your <span className="text-primary">Next Favorite</span> Thing
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl font-medium leading-relaxed">
-                Browse our latest arrivals and find the perfect addition to your life&apos;s journey with premium quality and unmatched style.
+                Browse our latest arrivals and find the perfect addition to your lifestyle with authentic quality and lightning-fast delivery.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 {activeBanner.linkUrl ? (
@@ -78,15 +80,62 @@ export default function HomePage() {
         )}
       </section>
 
+      {/* Value Proposition Strip */}
+      <section className="border-b border-border/50 bg-secondary/15 py-8">
+        <div className="container">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-card border border-border/40 shadow-xs">
+              <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0">
+                <Truck className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Free Shipping</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">On orders over $50</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-card border border-border/40 shadow-xs">
+              <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">100% Authentic</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Direct from top brands</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-card border border-border/40 shadow-xs">
+              <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0">
+                <RefreshCw className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">30-Day Returns</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">No questions asked</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-card border border-border/40 shadow-xs">
+              <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0">
+                <Zap className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Instant Support</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Live expert assistance</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Categories */}
-      <section className="container py-24">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
+      <section className="container py-20">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
           <div>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Shop by Category</h2>
-            <p className="text-muted-foreground text-lg">Find exactly what you are looking for.</p>
+            <p className="text-muted-foreground text-base">Explore top collections curated for you.</p>
           </div>
           <Link href="/categories" className="text-primary font-semibold hover:underline flex items-center gap-1 group">
-            View All <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            View All Categories <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
         
@@ -116,12 +165,15 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Featured Products */}
+      {/* Featured / Trending Products */}
       <section className="container py-12 border-t border-border/50">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
           <div>
+            <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold mb-2">
+              <Sparkles className="h-3.5 w-3.5" /> Handpicked
+            </div>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Trending Now</h2>
-            <p className="text-muted-foreground text-lg">Top picks for you this week.</p>
+            <p className="text-muted-foreground text-base">The most popular items this week.</p>
           </div>
           <Link href="/products" className="text-primary font-semibold hover:underline flex items-center gap-1 group">
             View All Products <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -129,7 +181,7 @@ export default function HomePage() {
         </div>
         
         {isLoadingProducts ? (
-          <ProductGridSkeleton count={10} />
+          <ProductGridSkeleton count={8} />
         ) : productsData?.pages[0]?.data.length ? (
           <ProductGrid>
             {productsData.pages[0].data.map((product) => (
@@ -147,6 +199,12 @@ export default function HomePage() {
           />
         )}
       </section>
+
+      {/* Recently Viewed Section */}
+      <RecentlyViewedSection />
+
+      {/* Newsletter Section */}
+      <NewsletterSection />
     </div>
   );
 }
