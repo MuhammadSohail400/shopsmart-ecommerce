@@ -57,7 +57,7 @@ describe('Auth & Redis/Session Integration Tests (P1-2 Coverage)', () => {
 
   describe('Full Password Reset Lifecycle & State Invalidation', () => {
     it('generates a cryptographically random token, stores hash in Redis, and enforces single-use', async () => {
-      const { redis } = await import('@config/redis');
+      const { redis } = await import('../../src/config/redis');
       const user = { id: 'user-integration-1', email: 'integration@shopsmart.ai', role: 'customer' };
       (authRepository.findByEmailOrPhone as ReturnType<typeof vi.fn>).mockResolvedValue(user);
 

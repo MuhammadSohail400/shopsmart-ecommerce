@@ -153,11 +153,11 @@ describe('POST /api/v1/auth/password-reset (P0 & P1-1 Security Fix Verification)
   });
 
   it('rejects password reset when attempted with a normal JWT access token (P0 Fix)', async () => {
-    const { signAccessToken } = await import('@shared/utils/jwt.util');
+    const { signAccessToken } = await import('../../src/shared/utils/jwt.util');
     const validAccessJwt = signAccessToken({ sub: 'user-123', role: 'customer' });
 
     (authRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'user-123' });
-    const { redis } = await import('@config/redis');
+    const { redis } = await import('../../src/config/redis');
     (redis.get as ReturnType<typeof vi.fn>).mockResolvedValue(null); // Redis has no key for access JWT hash
 
     const res = await request(app)
@@ -169,9 +169,9 @@ describe('POST /api/v1/auth/password-reset (P0 & P1-1 Security Fix Verification)
   });
 
   it('successfully resets password with a valid dedicated reset token and revokes sessions', async () => {
-    const { generatePasswordResetToken } = await import('@shared/utils/jwt.util');
+    const { generatePasswordResetToken } = await import('../../src/shared/utils/jwt.util');
     const { raw, hash } = generatePasswordResetToken();
-    const { redis } = await import('@config/redis');
+    const { redis } = await import('../../src/config/redis');
 
     (redis.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
       if (key === `password-reset:${hash}`) return Promise.resolve('user-123');
@@ -193,9 +193,9 @@ describe('POST /api/v1/auth/password-reset (P0 & P1-1 Security Fix Verification)
   });
 
   it('rejects reset token on second use (single-use enforcement)', async () => {
-    const { generatePasswordResetToken } = await import('@shared/utils/jwt.util');
+    const { generatePasswordResetToken } = await import('../../src/shared/utils/jwt.util');
     const { raw } = generatePasswordResetToken();
-    const { redis } = await import('@config/redis');
+    const { redis } = await import('../../src/config/redis');
 
     // Key has been deleted after first use, so redis.get returns null
     (redis.get as ReturnType<typeof vi.fn>).mockResolvedValue(null);

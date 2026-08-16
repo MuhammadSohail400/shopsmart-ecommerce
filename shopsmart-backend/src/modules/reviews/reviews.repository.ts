@@ -4,6 +4,7 @@ export const reviewsRepository = {
   async listForProduct(productId: string, cursor: string | undefined, limit: number) {
     const items = await prisma.review.findMany({
       where: { productId, hidden: false, deletedAt: null },
+      include: { user: { select: { id: true, email: true } } },
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       orderBy: { createdAt: 'desc' },

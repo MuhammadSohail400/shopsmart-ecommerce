@@ -8,7 +8,7 @@ interface ProductGridProps {
 
 export function ProductGrid({ children }: ProductGridProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
       {children}
     </div>
   );
@@ -19,7 +19,7 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
     <ProductGrid>
       {Array.from({ length: count }).map((_, i) => (
         <Card key={i} className="flex flex-col overflow-hidden border-border bg-card rounded-lg">
-          <div className="aspect-[4/5] w-full bg-muted/50 flex items-center justify-center">
+          <div className="aspect-square w-full bg-muted/50 flex items-center justify-center">
             <Skeleton className="h-full w-full rounded-none" />
           </div>
           <CardContent className="flex flex-col gap-1 p-3 flex-1">

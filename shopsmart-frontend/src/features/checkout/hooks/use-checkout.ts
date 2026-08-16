@@ -18,20 +18,20 @@ export function useCheckoutSession(sessionId: string | null) {
     queryKey: checkoutKeys.session(sessionId!),
     queryFn: () => checkoutService.getSession(sessionId!),
     enabled: !!sessionId,
-    retry: false, // Don't retry if session is invalid or expired
+    retry: false,
   });
 }
 
 export function useConfirmCheckoutSession() {
   return useMutation({
-    mutationFn: ({ 
-      sessionId, 
-      data, 
-      idempotencyKey 
-    }: { 
-      sessionId: string; 
-      data: ConfirmSessionPayload; 
-      idempotencyKey: string 
+    mutationFn: ({
+      sessionId,
+      data,
+      idempotencyKey,
+    }: {
+      sessionId: string;
+      data: ConfirmSessionPayload;
+      idempotencyKey: string;
     }) => checkoutService.confirmSession(sessionId, data, idempotencyKey),
   });
 }

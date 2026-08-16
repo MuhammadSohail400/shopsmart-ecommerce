@@ -27,7 +27,7 @@ export const paymentsService = {
       const intent = await stripeAdapter.createPaymentIntent(input.amount, 'usd', input.idempotencyKey, {
         orderId: input.orderId,
       });
-      return paymentsRepository.create({
+      const payment = await paymentsRepository.create({
         orderId: input.orderId,
         gatewayPaymentIntentId: intent.id,
         amount: input.amount,
@@ -35,8 +35,12 @@ export const paymentsService = {
         idempotencyKey: input.idempotencyKey,
         status: PaymentStatus.pending,
       });
+      // Attach the client_secret to the response so the frontend can
+      // initialize Stripe Elements (the client_secret is payment-scoped and
+      // safe for browser exposure — it is NOT the Stripe secret API key).
       // Order remains "pending" until the webhook confirms payment (see
       // handleStripeWebhookEvent below).
+      return { ...payment, clientSecret: intent.client_secret };
     }
 
     // COD / bank_transfer: no gateway round-trip needed — confirm immediately.

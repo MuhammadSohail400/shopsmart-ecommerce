@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ArrowRight, ShoppingBag } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Sparkles } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/storefront/product-card';
@@ -13,54 +13,65 @@ import { EmptyState } from '@/components/shared/empty-state';
 export default function HomePage() {
   const { data: banners, isLoading: isLoadingBanners } = useBanners();
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
-  const { data: productsData, isLoading: isLoadingProducts } = useProducts({ limit: 8 });
+  const { data: productsData, isLoading: isLoadingProducts } = useProducts({ limit: 10 });
 
   const activeBanner = banners && banners.length > 0 ? banners[0] : null;
 
   return (
     <div className="flex flex-col gap-0 pb-16">
       {/* Hero Section */}
-      <section className="relative bg-muted overflow-hidden">
+      <section className="relative overflow-hidden bg-background">
         {isLoadingBanners ? (
-          <Skeleton className="w-full h-[400px] md:h-[480px]" />
+          <Skeleton className="w-full h-[500px] md:h-[600px] rounded-none" />
         ) : activeBanner ? (
-          <div className="relative w-full h-[400px] md:h-[480px] flex items-center bg-zinc-900">
-            {/* The backend provides imageUrl but due to Phase 4 mock/limitations, we use it directly or fallback */}
+          <div className="relative w-full h-[500px] md:h-[600px] flex items-center">
             <div 
-              className="absolute inset-0 z-0 opacity-40 bg-cover bg-center"
+              className="absolute inset-0 z-0 bg-cover bg-center"
               style={{ backgroundImage: `url(${activeBanner.imageUrl})` }}
             />
-            <div className="container relative z-10 flex flex-col items-start justify-center text-white">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-2xl leading-tight">
-                Discover Your Next Favorite Thing
+            {/* Rich gradient overlay for premium depth */}
+            <div className="absolute inset-0 z-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+            
+            <div className="container relative z-10 flex flex-col items-start justify-center pt-20">
+              <Badge className="mb-6 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 pointer-events-none px-4 py-1.5 text-sm">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Featured Collection
+              </Badge>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 max-w-2xl leading-[1.1] text-foreground">
+                Discover Your <span className="text-primary">Next Favorite</span> Thing
               </h1>
-              <p className="text-base md:text-lg text-zinc-300 mb-8 max-w-lg">
-                Browse our latest arrivals and find the perfect addition to your life&apos;s journey.
+              <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl font-medium leading-relaxed">
+                Browse our latest arrivals and find the perfect addition to your life&apos;s journey with premium quality and unmatched style.
               </p>
-              {activeBanner.linkUrl ? (
-                <Link href={activeBanner.linkUrl} className={buttonVariants({ size: "lg", className: "text-md h-12 px-8" })}>
-                  Shop Now <ArrowRight className="ml-2 h-4 w-4" />
+              <div className="flex flex-col sm:flex-row gap-4">
+                {activeBanner.linkUrl ? (
+                  <Link href={activeBanner.linkUrl} className={buttonVariants({ size: "lg", className: "h-14 px-8 text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 rounded-full" })}>
+                    Shop Collection <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                ) : (
+                  <Link href="/products" className={buttonVariants({ size: "lg", className: "h-14 px-8 text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 rounded-full" })}>
+                    Explore Catalog <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                )}
+                <Link href="/categories" className={buttonVariants({ variant: "outline", size: "lg", className: "h-14 px-8 text-base font-semibold bg-background/50 backdrop-blur-sm rounded-full" })}>
+                  Browse Categories
                 </Link>
-              ) : (
-                <Link href="/products" className={buttonVariants({ size: "lg", className: "text-md h-12 px-8" })}>
-                  Explore Catalog <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              )}
+              </div>
             </div>
           </div>
         ) : (
-          // Fallback Hero if no banners are returned from backend
-          <div className="relative w-full h-[400px] md:h-[480px] flex items-center bg-gradient-to-tr from-primary/10 via-primary/5 to-background">
-            <div className="container flex flex-col items-start justify-center">
-              <Badge className="mb-4 bg-primary/20 text-primary hover:bg-primary/20 pointer-events-none">New Arrivals</Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 max-w-2xl leading-tight text-foreground">
-                Welcome to ShopSmart
+          // Fallback Hero if no banners
+          <div className="relative w-full h-[500px] md:h-[600px] flex items-center bg-gradient-to-tr from-primary/10 via-background to-background">
+            <div className="container flex flex-col items-start justify-center pt-16">
+              <Badge className="mb-6 bg-primary/20 text-primary hover:bg-primary/20 pointer-events-none px-4 py-1.5 text-sm">New Arrivals</Badge>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 max-w-3xl leading-[1.1] text-foreground">
+                Welcome to <span className="text-primary">ShopSmart</span>
               </h1>
-              <p className="text-base md:text-lg text-muted-foreground mb-8 max-w-lg">
-                The intelligent way to shop online. Get the best products at the smartest prices.
+              <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl font-medium leading-relaxed">
+                The intelligent way to shop online. Get the best products at the smartest prices with our curated collections.
               </p>
-              <Link href="/products" className={buttonVariants({ size: "lg", className: "text-md h-12 px-8" })}>
-                Shop Now <ArrowRight className="ml-2 h-4 w-4" />
+              <Link href="/products" className={buttonVariants({ size: "lg", className: "h-14 px-8 text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 rounded-full" })}>
+                Start Shopping <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </div>
           </div>
@@ -68,47 +79,57 @@ export default function HomePage() {
       </section>
 
       {/* Featured Categories */}
-      <section className="container py-16">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h2 className="text-2xl font-bold tracking-tight">Shop by Category</h2>
-          <Link href="/categories" className={buttonVariants({ variant: "ghost" })}>View All</Link>
+      <section className="container py-24">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Shop by Category</h2>
+            <p className="text-muted-foreground text-lg">Find exactly what you are looking for.</p>
+          </div>
+          <Link href="/categories" className="text-primary font-semibold hover:underline flex items-center gap-1 group">
+            View All <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
         
         {isLoadingCategories ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-square rounded-xl" />
+              <Skeleton key={i} className="aspect-square rounded-2xl" />
             ))}
           </div>
         ) : categories && categories.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {categories.slice(0, 6).map((category) => (
               <Link 
                 key={category.id} 
                 href={`/products?category=${category.slug}`}
-                className="group flex flex-col items-center justify-center gap-3 p-6 rounded-xl border bg-card hover:bg-accent hover:text-accent-foreground transition-all hover:shadow-md"
+                className="group flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border border-border/50 bg-card hover:bg-primary/5 hover:border-primary/30 transition-all hover:shadow-lg hover:-translate-y-1"
               >
-                <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <ShoppingBag className="h-6 w-6" />
+                <div className="h-16 w-16 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shadow-sm">
+                  <ShoppingBag className="h-8 w-8" />
                 </div>
-                <span className="font-medium text-sm text-center">{category.name}</span>
+                <span className="font-semibold text-base text-center group-hover:text-primary transition-colors">{category.name}</span>
               </Link>
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground text-sm">No categories found.</p>
+          <p className="text-muted-foreground">No categories found.</p>
         )}
       </section>
 
       {/* Featured Products */}
-      <section className="container py-16 border-t">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h2 className="text-2xl font-bold tracking-tight">Featured Products</h2>
-          <Link href="/products" className={buttonVariants({ variant: "ghost" })}>View All Products</Link>
+      <section className="container py-12 border-t border-border/50">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Trending Now</h2>
+            <p className="text-muted-foreground text-lg">Top picks for you this week.</p>
+          </div>
+          <Link href="/products" className="text-primary font-semibold hover:underline flex items-center gap-1 group">
+            View All Products <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
         
         {isLoadingProducts ? (
-          <ProductGridSkeleton count={8} />
+          <ProductGridSkeleton count={10} />
         ) : productsData?.pages[0]?.data.length ? (
           <ProductGrid>
             {productsData.pages[0].data.map((product) => (
@@ -121,7 +142,7 @@ export default function HomePage() {
             title="No products available"
             description="We're currently restocking our inventory. Check back soon!"
             action={
-              <Link href="/products" className={buttonVariants({ variant: "outline" })}>Browse Catalog</Link>
+              <Link href="/products" className={buttonVariants({ variant: "outline", className: "rounded-full" })}>Browse Catalog</Link>
             }
           />
         )}

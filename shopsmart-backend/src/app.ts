@@ -19,9 +19,20 @@ export function createApp(): Express {
 
   // --- Security & infra middleware (Backend Standards Section 16) ---
   app.use(helmet());
+  const configuredOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
   app.use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin: (origin, callback) => {
+        if (
+          !origin ||
+          configuredOrigins.includes(origin) ||
+          (env.NODE_ENV === 'development' && /^http:\/\/localhost(:\d+)?$/.test(origin))
+        ) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+      },
       credentials: true, // required for the HttpOnly refresh-token cookie
     }),
   );

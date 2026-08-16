@@ -63,20 +63,22 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="group flex flex-col overflow-hidden transition-all hover:shadow-md border-border bg-card relative rounded-lg">
-      {/* Image Area - strict 4/5 aspect ratio for fashion/e-com standard */}
-      <Link href={`/products/${product.slug}`} className="relative aspect-[4/5] w-full bg-muted/30 flex items-center justify-center overflow-hidden">
+    <Card className="group flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border/40 bg-card relative rounded-2xl h-full">
+      {/* Image Area - strict square aspect ratio for balanced e-com standard */}
+      <Link href={`/products/${product.slug}`} className="relative aspect-square w-full bg-secondary/30 flex items-center justify-center overflow-hidden">
         {/* Placeholder for missing images */}
         {product.images?.[0] ? (
-          <img src={product.images[0].url} alt={product.title} className="w-full h-full object-cover absolute inset-0 z-0" />
+          <img src={product.images[0].url} alt={product.title} className="w-full h-full object-cover absolute inset-0 z-0 transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="text-muted-foreground/30 flex flex-col items-center gap-4 relative z-0">
             <Package className="h-16 w-16" strokeWidth={1} />
             <span className="text-4xl font-bold tracking-tighter opacity-40">{initials}</span>
           </div>
         )}
-        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col items-center justify-end pb-4">
-          <Button variant="secondary" size="sm" className="shadow-sm translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 h-8 text-xs px-4 rounded-full">
+        
+        {/* Hover Action Overlay */}
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col items-center justify-end pb-6">
+          <Button variant="secondary" size="sm" className="shadow-lg translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 h-9 font-medium px-6 rounded-full hover:bg-primary hover:text-primary-foreground">
             View Details
           </Button>
         </div>
@@ -84,19 +86,19 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Badges */}
         <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
           {isOutOfStock && (
-            <Badge variant="destructive" className="shadow-sm">Out of Stock</Badge>
+            <Badge variant="destructive" className="shadow-sm font-semibold tracking-wide">Out of Stock</Badge>
           )}
           {!isOutOfStock && product.status === 'new' && (
-            <Badge className="bg-blue-500 hover:bg-blue-600 shadow-sm">New</Badge>
+            <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm font-semibold tracking-wide">New</Badge>
           )}
         </div>
         
-        {/* Wishlist Button Placeholder */}
+        {/* Wishlist Button */}
         {user && (
           <Button 
             variant="ghost" 
             size="icon" 
-            className={`absolute top-2 right-2 z-20 h-8 w-8 rounded-full bg-background/80 shadow-sm backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background ${isInWishlist ? 'text-primary opacity-100' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`absolute top-3 right-3 z-20 h-9 w-9 rounded-full bg-background/90 shadow-sm backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:bg-background ${isInWishlist ? 'text-primary opacity-100' : 'text-muted-foreground hover:text-primary'}`}
             onClick={handleToggleWishlist}
             disabled={addToWishlist.isPending || removeFromWishlist.isPending}
           >
@@ -106,30 +108,30 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
       </Link>
 
-      <CardContent className="flex flex-col gap-1 p-3 flex-1">
-        <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+      <CardContent className="flex flex-col gap-1.5 p-4 flex-1">
+        <div className="text-[11px] text-muted-foreground uppercase tracking-widest font-bold">
           {product.brand?.name || 'Generic'}
         </div>
-        <Link href={`/products/${product.slug}`} className="hover:underline line-clamp-2">
-          <h3 className="font-medium text-sm leading-snug tracking-tight text-foreground">
+        <Link href={`/products/${product.slug}`} className="hover:text-primary transition-colors line-clamp-2">
+          <h3 className="font-semibold text-sm leading-snug tracking-tight text-foreground">
             {product.title}
           </h3>
         </Link>
       </CardContent>
 
-      <CardFooter className="p-3 pt-0 flex items-end justify-between">
+      <CardFooter className="p-4 pt-0 flex items-end justify-between mt-auto">
         <div className="flex flex-col">
-          <span className="text-base font-semibold text-foreground">{formattedPrice}</span>
+          <span className="text-lg font-extrabold text-foreground tracking-tight">{formattedPrice}</span>
         </div>
         
         <Button 
           size="icon" 
           variant={isOutOfStock ? 'outline' : 'secondary'} 
           disabled={isOutOfStock || addToCart.isPending} 
-          className="h-8 w-8 rounded-full transition-transform hover:bg-primary hover:text-primary-foreground shadow-sm"
+          className="h-10 w-10 rounded-full transition-transform hover:scale-110 hover:bg-primary hover:text-primary-foreground shadow-sm bg-secondary/80"
           onClick={handleAddToCart}
         >
-          <ShoppingBag className="h-3.5 w-3.5" />
+          <ShoppingBag className="h-4 w-4" />
           <span className="sr-only">Add to cart</span>
         </Button>
       </CardFooter>

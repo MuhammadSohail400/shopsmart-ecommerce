@@ -5,17 +5,20 @@ import { useProduct } from '@/hooks/use-catalog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, Star, Package, ChevronRight, Home, Shield, Truck, RefreshCw, Heart } from 'lucide-react';
+import { ShoppingBag, Star, Package, ChevronRight, Home, Shield, Truck, RefreshCw, Heart, Minus, Plus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useAddToCart } from '@/features/cart/hooks/use-cart';
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/use-wishlist';
 import { useCurrentUser } from '@/hooks/use-auth';
+import { useProductReviewSummary } from '@/features/reviews/hooks/use-reviews';
+import { ProductReviewsSection } from '@/features/reviews/components/product-reviews-section';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const { data: user } = useCurrentUser();
   const { data: product, isLoading, isError } = useProduct(resolvedParams.id);
+  const { data: reviewSummary } = useProductReviewSummary(product?.id || '');
   
   const addToCartMutation = useAddToCart();
   const { data: wishlist } = useWishlist();
@@ -27,15 +30,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   if (isLoading) {
     return (
-      <div className="container py-8 flex flex-col md:flex-row gap-12">
-        <div className="w-full md:w-1/2 aspect-[4/5] max-w-lg mx-auto md:mx-0">
-          <Skeleton className="w-full h-full rounded-2xl" />
+      <div className="container py-12 flex flex-col lg:flex-row gap-12 max-w-7xl mx-auto">
+        <div className="w-full lg:w-1/2 aspect-square">
+          <Skeleton className="w-full h-full rounded-3xl" />
         </div>
-        <div className="w-full md:w-1/2 space-y-6">
+        <div className="w-full lg:w-1/2 space-y-6 pt-8">
           <Skeleton className="h-10 w-3/4" />
           <Skeleton className="h-6 w-1/4" />
           <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-12 w-1/3" />
+          <Skeleton className="h-14 w-1/2" />
         </div>
       </div>
     );
@@ -43,11 +46,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   if (isError || !product) {
     return (
-      <div className="container py-20 text-center flex flex-col items-center justify-center">
-        <Package className="h-16 w-16 text-muted-foreground mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Product not found</h1>
-        <p className="text-muted-foreground mb-6">The product you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-        <Link href="/products" className={buttonVariants()}>
+      <div className="container py-32 text-center flex flex-col items-center justify-center">
+        <div className="bg-muted p-6 rounded-full mb-6">
+          <Package className="h-16 w-16 text-muted-foreground" />
+        </div>
+        <h1 className="text-3xl font-bold mb-4">Product not found</h1>
+        <p className="text-lg text-muted-foreground mb-8 max-w-md">The product you&apos;re looking for doesn&apos;t exist or has been removed from our catalog.</p>
+        <Link href="/products" className={buttonVariants({ size: "lg", className: "rounded-full px-8" })}>
           Back to Catalog
         </Link>
       </div>
@@ -105,30 +110,31 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   });
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 md:py-12">
       {/* Breadcrumbs */}
-      <nav className="flex items-center text-sm text-muted-foreground mb-8">
-        <Link href="/" className="hover:text-foreground flex items-center">
+      <nav className="flex items-center text-sm font-medium text-muted-foreground mb-8 md:mb-12 overflow-x-auto whitespace-nowrap pb-2">
+        <Link href="/" className="hover:text-primary transition-colors flex items-center bg-muted/50 p-1.5 rounded-md">
           <Home className="h-4 w-4" />
         </Link>
-        <ChevronRight className="h-4 w-4 mx-2" />
-        <Link href="/products" className="hover:text-foreground">Products</Link>
+        <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground/50 shrink-0" />
+        <Link href="/products" className="hover:text-primary transition-colors">Products</Link>
         {product.category && (
           <>
-            <ChevronRight className="h-4 w-4 mx-2" />
-            <Link href={`/products?category=${product.category.slug}`} className="hover:text-foreground">
+            <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground/50 shrink-0" />
+            <Link href={`/products?category=${product.category.slug}`} className="hover:text-primary transition-colors">
               {product.category.name}
             </Link>
           </>
         )}
-        <ChevronRight className="h-4 w-4 mx-2" />
-        <span className="text-foreground font-medium truncate max-w-[200px]">{product.title}</span>
+        <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground/50 shrink-0" />
+        <span className="text-foreground truncate max-w-[200px] sm:max-w-[300px]">{product.title}</span>
       </nav>
 
-      <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
-        {/* Images Gallery */}
-        <div className="w-full lg:w-1/2 flex flex-col gap-4 max-w-xl mx-auto lg:mx-0">
-          <div className="aspect-[4/5] w-full rounded-2xl overflow-hidden bg-muted border relative flex items-center justify-center">
+      <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 max-w-7xl mx-auto">
+        
+        {/* Left: Image Gallery */}
+        <div className="w-full lg:w-1/2 flex flex-col gap-4">
+          <div className="relative aspect-square w-full bg-secondary/30 rounded-3xl overflow-hidden border border-border/50 flex items-center justify-center shadow-sm">
             {product.images && product.images.length > 0 ? (
               <img 
                 src={product.images[0].url} 
@@ -138,22 +144,22 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             ) : (
               <div className="flex flex-col items-center justify-center text-muted-foreground/30">
                 <Package className="h-24 w-24 mb-4" strokeWidth={1} />
-                <span className="text-xl font-medium tracking-widest uppercase">{product.title.substring(0, 2)}</span>
+                <span className="text-2xl font-bold tracking-widest uppercase">{product.title.substring(0, 2)}</span>
               </div>
             )}
             
             {isOutOfStock && (
-              <div className="absolute top-4 left-4">
-                <Badge variant="destructive" className="text-sm shadow-md">Out of Stock</Badge>
+              <div className="absolute top-6 left-6">
+                <Badge variant="destructive" className="text-sm shadow-md px-4 py-1.5 font-semibold">Out of Stock</Badge>
               </div>
             )}
           </div>
           
           {/* Thumbnails */}
           {product.images && product.images.length > 1 && (
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
               {product.images.map(image => (
-                <button key={image.id} className="h-20 w-20 flex-shrink-0 rounded-md border-2 border-transparent hover:border-primary overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                <button key={image.id} className="h-24 w-24 flex-shrink-0 rounded-2xl border-2 border-transparent bg-secondary/30 hover:border-primary/50 overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all opacity-80 hover:opacity-100">
                   <img src={image.url} alt="Thumbnail" className="w-full h-full object-cover" />
                 </button>
               ))}
@@ -161,55 +167,64 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           )}
         </div>
 
-        {/* Product Info */}
-        <div className="w-full lg:w-1/2 flex flex-col">
+        {/* Right: Product Info */}
+        <div className="w-full lg:w-1/2 flex flex-col pt-2 lg:pt-8">
           {product.brand && (
-            <Link href={`/products?brand=${product.brand.slug}`} className="text-sm font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary mb-2">
+            <Link href={`/products?brand=${product.brand.slug}`} className="inline-block text-sm font-extrabold uppercase tracking-widest text-primary hover:text-primary/80 mb-3 transition-colors">
               {product.brand.name}
             </Link>
           )}
           
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-foreground">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-4 text-foreground leading-[1.1]">
             {product.title}
           </h1>
           
-          {/* Reviews Mock */}
-          <div className="flex items-center gap-2 mb-6">
-            <div className="flex text-yellow-500">
-              {[1, 2, 3, 4, 5].map(i => (
-                <Star key={i} className="h-4 w-4 fill-current" />
-              ))}
+          {/* Rating Summary Badge */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center bg-amber-400/10 px-2.5 py-1 rounded-full text-amber-600 dark:text-amber-400 border border-amber-400/20">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400 mr-1" />
+              <span className="text-sm font-bold">
+                {reviewSummary && reviewSummary.reviewCount > 0
+                  ? reviewSummary.averageRating.toFixed(1)
+                  : 'New'}
+              </span>
             </div>
-            <span className="text-sm text-muted-foreground">(128 reviews)</span>
+            <a
+              href="#reviews"
+              className="text-sm text-muted-foreground font-medium underline decoration-muted-foreground/30 underline-offset-4 hover:text-foreground transition-colors"
+            >
+              {reviewSummary && reviewSummary.reviewCount > 0
+                ? `${reviewSummary.reviewCount} ${reviewSummary.reviewCount === 1 ? 'review' : 'reviews'}`
+                : 'No reviews yet'}
+            </a>
           </div>
 
-          <div className="text-3xl font-bold text-primary mb-6">
+          <div className="text-4xl font-extrabold text-foreground mb-8 flex items-end gap-2">
             {formattedPrice}
+            {isOutOfStock && <span className="text-lg text-destructive font-semibold mb-1 ml-2">Unavailable</span>}
           </div>
 
-          <div className="prose prose-sm sm:prose-base dark:prose-invert mb-8 text-muted-foreground line-clamp-3 hover:line-clamp-none transition-all">
+          <div className="prose prose-sm sm:prose-base dark:prose-invert mb-10 text-muted-foreground/90 font-medium leading-relaxed">
             <p>{product.description}</p>
           </div>
 
-          <Separator className="mb-6" />
-
           {/* Variants */}
           {attributesMap.size > 0 && (
-            <div className="space-y-6 mb-8">
+            <div className="space-y-6 mb-10 bg-secondary/20 p-6 rounded-2xl border border-border/40">
               {Array.from(attributesMap.entries()).map(([key, values]) => (
                 <div key={key}>
-                  <h3 className="text-sm font-medium mb-3 capitalize">{key}</h3>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-sm font-bold capitalize text-foreground">{key}</h3>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {Array.from(values).map(val => {
-                      // Find if a variant with this value exists and is selected
                       const isSelected = selectedVariant?.attributes[key] === val;
-                      
                       return (
                         <Button 
                           key={val} 
                           variant={isSelected ? 'default' : 'outline'}
+                          className={`rounded-full px-6 font-semibold transition-all ${isSelected ? 'shadow-md' : 'bg-background hover:border-primary/50'}`}
                           onClick={() => {
-                            // Find the first variant that matches this new attribute selection
                             const newSelection = { ...selectedVariant?.attributes, [key]: val };
                             const matchingVariant = product.variants.find(variant => 
                               Object.entries(newSelection).every(([attrKey, attrValue]) => variant.attributes[attrKey] === attrValue)
@@ -229,78 +244,97 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {/* Actions */}
+          {/* Actions Container */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-8">
-            <div className="flex items-center border rounded-md h-12 w-full sm:w-32 shrink-0">
+            
+            {/* Quantity Selector */}
+            <div className="flex items-center border border-border/60 rounded-full h-14 bg-background shadow-sm w-full sm:w-36 shrink-0 overflow-hidden">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-none h-full w-10 shrink-0"
+                className="h-full w-12 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={isOutOfStock || quantity <= 1}
               >
-                -
+                <Minus className="h-4 w-4" />
               </Button>
-              <div className="flex-1 text-center font-medium">{quantity}</div>
+              <div className="flex-1 text-center font-bold text-lg">{quantity}</div>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-none h-full w-10 shrink-0"
+                className="h-full w-12 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
                 onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
                 disabled={isOutOfStock || quantity >= availableStock}
               >
-                +
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
+
+            {/* Add to Cart */}
             <Button 
               size="lg" 
-              className="flex-1 h-12 text-base font-semibold shadow-sm transition-transform active:scale-95" 
+              className="flex-1 h-14 text-base font-bold shadow-lg transition-all active:scale-95 hover:shadow-xl rounded-full" 
               disabled={isOutOfStock || addToCartMutation.isPending}
               onClick={handleAddToCart}
             >
               <ShoppingBag className="mr-2 h-5 w-5" />
               {addToCartMutation.isPending ? 'Adding...' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
             </Button>
+            
+            {/* Wishlist */}
             {user && (
               <Button
                 variant={isInWishlist ? 'secondary' : 'outline'}
                 size="icon"
-                className="h-12 w-12"
+                className={`h-14 w-14 rounded-full shrink-0 shadow-sm border-border/60 transition-all ${isInWishlist ? 'bg-primary/10 border-primary/20' : 'hover:border-primary/50'}`}
                 onClick={handleToggleWishlist}
                 disabled={addToWishlistMutation.isPending || removeFromWishlistMutation.isPending}
               >
-                <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
+                <Heart className={`h-6 w-6 ${isInWishlist ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
               </Button>
             )}
           </div>
 
-          <p className="text-sm text-muted-foreground mb-8">
+          {/* Stock Indicator */}
+          <div className="flex items-center gap-2 text-sm font-medium mb-10">
             {isOutOfStock ? (
-              <span className="text-destructive font-medium">Currently unavailable.</span>
+              <>
+                <div className="w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
+                <span className="text-destructive">Currently unavailable</span>
+              </>
             ) : (
-              <span><strong className="text-foreground">{availableStock}</strong> items left in stock</span>
+              <>
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="text-muted-foreground"><strong className="text-foreground">{availableStock}</strong> items left in stock</span>
+              </>
             )}
-          </p>
+          </div>
 
-          <Separator className="mb-6" />
+          <Separator className="mb-8" />
 
-          {/* Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-primary" />
-              <span>1 Year Warranty</span>
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm font-medium">
+            <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-secondary/30 border border-border/40 text-center gap-2">
+              <Shield className="h-6 w-6 text-primary mb-1" />
+              <span className="text-foreground">1 Year Warranty</span>
+              <span className="text-muted-foreground text-xs font-normal">Full coverage included</span>
             </div>
-            <div className="flex items-center gap-3">
-              <Truck className="h-5 w-5 text-primary" />
-              <span>Free Shipping over $50</span>
+            <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-secondary/30 border border-border/40 text-center gap-2">
+              <Truck className="h-6 w-6 text-primary mb-1" />
+              <span className="text-foreground">Free Shipping</span>
+              <span className="text-muted-foreground text-xs font-normal">On orders over $50</span>
             </div>
-            <div className="flex items-center gap-3">
-              <RefreshCw className="h-5 w-5 text-primary" />
-              <span>30 Day Returns</span>
+            <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-secondary/30 border border-border/40 text-center gap-2">
+              <RefreshCw className="h-6 w-6 text-primary mb-1" />
+              <span className="text-foreground">30 Day Returns</span>
+              <span className="text-muted-foreground text-xs font-normal">No questions asked</span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Product Reviews & Ratings Section */}
+      <ProductReviewsSection productId={product.id} productTitle={product.title} />
     </div>
   );
 }
