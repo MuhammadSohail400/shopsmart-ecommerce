@@ -47,9 +47,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/lib/api-client';
 
 // ─── Stripe setup (publishable key only — never the secret) ─────────────────
-const stripePromise = env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+const isStripeConfigured =
+  Boolean(env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) &&
+  !env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.includes('your_stripe_publishable_key_here');
+
+const stripePromise = isStripeConfigured
   ? loadStripe(env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
   : null;
+
 
 // ─── Shipping form schema (mirrors backend checkout.validators.ts) ───────────
 const shippingSchema = z.object({
@@ -533,15 +538,33 @@ export default function CheckoutPage() {
               {/* ── Card payment: Stripe Elements ──── */}
               {paymentMethod === 'card' && (
                 <>
-                  {!stripePromise ? (
-                    <Alert>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Stripe not configured</AlertTitle>
-                      <AlertDescription>
-                        Set <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in <code>.env.local</code> to enable card payments.
-                        You can still use Cash on Delivery or Bank Transfer.
-                      </AlertDescription>
-                    </Alert>
+                  {!isStripeConfigured ? (
+                    <Card>
+                      <CardContent className="pt-6 space-y-4">
+                        <Alert className="border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200">
+                          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          <AlertTitle className="font-bold">Stripe Publishable Key Required</AlertTitle>
+                          <AlertDescription className="text-xs space-y-2 mt-1.5 leading-relaxed">
+                            <p>
+                              Your backend is connected to Stripe, but the frontend needs your corresponding <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in <code>shopsmart-frontend/.env.local</code>.
+                            </p>
+                            <p>
+                              You can copy your Publishable Key (<code>pk_test_...</code>) from your Stripe Dashboard, or switch to <strong>Cash on Delivery (COD)</strong> to test checkout immediately!
+                            </p>
+                          </AlertDescription>
+                        </Alert>
+                        <div className="flex justify-center">
+                          <Button
+                            variant="outline"
+                            onClick={() => setPaymentMethod('cod')}
+                            className="rounded-full font-semibold"
+                          >
+                            <Truck className="h-4 w-4 mr-2 text-primary" />
+                            Switch to Cash on Delivery (COD)
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ) : !clientSecret ? (
                     <Card>
                       <CardContent className="pt-6 pb-6 flex flex-col items-center gap-4">
