@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cartService } from '@/services/cart.service';
 import { useCartStore } from '@/store/cart-store';
+import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 
 export const cartKeys = {
@@ -9,14 +10,17 @@ export const cartKeys = {
 
 export function useCart() {
   const { initializeGuestCart } = useCartStore();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isServer = typeof window === 'undefined';
+  const hasSession = !isServer && localStorage.getItem('has_session') === 'true';
 
   return useQuery({
     queryKey: cartKeys.all,
     queryFn: () => {
-      // Ensure we have a guest cart ID before fetching, so API doesn't throw 400
       initializeGuestCart();
       return cartService.getCart();
     },
+    enabled: !!accessToken || hasSession,
   });
 }
 

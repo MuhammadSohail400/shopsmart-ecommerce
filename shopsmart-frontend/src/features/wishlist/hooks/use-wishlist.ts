@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { wishlistService } from '@/services/wishlist.service';
+import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 
 export const wishlistKeys = {
@@ -7,12 +8,15 @@ export const wishlistKeys = {
 };
 
 export function useWishlist() {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isServer = typeof window === 'undefined';
+  const hasSession = !isServer && localStorage.getItem('has_session') === 'true';
+
   return useQuery({
     queryKey: wishlistKeys.all,
     queryFn: () => wishlistService.getWishlist(),
-    // Unauthenticated users will get a 401 which the apiClient handles,
-    // but typically we disable fetching if no token is present.
-    // However, the api-client will redirect to login or clear auth on 401, so this is fine.
+    enabled: !!accessToken || hasSession,
+    staleTime: 60 * 1000,
   });
 }
 

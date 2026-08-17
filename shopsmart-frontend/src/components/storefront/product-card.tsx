@@ -126,34 +126,34 @@ export function ProductCard({ product }: ProductCardProps) {
           variant="ghost" 
           size="icon" 
           aria-label={isInWishlist ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
-          className={`absolute top-3 right-3 z-20 h-9 w-9 rounded-full bg-background/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 hover:bg-background ${
-            isInWishlist ? 'text-primary opacity-100' : 'text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-primary'
+          className={`absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20 h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-background/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 hover:bg-background ${
+            isInWishlist ? 'text-primary opacity-100' : 'text-muted-foreground opacity-90 sm:opacity-0 sm:group-hover:opacity-100 hover:text-primary'
           }`}
           onClick={handleToggleWishlist}
           disabled={addToWishlist.isPending || removeFromWishlist.isPending}
         >
           {addToWishlist.isPending || removeFromWishlist.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin text-primary" />
           ) : (
-            <Heart className={`h-4 w-4 transition-colors ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
+            <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
           )}
         </Button>
       </Link>
 
-      <CardContent className="flex flex-col gap-1.5 p-4 flex-1">
-        <div className="text-[11px] text-muted-foreground uppercase tracking-widest font-bold">
+      <CardContent className="flex flex-col gap-1 sm:gap-1.5 p-3 sm:p-4 flex-1">
+        <div className="text-[10px] sm:text-[11px] text-muted-foreground uppercase tracking-widest font-bold">
           {product.brand?.name || 'Generic'}
         </div>
         <Link href={`/products/${product.slug}`} className="hover:text-primary transition-colors line-clamp-2">
-          <h3 className="font-semibold text-sm leading-snug tracking-tight text-foreground">
+          <h3 className="font-bold text-xs sm:text-sm leading-snug tracking-tight text-foreground">
             {product.title}
           </h3>
         </Link>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex items-end justify-between mt-auto">
+      <CardFooter className="p-3 sm:p-4 pt-0 flex items-end justify-between mt-auto">
         <div className="flex flex-col">
-          <span className="text-lg font-extrabold text-foreground tracking-tight">{formattedPrice}</span>
+          <span className="text-sm sm:text-base md:text-lg font-extrabold text-foreground tracking-tight">{formattedPrice}</span>
         </div>
         
         <Button 
@@ -161,13 +161,13 @@ export function ProductCard({ product }: ProductCardProps) {
           variant={isOutOfStock ? 'outline' : 'secondary'} 
           disabled={isOutOfStock || addToCart.isPending} 
           aria-label={`Add ${product.title} to cart`}
-          className="h-10 w-10 rounded-full transition-transform hover:scale-110 hover:bg-primary hover:text-primary-foreground shadow-sm bg-secondary/80"
+          className="h-8 w-8 sm:h-10 sm:w-10 rounded-full transition-transform hover:scale-110 hover:bg-primary hover:text-primary-foreground shadow-xs bg-secondary/80"
           onClick={handleAddToCart}
         >
           {addToCart.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
           ) : (
-            <ShoppingBag className="h-4 w-4" />
+            <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           )}
         </Button>
       </CardFooter>

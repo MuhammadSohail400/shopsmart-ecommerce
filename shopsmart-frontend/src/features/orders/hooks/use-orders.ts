@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ordersService, OrderStatusFilter } from '@/services/orders.service';
+import { useAuthStore } from '@/store/auth-store';
 
 export const orderKeys = {
   all: ['orders'] as const,
@@ -13,18 +14,27 @@ export function useOrders(params?: {
   cursor?: string;
   limit?: number;
 }) {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isServer = typeof window === 'undefined';
+  const hasSession = !isServer && localStorage.getItem('has_session') === 'true';
+
   return useQuery({
     queryKey: orderKeys.list(params),
     queryFn: () => ordersService.list(params),
+    enabled: !!accessToken || hasSession,
     staleTime: 30_000,
   });
 }
 
 export function useOrder(orderId: string | null | undefined) {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isServer = typeof window === 'undefined';
+  const hasSession = !isServer && localStorage.getItem('has_session') === 'true';
+
   return useQuery({
     queryKey: orderKeys.detail(orderId ?? ''),
     queryFn: () => ordersService.getById(orderId!),
-    enabled: !!orderId,
+    enabled: (!!accessToken || hasSession) && !!orderId,
     retry: false,
   });
 }
