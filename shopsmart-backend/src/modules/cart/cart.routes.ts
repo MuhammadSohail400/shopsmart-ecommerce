@@ -21,5 +21,6 @@ router.delete('/items/:itemId', asyncHandler(cartController.removeItem));
 
 router.post('/coupon', validate(applyCouponSchema), asyncHandler(cartController.applyCoupon));
 router.delete('/coupon', asyncHandler(cartController.removeCoupon));
+router.post('/merge', asyncHandler(cartController.mergeCart));
 
 export { router as cartRoutes };

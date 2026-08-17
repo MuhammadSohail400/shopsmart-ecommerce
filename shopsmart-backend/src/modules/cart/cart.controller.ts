@@ -48,6 +48,20 @@ export const cartController = {
     sendSuccess(res, view);
   },
 
+  async mergeCart(req: Request, res: Response) {
+    if (!req.user?.id) {
+      throw new ValidationError('Authentication required for merging cart');
+    }
+    const guestCartId = req.body?.guestCartId || req.header('X-Guest-Cart-Id');
+    if (!guestCartId) {
+      const view = await cartService.getCart({ userId: req.user.id });
+      sendSuccess(res, view);
+      return;
+    }
+    const view = await cartService.mergeGuestCart(req.user.id, guestCartId);
+    sendSuccess(res, view);
+  },
+
   async clearCart(req: Request, res: Response) {
     await cartService.clear(getContext(req));
     res.status(204).send();

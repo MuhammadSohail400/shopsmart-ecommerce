@@ -21,6 +21,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ProtectedRoute } from '@/components/auth/protected-route';
+import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { toast } from 'sonner';
 import { OrderStatus } from '@/types/checkout.types';
 import { ApiError } from '@/lib/api-client';
@@ -47,7 +49,7 @@ function getStatusConfig(status: OrderStatus) {
 
 const CANCELLABLE_STATUSES: OrderStatus[] = ['pending', 'confirmed'];
 
-export default function OrderDetailPage() {
+function OrderDetailContent() {
   const params = useParams();
   const router = useRouter();
   const orderId = typeof params.id === 'string' ? params.id : '';
@@ -115,11 +117,10 @@ export default function OrderDetailPage() {
   return (
     <div className="container max-w-3xl mx-auto py-8 px-4">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-5">
-        <Link href="/orders" className="hover:text-primary transition-colors">My Orders</Link>
-        <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-mono font-medium">{order.orderNumber}</span>
-      </div>
+      <Breadcrumbs
+        items={[{ label: 'My Orders', href: '/orders' }, { label: `#${order.orderNumber}` }]}
+        className="mb-6"
+      />
 
       <div className="space-y-4">
         {/* Status banner */}
@@ -354,11 +355,19 @@ export default function OrderDetailPage() {
         )}
 
         {/* Back button */}
-        <Button variant="outline" onClick={() => router.push('/orders')} className="w-full sm:w-auto">
+        <Button variant="outline" onClick={() => router.push('/orders')} className="w-full sm:w-auto rounded-full">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Orders
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function OrderDetailPage() {
+  return (
+    <ProtectedRoute>
+      <OrderDetailContent />
+    </ProtectedRoute>
   );
 }

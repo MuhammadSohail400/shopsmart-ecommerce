@@ -1,6 +1,8 @@
 import { ForgotPasswordForm } from '@/components/auth/forgot-password-form';
 import { GuestRoute } from '@/components/auth/guest-route';
 import { Metadata } from 'next';
+import { Suspense } from 'react';
+import { Spinner } from '@/components/ui/spinner';
 
 export const metadata: Metadata = {
   title: 'Forgot Password - ShopSmart',
@@ -10,7 +12,9 @@ export const metadata: Metadata = {
 export default function ForgotPasswordPage() {
   return (
     <GuestRoute>
-      <ForgotPasswordForm />
+      <Suspense fallback={<div className="flex justify-center"><Spinner className="h-6 w-6 text-primary" /></div>}>
+        <ForgotPasswordForm />
+      </Suspense>
     </GuestRoute>
   );
 }

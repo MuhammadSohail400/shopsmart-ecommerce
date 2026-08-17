@@ -49,10 +49,33 @@ export function LoginForm() {
   const onSubmit = (values: LoginValues) => {
     setGlobalError(null);
     loginMutation.mutate(values, {
-      onSuccess: () => {
-        const redirect = searchParams.get('redirect');
-        if (redirect && redirect.startsWith('/')) {
-          router.push(redirect);
+      onSuccess: async () => {
+        const { usePendingActionStore } = await import('@/store/pending-action-store');
+        const { cartService } = await import('@/services/cart.service');
+        const { toast } = await import('sonner');
+        
+        const pendingAction = usePendingActionStore.getState().getAndClearPendingAction();
+        const redirectParam = searchParams.get('redirect');
+
+        if (pendingAction) {
+          if (pendingAction.type === 'ADD_TO_CART' && pendingAction.payload?.productVariantId) {
+            try {
+              await cartService.addItem(
+                pendingAction.payload.productVariantId,
+                pendingAction.payload.quantity || 1
+              );
+              toast.success(`Added ${pendingAction.payload.title || 'item'} to your cart!`);
+            } catch (err: any) {
+              toast.error(err?.userMessage || 'Failed to automatically add item to cart.');
+            }
+          }
+          const destination = pendingAction.returnUrl || redirectParam || '/';
+          router.push(destination.startsWith('/') ? destination : `/${destination}`);
+          return;
+        }
+
+        if (redirectParam && redirectParam.startsWith('/')) {
+          router.push(redirectParam);
         } else {
           router.push('/');
         }

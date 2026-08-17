@@ -2,6 +2,8 @@ import { env } from '@/config/env';
 import { useAuthStore } from '@/store/auth-store';
 import { useCartStore } from '@/store/cart-store';
 
+import { toast } from 'sonner';
+
 export class ApiError extends Error {
   status: number;
   code: string;
@@ -17,11 +19,28 @@ export class ApiError extends Error {
       errorData = errorData.error as Record<string, unknown>;
     }
 
-    super((errorData.message as string) || (errorData.userMessage as string) || 'An error occurred while communicating with the server.');
+    const defaultMessages: Record<number, string> = {
+      400: 'Invalid request. Please check your input.',
+      401: 'Please sign in to continue.',
+      403: 'You do not have permission to perform this action.',
+      404: 'The requested resource was not found.',
+      409: 'A conflict occurred. Please review your details and try again.',
+      422: 'Validation error. Please check your inputs.',
+      429: 'Too many requests. Please wait a moment and try again.',
+      500: 'Something went wrong on our end. Please try again shortly.',
+    };
+
+    const userMessage =
+      (errorData.userMessage as string) ||
+      (errorData.message as string) ||
+      defaultMessages[status] ||
+      'An unexpected error occurred. Please try again.';
+
+    super(userMessage);
     this.name = 'ApiError';
     this.status = status;
-    this.code = (errorData.code as string) || 'UNKNOWN_ERROR';
-    this.userMessage = (errorData.userMessage as string) || 'An unexpected error occurred. Please try again.';
+    this.code = (errorData.code as string) || `HTTP_${status}`;
+    this.userMessage = userMessage;
     this.validationErrors = errorData.validationErrors as { field: string; message: string }[] | undefined;
     this.requestId = errorData.requestId as string | undefined;
   }
@@ -29,6 +48,15 @@ export class ApiError extends Error {
 
 interface FetchOptions extends RequestInit {
   _retry?: boolean;
+}
+
+let lastSessionExpiryToastTime = 0;
+function notifySessionExpired() {
+  const now = Date.now();
+  if (now - lastSessionExpiryToastTime > 5000) {
+    lastSessionExpiryToastTime = now;
+    toast.error('Your session has expired. Please sign in again.');
+  }
 }
 
 let isRefreshing = false;
@@ -80,6 +108,7 @@ export async function apiClient<T>(endpoint: string, options: FetchOptions = {})
           })
           .catch(() => {
             useAuthStore.getState().clearAuth();
+            notifySessionExpired();
           })
           .finally(() => {
             isRefreshing = false;

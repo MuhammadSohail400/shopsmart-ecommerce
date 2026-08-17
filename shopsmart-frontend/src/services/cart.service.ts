@@ -31,4 +31,11 @@ export const cartService = {
       method: 'DELETE',
     });
   },
+
+  mergeCart: async (guestCartId?: string): Promise<CartView> => {
+    return apiClient<CartView>('/cart/merge', {
+      method: 'POST',
+      body: JSON.stringify({ guestCartId }),
+    });
+  },
 };

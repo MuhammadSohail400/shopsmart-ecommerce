@@ -45,6 +45,7 @@ import { toast } from 'sonner';
 import { CheckoutSession, ConfirmCheckoutResult } from '@/types/checkout.types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/lib/api-client';
+import { ProtectedRoute } from '@/components/auth/protected-route';
 
 // ─── Stripe setup (publishable key only — never the secret) ─────────────────
 const isStripeConfigured =
@@ -169,7 +170,7 @@ function StripePaymentForm({
 }
 
 // ─── Main Checkout Page ────────────────────────────────────────────────────────
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const { data: cart, isLoading: isCartLoading } = useCart();
   const clearCart = useClearCart();
@@ -770,5 +771,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <ProtectedRoute>
+      <CheckoutContent />
+    </ProtectedRoute>
   );
 }

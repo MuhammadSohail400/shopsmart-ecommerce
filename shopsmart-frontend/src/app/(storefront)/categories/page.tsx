@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
 import { useCategories } from '@/hooks/use-catalog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 
 export default function CategoriesPage() {
   const { data: categories, isLoading } = useCategories();
@@ -14,10 +15,11 @@ export default function CategoriesPage() {
   const getChildren = (parentId: string) => categories?.filter(c => c.parentId === parentId) || [];
 
   return (
-    <div className="container py-12">
-      <div className="flex flex-col gap-4 mb-10">
-        <h1 className="text-4xl font-extrabold tracking-tight">All Categories</h1>
-        <p className="text-lg text-muted-foreground">Browse our entire catalog by category.</p>
+    <div className="container py-8 sm:py-12">
+      <Breadcrumbs items={[{ label: 'Categories' }]} className="mb-6" />
+      <div className="flex flex-col gap-2 mb-10">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">All Categories</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Browse our entire catalog by category.</p>
       </div>
 
       {isLoading ? (

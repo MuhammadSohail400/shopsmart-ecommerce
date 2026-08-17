@@ -5,20 +5,22 @@ import { useProduct } from '@/hooks/use-catalog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, Star, Package, ChevronRight, Home, Shield, Truck, RefreshCw, Heart, Minus, Plus } from 'lucide-react';
+import { ShoppingBag, Star, Package, Shield, Truck, RefreshCw, Heart, Minus, Plus, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useAddToCart } from '@/features/cart/hooks/use-cart';
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/use-wishlist';
-import { useCurrentUser } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { useProductReviewSummary } from '@/features/reviews/hooks/use-reviews';
 import { ProductReviewsSection } from '@/features/reviews/components/product-reviews-section';
 import { useRecentlyViewed } from '@/features/products/hooks/use-recently-viewed';
 import { RecentlyViewedSection } from '@/components/storefront/recently-viewed-section';
+import { Breadcrumbs } from '@/components/shared/breadcrumbs';
+import { SectionErrorBoundary } from '@/components/shared/section-error-boundary';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const { data: user } = useCurrentUser();
+  const { user, requireAuth } = useAuth();
   const { data: product, isLoading, isError } = useProduct(resolvedParams.id);
   const { data: reviewSummary } = useProductReviewSummary(product?.id || '');
   const { addProduct } = useRecentlyViewed();
@@ -95,18 +97,40 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   
   const handleAddToCart = () => {
     if (!selectedVariantId) return;
-    addToCartMutation.mutate({ productVariantId: selectedVariantId, quantity });
+
+    requireAuth(
+      () => {
+        addToCartMutation.mutate({ productVariantId: selectedVariantId, quantity });
+      },
+      {
+        pendingAction: 'ADD_TO_CART',
+        payload: {
+          productVariantId: selectedVariantId,
+          quantity,
+          title: product.title,
+        },
+        returnUrl: `/products/${product.slug}`,
+        message: 'Please sign in to add items to your cart',
+      }
+    );
   };
 
   const isInWishlist = wishlist?.items?.some(item => item.productId === product.id) ?? false;
 
   const handleToggleWishlist = () => {
-    if (!user) return;
-    if (isInWishlist) {
-      removeFromWishlistMutation.mutate(product.id);
-    } else {
-      addToWishlistMutation.mutate(product.id);
-    }
+    requireAuth(
+      () => {
+        if (isInWishlist) {
+          removeFromWishlistMutation.mutate(product.id);
+        } else {
+          addToWishlistMutation.mutate(product.id);
+        }
+      },
+      {
+        message: 'Sign in to save items to your wishlist',
+        returnUrl: `/products/${product.slug}`,
+      }
+    );
   };
 
   // Group attributes for VariantSelector
@@ -118,26 +142,44 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     });
   });
 
+  const breadcrumbItems = [
+    { label: 'Products', href: '/products' },
+    ...(product.category ? [{ label: product.category.name, href: `/products?category=${product.category.slug}` }] : []),
+    { label: product.title },
+  ];
+
+  // Structured Data (JSON-LD) for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description,
+    image: product.images?.map(i => i.url) || [],
+    offers: {
+      '@type': 'Offer',
+      price: finalPrice,
+      priceCurrency: 'USD',
+      availability: isOutOfStock ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+    },
+    ...(reviewSummary && reviewSummary.reviewCount > 0 ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: reviewSummary.averageRating,
+        reviewCount: reviewSummary.reviewCount,
+      },
+    } : {}),
+  };
+
   return (
     <div className="container py-8 md:py-12">
+      {/* JSON-LD for Search Engines */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Breadcrumbs */}
-      <nav className="flex items-center text-sm font-medium text-muted-foreground mb-8 md:mb-12 overflow-x-auto whitespace-nowrap pb-2">
-        <Link href="/" className="hover:text-primary transition-colors flex items-center bg-muted/50 p-1.5 rounded-md">
-          <Home className="h-4 w-4" />
-        </Link>
-        <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground/50 shrink-0" />
-        <Link href="/products" className="hover:text-primary transition-colors">Products</Link>
-        {product.category && (
-          <>
-            <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground/50 shrink-0" />
-            <Link href={`/products?category=${product.category.slug}`} className="hover:text-primary transition-colors">
-              {product.category.name}
-            </Link>
-          </>
-        )}
-        <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground/50 shrink-0" />
-        <span className="text-foreground truncate max-w-[200px] sm:max-w-[300px]">{product.title}</span>
-      </nav>
+      <Breadcrumbs items={breadcrumbItems} className="mb-8 md:mb-12" />
 
       <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 max-w-7xl mx-auto">
         
@@ -168,7 +210,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           {product.images && product.images.length > 1 && (
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
               {product.images.map(image => (
-                <button key={image.id} className="h-24 w-24 flex-shrink-0 rounded-2xl border-2 border-transparent bg-secondary/30 hover:border-primary/50 overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all opacity-80 hover:opacity-100">
+                <button
+                  key={image.id}
+                  aria-label="View product image thumbnail"
+                  className="h-24 w-24 flex-shrink-0 rounded-2xl border-2 border-transparent bg-secondary/30 hover:border-primary/50 overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all opacity-80 hover:opacity-100"
+                >
                   <img src={image.url} alt="Thumbnail" className="w-full h-full object-cover" />
                 </button>
               ))}
@@ -261,6 +307,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <Button 
                 variant="ghost" 
                 size="icon" 
+                aria-label="Decrease quantity"
                 className="h-full w-12 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={isOutOfStock || quantity <= 1}
@@ -271,6 +318,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <Button 
                 variant="ghost" 
                 size="icon" 
+                aria-label="Increase quantity"
                 className="h-full w-12 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
                 onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
                 disabled={isOutOfStock || quantity >= availableStock}
@@ -286,22 +334,34 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               disabled={isOutOfStock || addToCartMutation.isPending}
               onClick={handleAddToCart}
             >
-              <ShoppingBag className="mr-2 h-5 w-5" />
-              {addToCartMutation.isPending ? 'Adding...' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+              {addToCartMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Adding to Cart...
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                </>
+              )}
             </Button>
             
             {/* Wishlist */}
-            {user && (
-              <Button
-                variant={isInWishlist ? 'secondary' : 'outline'}
-                size="icon"
-                className={`h-14 w-14 rounded-full shrink-0 shadow-sm border-border/60 transition-all ${isInWishlist ? 'bg-primary/10 border-primary/20' : 'hover:border-primary/50'}`}
-                onClick={handleToggleWishlist}
-                disabled={addToWishlistMutation.isPending || removeFromWishlistMutation.isPending}
-              >
-                <Heart className={`h-6 w-6 ${isInWishlist ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
-              </Button>
-            )}
+            <Button
+              variant={isInWishlist ? 'secondary' : 'outline'}
+              size="icon"
+              aria-label={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
+              className={`h-14 w-14 rounded-full shrink-0 shadow-sm border-border/60 transition-all ${isInWishlist ? 'bg-primary/10 border-primary/20 text-primary' : 'hover:border-primary/50 text-muted-foreground'}`}
+              onClick={handleToggleWishlist}
+              disabled={addToWishlistMutation.isPending || removeFromWishlistMutation.isPending}
+            >
+              {addToWishlistMutation.isPending || removeFromWishlistMutation.isPending ? (
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              ) : (
+                <Heart className={`h-6 w-6 ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
+              )}
+            </Button>
           </div>
 
           {/* Stock Indicator */}
@@ -343,10 +403,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Product Reviews & Ratings Section */}
-      <ProductReviewsSection productId={product.id} productTitle={product.title} />
+      <SectionErrorBoundary fallbackTitle="Reviews unavailable">
+        <ProductReviewsSection productId={product.id} productTitle={product.title} />
+      </SectionErrorBoundary>
 
       {/* Recently Viewed Products */}
-      <RecentlyViewedSection currentProductId={product.id} />
+      <SectionErrorBoundary fallbackTitle="Recently viewed items unavailable">
+        <RecentlyViewedSection currentProductId={product.id} />
+      </SectionErrorBoundary>
     </div>
   );
 }

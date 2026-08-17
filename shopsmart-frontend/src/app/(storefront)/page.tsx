@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { NewsletterSection } from '@/components/storefront/newsletter-section';
 import { RecentlyViewedSection } from '@/components/storefront/recently-viewed-section';
+import { SectionErrorBoundary } from '@/components/shared/section-error-boundary';
 
 export default function HomePage() {
   const { data: banners, isLoading: isLoadingBanners } = useBanners();
@@ -166,45 +167,51 @@ export default function HomePage() {
       </section>
 
       {/* Featured / Trending Products */}
-      <section className="container py-12 border-t border-border/50">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold mb-2">
-              <Sparkles className="h-3.5 w-3.5" /> Handpicked
+      <SectionErrorBoundary fallbackTitle="Featured products unavailable">
+        <section className="container py-12 border-t border-border/50">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold mb-2">
+                <Sparkles className="h-3.5 w-3.5" /> Handpicked
+              </div>
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Trending Now</h2>
+              <p className="text-muted-foreground text-base">The most popular items this week.</p>
             </div>
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Trending Now</h2>
-            <p className="text-muted-foreground text-base">The most popular items this week.</p>
+            <Link href="/products" className="text-primary font-semibold hover:underline flex items-center gap-1 group">
+              View All Products <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
-          <Link href="/products" className="text-primary font-semibold hover:underline flex items-center gap-1 group">
-            View All Products <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
-        
-        {isLoadingProducts ? (
-          <ProductGridSkeleton count={8} />
-        ) : productsData?.pages[0]?.data.length ? (
-          <ProductGrid>
-            {productsData.pages[0].data.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </ProductGrid>
-        ) : (
-          <EmptyState
-            icon={<ShoppingBag />}
-            title="No products available"
-            description="We're currently restocking our inventory. Check back soon!"
-            action={
-              <Link href="/products" className={buttonVariants({ variant: "outline", className: "rounded-full" })}>Browse Catalog</Link>
-            }
-          />
-        )}
-      </section>
+          
+          {isLoadingProducts ? (
+            <ProductGridSkeleton count={8} />
+          ) : productsData?.pages[0]?.data.length ? (
+            <ProductGrid>
+              {productsData.pages[0].data.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </ProductGrid>
+          ) : (
+            <EmptyState
+              icon={<ShoppingBag />}
+              title="No products available"
+              description="We're currently restocking our inventory. Check back soon!"
+              action={
+                <Link href="/products" className={buttonVariants({ variant: "outline", className: "rounded-full" })}>Browse Catalog</Link>
+              }
+            />
+          )}
+        </section>
+      </SectionErrorBoundary>
 
       {/* Recently Viewed Section */}
-      <RecentlyViewedSection />
+      <SectionErrorBoundary fallbackTitle="Recently viewed items unavailable">
+        <RecentlyViewedSection />
+      </SectionErrorBoundary>
 
       {/* Newsletter Section */}
-      <NewsletterSection />
+      <SectionErrorBoundary fallbackTitle="Newsletter signup unavailable">
+        <NewsletterSection />
+      </SectionErrorBoundary>
     </div>
   );
 }

@@ -2,24 +2,26 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Package, Clock, CheckCircle2, AlertCircle, Truck, ArrowRight, ShoppingBag, ChevronRight } from 'lucide-react';
+import { Package, Clock, CheckCircle2, AlertCircle, Truck, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useOrders } from '@/features/orders/hooks/use-orders';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OrderStatus } from '@/types/checkout.types';
+import { ProtectedRoute } from '@/components/auth/protected-route';
+import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 
 // ─── Status helpers (mirroring backend OrderStatus enum) ─────────────────────
 function getStatusConfig(status: OrderStatus) {
   const map: Record<OrderStatus, { label: string; color: string; icon: React.ElementType }> = {
-    pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-    confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: CheckCircle2 },
-    processing: { label: 'Processing', color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: Package },
-    shipped: { label: 'Shipped', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Truck },
-    delivered: { label: 'Delivered', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle2 },
-    cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700 border-red-200', icon: AlertCircle },
-    disputed: { label: 'Disputed', color: 'bg-orange-100 text-orange-700 border-orange-200', icon: AlertCircle },
-    refunded: { label: 'Refunded', color: 'bg-gray-100 text-gray-600 border-gray-200', icon: ArrowRight },
+    pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20', icon: Clock },
+    confirmed: { label: 'Confirmed', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: CheckCircle2 },
+    processing: { label: 'Processing', color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20', icon: Package },
+    shipped: { label: 'Shipped', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: Truck },
+    delivered: { label: 'Delivered', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', icon: CheckCircle2 },
+    cancelled: { label: 'Cancelled', color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: AlertCircle },
+    disputed: { label: 'Disputed', color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20', icon: AlertCircle },
+    refunded: { label: 'Refunded', color: 'bg-muted text-muted-foreground border-border', icon: ArrowRight },
   };
   return map[status] ?? { label: status, color: 'bg-muted text-muted-foreground', icon: Package };
 }
@@ -33,7 +35,7 @@ const STATUS_FILTERS = [
   { value: 'cancelled' as OrderStatus, label: 'Cancelled' },
 ];
 
-export default function OrdersPage() {
+function OrdersContent() {
   const [activeFilter, setActiveFilter] = useState<OrderStatus | undefined>(undefined);
 
   const { data, isLoading, isError, error } = useOrders({
@@ -45,27 +47,25 @@ export default function OrdersPage() {
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
+      {/* Breadcrumbs */}
+      <Breadcrumbs items={[{ label: 'My Orders' }]} className="mb-6" />
+
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-3">
-          <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-          <ChevronRight className="h-3.5 w-3.5" />
-          <span className="text-foreground font-medium">My Orders</span>
-        </div>
-        <h1 className="text-2xl font-bold">Order History</h1>
-        <p className="text-muted-foreground text-sm mt-1">Track and manage all your past orders.</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold tracking-tight">Order History</h1>
+        <p className="text-muted-foreground text-sm mt-1">Track, review, and manage all your past orders.</p>
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-8">
         {STATUS_FILTERS.map(({ value, label }) => (
           <button
             key={label}
             onClick={() => setActiveFilter(value)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all border ${
               activeFilter === value
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
+                ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                : 'bg-background text-muted-foreground border-border/80 hover:border-primary/50 hover:text-foreground'
             }`}
           >
             {label}
@@ -75,23 +75,25 @@ export default function OrdersPage() {
 
       {/* Loading state */}
       {isLoading && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-xl" />
+            <Skeleton key={i} className="h-28 w-full rounded-2xl" />
           ))}
         </div>
       )}
 
       {/* Error state */}
       {isError && !isLoading && (
-        <Card>
+        <Card className="rounded-2xl border-border/60">
           <CardContent className="py-12 text-center">
-            <AlertCircle className="h-10 w-10 text-destructive mx-auto mb-3" />
-            <p className="font-semibold mb-1">Could not load orders</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              {error instanceof Error ? error.message : 'Please sign in to view your orders.'}
+            <div className="p-4 rounded-full bg-destructive/10 text-destructive mx-auto w-fit mb-4">
+              <AlertCircle className="h-8 w-8" />
+            </div>
+            <h3 className="font-bold text-lg mb-1">Could not load orders</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              {error instanceof Error ? error.message : 'Please try again.'}
             </p>
-            <Link href="/auth/login" className={buttonVariants({ size: 'sm' })}>
+            <Link href="/login" className={buttonVariants({ size: 'sm', className: 'rounded-full px-6' })}>
               Sign In
             </Link>
           </CardContent>
@@ -100,61 +102,76 @@ export default function OrdersPage() {
 
       {/* Empty state */}
       {!isLoading && !isError && orders.length === 0 && (
-        <Card>
-          <CardContent className="py-16 text-center">
-            <div className="p-5 rounded-full bg-muted inline-flex mb-5">
-              <ShoppingBag className="h-10 w-10 text-muted-foreground" />
-            </div>
-            <p className="font-semibold text-lg mb-1">No orders yet</p>
-            <p className="text-sm text-muted-foreground mb-6">
-              {activeFilter
-                ? `No ${activeFilter} orders found.`
-                : "You haven't placed any orders yet. Start shopping!"}
-            </p>
-            <Link href="/products" className={buttonVariants()}>
-              Browse Products
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="text-center py-16 px-4 rounded-3xl border border-dashed border-border/80 bg-card/40">
+          <div className="p-6 rounded-full bg-secondary/40 text-muted-foreground/40 mx-auto w-fit mb-4">
+            <ShoppingBag className="h-12 w-12" />
+          </div>
+          <h3 className="font-extrabold text-xl mb-2">No orders found</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
+            {activeFilter
+              ? `You don't have any orders with "${activeFilter}" status.`
+              : "You haven't placed any orders yet. Discover our curated catalog today!"}
+          </p>
+          <Link
+            href="/products"
+            className={buttonVariants({ className: 'rounded-full px-8 font-semibold shadow-md' })}
+          >
+            Start Shopping
+          </Link>
+        </div>
       )}
 
-      {/* Order list */}
+      {/* Orders list */}
       {!isLoading && !isError && orders.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {orders.map((order) => {
-            const cfg = getStatusConfig(order.status);
-            const StatusIcon = cfg.icon;
-            const total = Number(order.totalAmount);
-            const itemCount = order.items?.length ?? 0;
+            const statusConfig = getStatusConfig(order.status as OrderStatus);
+            const StatusIcon = statusConfig.icon;
+            const formattedDate = new Date(order.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            });
+            const formattedTotal = new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+            }).format(Number(order.totalAmount));
 
             return (
-              <Link key={order.id} href={`/orders/${order.id}`} className="block group">
-                <Card className="transition-all hover:shadow-md hover:border-primary/30 group-hover:translate-y-[-1px]">
-                  <CardContent className="py-4 px-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="font-bold font-mono text-sm">{order.orderNumber}</span>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.color}`}>
+              <Link
+                key={order.id}
+                href={`/orders/${order.id}`}
+                className="block group"
+              >
+                <Card className="rounded-2xl border-border/60 hover:border-primary/50 hover:shadow-md transition-all duration-200">
+                  <CardContent className="p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      {/* Left: order info */}
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-base group-hover:text-primary transition-colors">
+                            Order #{order.id.slice(-8).toUpperCase()}
+                          </span>
+                          <span
+                            className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border ${statusConfig.color}`}
+                          >
                             <StatusIcon className="h-3 w-3" />
-                            {cfg.label}
+                            {statusConfig.label}
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(order.createdAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                          {itemCount > 0 && ` · ${itemCount} item${itemCount !== 1 ? 's' : ''}`}
+                          Placed on {formattedDate} • {order.items?.length ?? 0}{' '}
+                          {(order.items?.length ?? 0) === 1 ? 'item' : 'items'}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="font-bold text-base">${total.toFixed(2)}</p>
-                          <p className="text-xs text-muted-foreground">Total</p>
+
+                      {/* Right: price & arrow */}
+                      <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
+                        <span className="font-extrabold text-lg">{formattedTotal}</span>
+                        <div className="flex items-center text-xs font-semibold text-primary gap-1 group-hover:translate-x-0.5 transition-transform">
+                          Details
+                          <ArrowRight className="h-3.5 w-3.5" />
                         </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                       </div>
                     </div>
                   </CardContent>
@@ -162,15 +179,16 @@ export default function OrdersPage() {
               </Link>
             );
           })}
-
-          {data?.pagination?.hasMore && (
-            <p className="text-center text-sm text-muted-foreground pt-2">
-              Showing first 20 orders.{' '}
-              <span className="text-primary">Pagination coming soon.</span>
-            </p>
-          )}
         </div>
       )}
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <ProtectedRoute>
+      <OrdersContent />
+    </ProtectedRoute>
   );
 }

@@ -175,6 +175,20 @@ export const cartService = {
     return this.getCart(ctx);
   },
 
+  async mergeGuestCart(userId: string, guestCartId: string): Promise<CartView> {
+    const guestData = await guestCartStore.get(guestCartId);
+    if (guestData && guestData.items.length > 0) {
+      const userCart = await cartRepository.findOrCreateForUser(userId);
+      for (const item of guestData.items) {
+        const existing = await cartRepository.findItem(userCart.id, item.productVariantId);
+        const newQuantity = (existing?.quantity ?? 0) + item.quantity;
+        await cartRepository.upsertItem(userCart.id, item.productVariantId, newQuantity);
+      }
+      await guestCartStore.clear(guestCartId).catch(() => undefined);
+    }
+    return buildRegisteredCartView(userId);
+  },
+
   async clear(ctx: CartContext): Promise<void> {
     if (ctx.userId) {
       const cart = await cartRepository.findOrCreateForUser(ctx.userId);

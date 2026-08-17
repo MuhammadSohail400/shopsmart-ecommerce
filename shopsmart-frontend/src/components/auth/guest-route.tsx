@@ -1,18 +1,35 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-auth';
 
-
-export function GuestRoute({ children }: { children: React.ReactNode }) {
+function GuestRouteRedirect() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: user } = useCurrentUser();
+
   useEffect(() => {
     if (user) {
-      router.replace('/'); // Redirect logged-in users away from auth pages
+      const redirect = searchParams.get('redirect');
+      if (redirect && redirect.startsWith('/')) {
+        router.replace(redirect);
+      } else {
+        router.replace('/');
+      }
     }
-  }, [user, router]);
+  }, [user, router, searchParams]);
 
-  return <>{children}</>;
+  return null;
+}
+
+export function GuestRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <Suspense fallback={null}>
+        <GuestRouteRedirect />
+      </Suspense>
+      {children}
+    </>
+  );
 }
