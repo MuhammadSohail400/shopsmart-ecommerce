@@ -26,11 +26,14 @@ export function createApp(): Express {
         if (
           !origin ||
           configuredOrigins.includes(origin) ||
+          configuredOrigins.includes('*') ||
+          /\.netlify\.app$/.test(origin) ||
+          /\.vercel\.app$/.test(origin) ||
           (env.NODE_ENV === 'development' && /^http:\/\/localhost(:\d+)?$/.test(origin))
         ) {
           callback(null, true);
         } else {
-          callback(new Error(`Origin ${origin} not allowed by CORS`));
+          callback(null, false);
         }
       },
       credentials: true, // required for the HttpOnly refresh-token cookie
