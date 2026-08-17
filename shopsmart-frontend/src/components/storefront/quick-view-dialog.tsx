@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useAddToCart } from '@/features/cart/hooks/use-cart';
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/use-wishlist';
 import { ShoppingBag, Heart, Loader2, Plus, Minus, ArrowRight, ShieldCheck, Truck, Package } from 'lucide-react';
+import { formatCurrency, getDiscountDetails } from '@/lib/utils';
 
 interface QuickViewDialogProps {
   product: Product | null;
@@ -49,10 +50,7 @@ export function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialog
   const priceModifier = selectedVariant ? parseFloat(selectedVariant.priceModifier || '0') : 0;
   const finalPrice = basePrice + priceModifier;
 
-  const formattedPrice = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(finalPrice);
+  const discount = getDiscountDetails(finalPrice, product.slug);
 
   const handleAddToCart = () => {
     if (!selectedVariant) return;
@@ -97,9 +95,9 @@ export function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden rounded-3xl border-border/60 shadow-2xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-          {/* Left: Product Images */}
+          {/* Left: Product Images (4:5 Ratio) */}
           <div className="bg-secondary/30 p-6 flex flex-col justify-between items-center border-b md:border-b-0 md:border-r border-border/50">
-            <div className="relative aspect-square w-full rounded-2xl bg-card border border-border/40 overflow-hidden flex items-center justify-center shadow-xs">
+            <div className="relative aspect-[4/5] w-full rounded-2xl bg-card border border-border/40 overflow-hidden flex items-center justify-center shadow-xs">
               {activeImage ? (
                 <img
                   src={activeImage}
@@ -131,7 +129,7 @@ export function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialog
                     key={img.id || idx}
                     type="button"
                     onClick={() => setActiveImageIndex(idx)}
-                    className={`h-12 w-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                    className={`h-12 w-10 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
                       activeImageIndex === idx ? 'border-primary shadow-xs' : 'border-border/40 opacity-70 hover:opacity-100'
                     }`}
                   >
@@ -161,16 +159,26 @@ export function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialog
               <div className="flex items-center gap-2 mt-2">
                 <StarRating rating={4.8} size="sm" />
                 <span className="text-xs font-bold text-foreground">4.8</span>
-                <span className="text-xs text-muted-foreground">(12 reviews)</span>
+                <span className="text-xs text-muted-foreground">(18 reviews)</span>
               </div>
 
               {/* Price & Stock */}
               <div className="flex items-center gap-3 mt-4 pb-4 border-b border-border/50">
-                <span className="text-2xl font-extrabold text-foreground">{formattedPrice}</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-foreground">{discount.formattedCurrent}</span>
+                  {discount.isSale && (
+                    <span className="text-xs text-muted-foreground line-through font-bold">{discount.formattedOriginal}</span>
+                  )}
+                </div>
+                {discount.isSale && (
+                  <Badge className="bg-rose-600 text-white font-black text-[10px] border-none">
+                    -{discount.discountPercent}% OFF
+                  </Badge>
+                )}
                 {isOutOfStock ? (
-                  <Badge variant="destructive" className="font-semibold text-xs">Out of Stock</Badge>
+                  <Badge variant="destructive" className="font-semibold text-xs ml-auto">Out of Stock</Badge>
                 ) : (
-                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-semibold text-xs">
+                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-semibold text-xs ml-auto">
                     In Stock
                   </Badge>
                 )}
@@ -183,11 +191,11 @@ export function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialog
                 </p>
               )}
 
-              {/* Variants Selector */}
+              {/* Size & Color Variants Selector */}
               {variants.length > 1 && (
                 <div className="mt-4 space-y-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Variant / Option
+                    Select Size / Option
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {variants.map((v, i) => {
@@ -199,7 +207,7 @@ export function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialog
                           key={v.id}
                           type="button"
                           onClick={() => setSelectedVariantIndex(i)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                             selectedVariantIndex === i
                               ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                               : 'bg-background text-foreground border-border hover:border-primary/50'

@@ -10,8 +10,8 @@ import { Product } from '@/services/products.service';
 import { useAuth } from '@/hooks/use-auth';
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/use-wishlist';
 import { useAddToCart } from '@/features/cart/hooks/use-cart';
-import { StarRating } from '@/features/reviews/components/star-rating';
 import { QuickViewDialog } from '@/components/storefront/quick-view-dialog';
+import { formatCurrency, getDiscountDetails } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -26,10 +26,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
-  const formattedPrice = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(parseFloat(product.basePrice));
+  const discount = getDiscountDetails(product.basePrice, product.slug);
 
   const totalInventory = product.variants.reduce((acc, variant) => {
     return acc + (variant.inventory ? variant.inventory.quantity - variant.inventory.reservedQuantity : 0);
@@ -94,15 +91,15 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <>
       <Card className="group flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/40 border-border/50 bg-card relative rounded-2xl h-full shadow-2xs">
-        {/* Image Area - 1:1 Aspect Ratio */}
-        <div className="relative aspect-square w-full bg-secondary/30 flex items-center justify-center overflow-hidden">
+        {/* Image Area - 4:5 Fashion Aspect Ratio */}
+        <div className="relative aspect-[4/5] w-full bg-secondary/30 flex items-center justify-center overflow-hidden">
           <Link href={`/products/${product.slug}`} className="absolute inset-0 z-0 flex items-center justify-center">
             {product.images?.[0] ? (
               <img
                 src={product.images[0].url}
                 alt={product.title}
                 loading="lazy"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-104"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
               <div className="text-muted-foreground/30 flex flex-col items-center gap-2">
@@ -112,7 +109,7 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </Link>
           
-          {/* Quick View Hover Button (Desktop) */}
+          {/* Quick View Button (Desktop Hover) */}
           <div className="absolute inset-x-0 bottom-3 z-10 hidden sm:flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-2 group-hover:translate-y-0 px-3">
             <Button
               variant="secondary"
@@ -125,20 +122,20 @@ export function ProductCard({ product }: ProductCardProps) {
             </Button>
           </div>
           
-          {/* Stock Badges */}
+          {/* Badges: Sale & Out of Stock */}
           <div className="absolute top-2.5 left-2.5 z-20 flex flex-col gap-1.5 pointer-events-none">
             {isOutOfStock ? (
               <Badge variant="destructive" className="shadow-xs font-bold text-[10px] px-2 py-0.5 rounded-md">
                 Out of Stock
               </Badge>
-            ) : product.status === 'new' ? (
-              <Badge className="bg-primary text-primary-foreground shadow-xs font-bold text-[10px] px-2 py-0.5 rounded-md">
-                New
+            ) : discount.isSale ? (
+              <Badge className="bg-rose-600 text-white shadow-xs font-black text-[10px] px-2 py-0.5 rounded-md border-none">
+                -{discount.discountPercent}%
               </Badge>
             ) : null}
           </div>
           
-          {/* Wishlist Button (Always accessible on touchscreens, hover on desktop) */}
+          {/* Wishlist Button */}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -159,12 +156,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Details Area */}
         <CardContent className="flex flex-col gap-1 p-3 sm:p-3.5 flex-1">
-          <div className="flex items-center justify-between gap-1 text-[10px] sm:text-[11px] text-muted-foreground font-bold uppercase tracking-wider">
-            <span className="truncate">{product.brand?.name || 'ShopSmart'}</span>
-            <div className="flex items-center gap-1 shrink-0 font-sans font-semibold normal-case text-foreground">
-              <StarRating rating={4.8} size="sm" />
-              <span>4.8</span>
-            </div>
+          <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest truncate">
+            {product.brand?.name || 'ShopSmart'}
           </div>
 
           <Link href={`/products/${product.slug}`} className="hover:text-primary transition-colors line-clamp-2 mt-0.5">
@@ -174,11 +167,18 @@ export function ProductCard({ product }: ProductCardProps) {
           </Link>
         </CardContent>
 
-        {/* Footer Area with Price and Quick Add */}
+        {/* Footer Area with Price (Current + Strike-through Original) and Quick Add */}
         <CardFooter className="p-3 sm:p-3.5 pt-0 flex items-center justify-between mt-auto border-t border-border/30 pt-2.5">
-          <span className="text-sm sm:text-base font-extrabold text-foreground tracking-tight">
-            {formattedPrice}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-sm sm:text-base font-extrabold text-foreground tracking-tight">
+              {discount.formattedCurrent}
+            </span>
+            {discount.isSale && (
+              <span className="text-[11px] text-muted-foreground line-through font-semibold">
+                {discount.formattedOriginal}
+              </span>
+            )}
+          </div>
           
           <Button 
             size="icon" 

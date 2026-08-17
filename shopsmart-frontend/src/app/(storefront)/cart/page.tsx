@@ -8,6 +8,7 @@ import { ShoppingCart, Trash2, Plus, Minus, PackageX, Loader2, ArrowRight, Truck
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/auth/protected-route';
+import { formatCurrency } from '@/lib/utils';
 
 function CartContent() {
   const router = useRouter();
@@ -73,11 +74,7 @@ function CartContent() {
     );
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
-  };
-
-  const freeShippingThreshold = 50;
+  const freeShippingThreshold = 2500;
   const amountNeeded = Math.max(0, freeShippingThreshold - cart.subtotal);
   const progressPercent = Math.min(100, Math.round((cart.subtotal / freeShippingThreshold) * 100));
 
@@ -97,7 +94,7 @@ function CartContent() {
             <Truck className="h-4 w-4 shrink-0" />
             {amountNeeded === 0
               ? '🎉 Congratulations! You have unlocked Free Shipping!'
-              : `Add ${formatPrice(amountNeeded)} more to qualify for FREE Shipping!`}
+              : `Add ${formatCurrency(amountNeeded)} more to qualify for FREE Shipping!`}
           </span>
           <span className="text-muted-foreground font-mono text-[11px]">{progressPercent}%</span>
         </div>
@@ -142,7 +139,7 @@ function CartContent() {
                         {item.title}
                       </Link>
                       <span className="font-extrabold text-foreground whitespace-nowrap text-sm sm:text-base">
-                        {formatPrice(item.unitPrice)}
+                        {formatCurrency(item.unitPrice)}
                       </span>
                     </div>
 
@@ -231,13 +228,13 @@ function CartContent() {
             <div className="space-y-3 text-xs sm:text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-bold">{formatPrice(cart.subtotal)}</span>
+                <span className="font-bold">{formatCurrency(cart.subtotal)}</span>
               </div>
               
               {cart.appliedCoupon && (
                 <div className="flex justify-between text-emerald-600 font-bold">
                   <span>Discount ({cart.appliedCoupon.code})</span>
-                  <span>-{formatPrice(cart.appliedCoupon.discountAmount)}</span>
+                  <span>-{formatCurrency(cart.appliedCoupon.discountAmount)}</span>
                 </div>
               )}
               
@@ -255,7 +252,7 @@ function CartContent() {
 
               <div className="flex justify-between text-base font-black">
                 <span>Estimated Total</span>
-                <span className="text-primary">{formatPrice(cart.subtotal - (cart.appliedCoupon?.discountAmount || 0))}</span>
+                <span className="text-primary">{formatCurrency(cart.subtotal - (cart.appliedCoupon?.discountAmount || 0))}</span>
               </div>
             </div>
 

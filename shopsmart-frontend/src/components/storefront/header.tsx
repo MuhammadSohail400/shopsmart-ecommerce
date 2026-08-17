@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Search, Menu, ShoppingCart, User, Heart, Sparkles, Shield, Clock, LogOut, ChevronDown } from 'lucide-react';
+import { 
+  ShoppingBag, Search, Menu, ShoppingCart, User, Heart, Sparkles, 
+  Shield, Clock, LogOut, ChevronDown, ChevronRight, X, Phone, 
+  HelpCircle, Truck, RefreshCw, Globe 
+} from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -31,6 +35,7 @@ export function Header() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<string | null>('men');
   
   const cartItemCount = isAuthenticated
     ? cart?.items.reduce((total, item) => total + item.quantity, 0) || 0
@@ -52,139 +57,183 @@ export function Header() {
   };
 
   const navLinks = [
-    { label: 'Shop All', href: '/products' },
-    { label: 'Categories', href: '/categories' },
-    { label: 'Support', href: '/contact' },
+    { label: 'Men', href: '/products?category=men' },
+    { label: 'Women', href: '/products?category=women' },
+    { label: 'Kids', href: '/products?category=kids' },
+    { label: 'New Arrivals', href: '/products?category=new-arrivals' },
+    { label: 'Sale', href: '/products?category=sale', isSale: true },
   ];
+
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full h-16 border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 transition-all shadow-xs">
+      <header className="sticky top-0 z-40 w-full h-16 border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 transition-all shadow-xs">
         <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between gap-3 sm:gap-6 px-4 sm:px-6">
           
-          {/* Left: Mobile Menu & Logo */}
-          <div className="flex items-center gap-2 sm:gap-6">
+          {/* Left Section: Mobile Drawer Trigger & Brand Logo & Desktop Nav */}
+          <div className="flex items-center gap-3 sm:gap-8">
+            {/* Mobile Drawer */}
             <div className="md:hidden">
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger render={<Button variant="ghost" size="icon" aria-label="Open navigation menu" className="h-9 w-9 rounded-full" />}>
                   <Menu className="h-5 w-5" />
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[300px] sm:w-[350px] p-6">
-                  <SheetHeader className="text-left mb-6">
-                    <SheetTitle className="flex items-center gap-2 text-xl font-extrabold text-foreground">
+                <SheetContent side="left" className="w-[310px] sm:w-[360px] p-0 flex flex-col h-full bg-background border-r border-border/60">
+                  {/* Drawer Header */}
+                  <div className="p-5 border-b border-border/50 flex items-center justify-between">
+                    <Link
+                      href="/"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-2 font-black text-xl tracking-tight text-foreground"
+                    >
                       <div className="bg-primary text-primary-foreground p-1.5 rounded-xl shadow-xs">
-                        <ShoppingBag className="h-5 w-5" />
+                        <ShoppingBag className="h-4 w-4" />
                       </div>
                       <span>ShopSmart</span>
-                    </SheetTitle>
-                  </SheetHeader>
+                    </Link>
+                  </div>
 
-                  <nav className="flex flex-col gap-4 text-sm font-medium">
+                  {/* Drawer Navigation Content (Scrollable) */}
+                  <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                    {/* Quick Search Button */}
                     <button
                       type="button"
                       onClick={() => {
                         setIsMobileMenuOpen(false);
                         setIsSearchOpen(true);
                       }}
-                      className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/50 text-muted-foreground text-xs font-semibold text-left"
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 text-muted-foreground text-xs font-semibold text-left border border-border/40 hover:bg-secondary transition-colors"
                     >
                       <Search className="h-4 w-4 text-primary" />
-                      <span>Search products, categories...</span>
+                      <span>Search shirts, trousers, dresses...</span>
                     </button>
 
-                    <div className="flex flex-col gap-1 pt-2">
-                      <Link
-                        href="/"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`py-2 px-3 rounded-xl transition-colors ${
-                          pathname === '/' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-secondary/40'
-                        }`}
-                      >
-                        Home
-                      </Link>
-                      <Link
-                        href="/products"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`py-2 px-3 rounded-xl transition-colors ${
-                          pathname === '/products' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-secondary/40'
-                        }`}
-                      >
-                        All Products
-                      </Link>
-                      <Link
-                        href="/categories"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`py-2 px-3 rounded-xl transition-colors ${
-                          pathname === '/categories' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-secondary/40'
-                        }`}
-                      >
-                        Categories
-                      </Link>
-                      <Link
-                        href="/contact"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`py-2 px-3 rounded-xl transition-colors ${
-                          pathname === '/contact' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-secondary/40'
-                        }`}
-                      >
-                        Contact & Support
-                      </Link>
-                    </div>
-
-                    {isAuthenticated && (
-                      <div className="pt-2 border-t border-border/50 flex flex-col gap-1">
-                        <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest px-3 py-1">
-                          Account
-                        </span>
-                        <Link
-                          href="/account"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="py-2 px-3 rounded-xl text-foreground hover:bg-secondary/40"
+                    {/* Department Navigation Accordions */}
+                    <div className="space-y-1">
+                      {/* MEN SECTION */}
+                      <div className="border-b border-border/30 pb-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleSection('men')}
+                          className="w-full flex items-center justify-between py-2 text-sm font-extrabold text-foreground uppercase tracking-wider"
                         >
-                          Account Overview
-                        </Link>
-                        <Link
-                          href="/orders"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="py-2 px-3 rounded-xl text-foreground hover:bg-secondary/40"
-                        >
-                          My Orders
-                        </Link>
-                        <Link
-                          href="/wishlist"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="py-2 px-3 rounded-xl text-foreground hover:bg-secondary/40 flex items-center justify-between"
-                        >
-                          <span>Wishlist</span>
-                          {wishlistCount > 0 && <Badge className="text-[10px]">{wishlistCount}</Badge>}
-                        </Link>
+                          <span>Men</span>
+                          <ChevronDown className={`h-4 w-4 transition-transform ${expandedSection === 'men' ? 'rotate-180 text-primary' : 'text-muted-foreground'}`} />
+                        </button>
+                        {expandedSection === 'men' && (
+                          <div className="pl-3 py-1 space-y-1 text-xs text-muted-foreground">
+                            <Link href="/products?category=formal-shirts" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Formal Shirts</Link>
+                            <Link href="/products?category=casual-shirts" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Casual Shirts</Link>
+                            <Link href="/products?category=linen-shirts" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Linen Shirts</Link>
+                            <Link href="/products?category=oxford-shirts" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Oxford Shirts</Link>
+                            <Link href="/products?category=polo-shirts" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Polo Shirts</Link>
+                            <Link href="/products?category=t-shirts" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">T-Shirts</Link>
+                            <Link href="/products?category=trousers-chinos" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Trousers & Chinos</Link>
+                            <Link href="/products?category=jeans" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Jeans</Link>
+                            <Link href="/products?category=jackets-outerwear" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Jackets & Outerwear</Link>
+                            <Link href="/products?category=traditional-wear" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Traditional Wear / Kurta</Link>
+                          </div>
+                        )}
                       </div>
-                    )}
 
-                    <div className="mt-auto pt-6 border-t border-border/60">
-                      {isAuthenticated ? (
-                        <Button
-                          variant="outline"
-                          className="w-full rounded-full text-destructive hover:bg-destructive/10 gap-2 font-semibold text-xs h-10"
-                          onClick={() => {
-                            logout.mutate();
-                            setIsMobileMenuOpen(false);
-                          }}
+                      {/* WOMEN SECTION */}
+                      <div className="border-b border-border/30 pb-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleSection('women')}
+                          className="w-full flex items-center justify-between py-2 text-sm font-extrabold text-foreground uppercase tracking-wider"
                         >
-                          <LogOut className="h-4 w-4" />
-                          Sign Out
-                        </Button>
-                      ) : (
-                        <Link
-                          href="/login"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className={buttonVariants({ className: 'w-full rounded-full font-bold shadow-md text-xs h-10' })}
+                          <span>Women</span>
+                          <ChevronDown className={`h-4 w-4 transition-transform ${expandedSection === 'women' ? 'rotate-180 text-primary' : 'text-muted-foreground'}`} />
+                        </button>
+                        {expandedSection === 'women' && (
+                          <div className="pl-3 py-1 space-y-1 text-xs text-muted-foreground">
+                            <Link href="/products?category=dresses" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Dresses</Link>
+                            <Link href="/products?category=tops-blouses" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Tops & Blouses</Link>
+                            <Link href="/products?category=women-trousers" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Trousers & Pants</Link>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* KIDS SECTION */}
+                      <div className="border-b border-border/30 pb-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleSection('kids')}
+                          className="w-full flex items-center justify-between py-2 text-sm font-extrabold text-foreground uppercase tracking-wider"
                         >
-                          Sign In / Register
-                        </Link>
-                      )}
+                          <span>Kids</span>
+                          <ChevronDown className={`h-4 w-4 transition-transform ${expandedSection === 'kids' ? 'rotate-180 text-primary' : 'text-muted-foreground'}`} />
+                        </button>
+                        {expandedSection === 'kids' && (
+                          <div className="pl-3 py-1 space-y-1 text-xs text-muted-foreground">
+                            <Link href="/products?category=boys" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Boys Collection</Link>
+                            <Link href="/products?category=girls" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-primary transition-colors font-medium">Girls Collection</Link>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* COLLECTIONS */}
+                      <div className="py-2 space-y-2">
+                        <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">
+                          Collections
+                        </span>
+                        <Link href="/products?category=new-arrivals" onClick={() => setIsMobileMenuOpen(false)} className="block text-xs font-bold text-foreground hover:text-primary py-1">New Arrivals</Link>
+                        <Link href="/products?category=best-sellers" onClick={() => setIsMobileMenuOpen(false)} className="block text-xs font-bold text-foreground hover:text-primary py-1">Best Sellers</Link>
+                        <Link href="/products?category=sale" onClick={() => setIsMobileMenuOpen(false)} className="block text-xs font-bold text-rose-600 dark:text-rose-400 py-1">Sale — Up to 50% Off</Link>
+                      </div>
                     </div>
-                  </nav>
+
+                    {/* Customer Care / Support */}
+                    <div className="pt-4 border-t border-border/40 space-y-2 text-xs">
+                      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">
+                        Customer Care
+                      </span>
+                      <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground py-1">
+                        <HelpCircle className="h-3.5 w-3.5 text-primary" /> Contact Us & FAQ
+                      </Link>
+                      <Link href="/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground py-1">
+                        <Truck className="h-3.5 w-3.5 text-primary" /> Track Your Order
+                      </Link>
+                    </div>
+
+                    {/* Social links */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram" className="p-2 rounded-full bg-secondary/60 text-muted-foreground hover:text-primary transition-colors text-xs font-bold">
+                        IG
+                      </a>
+                      <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="p-2 rounded-full bg-secondary/60 text-muted-foreground hover:text-primary transition-colors text-xs font-bold">
+                        FB
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Drawer Footer: User Auth */}
+                  <div className="p-4 border-t border-border/50 bg-secondary/20 mt-auto">
+                    {isAuthenticated ? (
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-full text-destructive hover:bg-destructive/10 gap-2 font-bold text-xs h-10"
+                        onClick={() => {
+                          logout.mutate();
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-4 w-4" /> Sign Out
+                      </Button>
+                    ) : (
+                      <Link
+                        href="/login"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={buttonVariants({ className: 'w-full rounded-full font-bold shadow-md text-xs h-10' })}
+                      >
+                        Sign In / Register
+                      </Link>
+                    )}
+                  </div>
                 </SheetContent>
               </Sheet>
             </div>
@@ -197,14 +246,16 @@ export function Header() {
               <span className="text-xl sm:text-2xl tracking-tighter text-foreground font-black">ShopSmart</span>
             </Link>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-6 text-sm font-semibold ml-2">
+            {/* Desktop Navigation Links (Men, Women, Kids, New Arrivals, Sale) */}
+            <nav className="hidden md:flex items-center gap-5 text-sm font-semibold ml-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={`transition-colors py-1 ${
-                    pathname === link.href ? 'text-primary font-bold border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
+                    link.isSale 
+                      ? 'text-rose-600 dark:text-rose-400 font-bold hover:opacity-80' 
+                      : pathname === link.href ? 'text-primary font-bold border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {link.label}
@@ -213,16 +264,16 @@ export function Header() {
             </nav>
           </div>
 
-          {/* Center/Right: Interactive Search & User Action Buttons */}
+          {/* Right Section: Search, Wishlist, Account, Cart */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Desktop Search Trigger Button */}
+            {/* Desktop Search Trigger */}
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="hidden sm:flex items-center gap-2.5 h-10 w-[200px] lg:w-[280px] px-3.5 rounded-full bg-secondary/50 hover:bg-secondary/70 border border-border/50 text-xs text-muted-foreground hover:text-foreground transition-all shadow-2xs"
+              className="hidden sm:flex items-center gap-2.5 h-10 w-[200px] lg:w-[260px] px-3.5 rounded-full bg-secondary/50 hover:bg-secondary/70 border border-border/50 text-xs text-muted-foreground hover:text-foreground transition-all shadow-2xs"
             >
               <Search className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span className="truncate">Search products...</span>
+              <span className="truncate">Search fashion...</span>
               <kbd className="hidden lg:inline-flex ml-auto pointer-events-none text-[10px] uppercase font-mono font-bold bg-background/80 px-1.5 py-0.5 rounded border border-border/60 text-muted-foreground">
                 ⌘K
               </kbd>
@@ -239,13 +290,13 @@ export function Header() {
               <Search className="h-4 w-4" />
             </Button>
 
-            {/* Wishlist Link (Desktop) */}
-            <Link href="/wishlist" className="hidden sm:inline-flex">
+            {/* Wishlist Link */}
+            <Link href="/wishlist">
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label="View wishlist"
-                className="relative h-10 w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors text-muted-foreground"
+                className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors text-muted-foreground"
               >
                 <Heart className="h-4 w-4" />
                 {wishlistCount > 0 && (
@@ -263,7 +314,7 @@ export function Header() {
                   <div className="h-7 w-7 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs">
                     {user?.firstName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
                   </div>
-                  <span className="hidden md:inline-block max-w-[90px] truncate text-foreground">
+                  <span className="hidden md:inline-block max-w-[80px] truncate text-foreground">
                     {user?.firstName || 'Account'}
                   </span>
                   <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:inline-block" />
@@ -316,7 +367,7 @@ export function Header() {
               type="button"
               onClick={handleCartClick}
               aria-label={`View shopping cart with ${cartItemCount} items`}
-              className="relative h-10 w-10 rounded-full border border-border/80 bg-card hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-200 shadow-xs inline-flex items-center justify-center group"
+              className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-border/80 bg-card hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-200 shadow-xs inline-flex items-center justify-center group"
             >
               <ShoppingCart className="h-4 w-4 group-hover:scale-110 transition-transform" />
               {cartItemCount > 0 && (
