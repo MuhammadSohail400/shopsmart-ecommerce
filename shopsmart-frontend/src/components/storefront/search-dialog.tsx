@@ -18,7 +18,7 @@ interface SearchDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const POPULAR_SEARCHES = ['Headphones', 'Sneakers', 'Smart Watch', 'T-Shirt', 'Backpack', 'Jacket'];
+const POPULAR_SEARCHES = ['Oxford Shirt', 'Linen Shirt', 'Formal Shirt', 'Polo Shirt', 'Heavyweight T-Shirt', 'Chinos', 'Blazer'];
 
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const router = useRouter();
