@@ -22,19 +22,29 @@ export const resendAdapter = {
     if (!resend) {
       // Dev-friendly fallback: no API key configured, log instead of failing
       // the whole request chain (SDD Section 18: graceful degradation).
-      logger.info({ to, subject }, 'RESEND_API_KEY not set — email logged instead of sent');
-      if (env.NODE_ENV === 'development') {
-        logger.info(`\n=== EMAIL TO: ${to} ===\nSUBJECT: ${subject}\n\n${html}\n=======================\n`);
-      }
+      logger.info({ to, subject }, 'RESEND_API_KEY not set on backend — email logged to console instead of sent');
+      logger.info(`\n=== EMAIL DISPATCH LOG ===\nTO: ${to}\nSUBJECT: ${subject}\nHTML CONTENT:\n${html}\n==========================\n`);
       return { sent: true };
     }
 
     try {
-      await resend.emails.send({ from: env.EMAIL_FROM_ADDRESS, to, subject, html });
+      const response = await resend.emails.send({
+        from: env.EMAIL_FROM_ADDRESS,
+        to,
+        subject,
+        html,
+      });
+
+      if (response.error) {
+        logger.error({ error: response.error, to, subject }, 'Resend email API returned error response');
+        return { sent: false, error: response.error.message };
+      }
+
+      logger.info({ id: response.data?.id, to, subject }, 'Resend email sent successfully');
       return { sent: true };
     } catch (err) {
       const message = (err as Error).message;
-      logger.error({ err, to, subject }, 'Resend email send failed');
+      logger.error({ err, to, subject }, 'Resend email dispatch threw exception');
       return { sent: false, error: message };
     }
   },
