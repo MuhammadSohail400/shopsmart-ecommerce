@@ -30,10 +30,14 @@ const envSchema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
-  // Email (Phase 6) — optional so the app still boots without Resend
-  // configured; the adapter logs instead of sending if unset (dev-friendly).
+  // Email (Phase 6) — supports Resend API key OR standard SMTP (e.g. free Gmail SMTP)
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM_ADDRESS: z.string().default('no-reply@shopsmart.ai'),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_SECURE: z.coerce.boolean().default(true),
 
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent']).default('info'),
 });
