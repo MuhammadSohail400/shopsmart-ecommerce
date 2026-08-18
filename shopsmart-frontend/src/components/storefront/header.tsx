@@ -309,19 +309,19 @@ export function Header() {
               variant="ghost"
               size="icon"
               aria-label="Open search dialog"
-              className="sm:hidden h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+              className="sm:hidden h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary"
               onClick={() => setIsSearchOpen(true)}
             >
-              <Search className="h-4 w-4" />
+              <Search className="h-4.5 w-4.5" />
             </Button>
 
-            {/* Wishlist Link */}
-            <Link href="/wishlist">
+            {/* Wishlist Link (Desktop & Tablet) */}
+            <Link href="/wishlist" className="hidden sm:inline-flex">
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label="View wishlist"
-                className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors text-muted-foreground"
+                className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors text-muted-foreground"
               >
                 <Heart className="h-4 w-4" />
                 {wishlistCount > 0 && (
@@ -332,76 +332,63 @@ export function Header() {
               </Button>
             </Link>
 
-            {/* User Account Menu / Login */}
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="sm" aria-label="Open user account menu" className="h-8 sm:h-10 px-1 sm:px-3 rounded-full hover:bg-secondary/60 transition-colors gap-1 sm:gap-1.5 text-xs font-semibold" />}>
-                  <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shadow-xs">
-                    {userInitial}
-                  </div>
-                  <span className="hidden md:inline-block max-w-[110px] truncate text-foreground font-bold">
-                    {displayName}
-                  </span>
-                  <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:inline-block" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl border-border/60">
-                  <DropdownMenuGroup>
-                    <div className="px-2 py-2 flex items-center gap-2.5">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                        {userInitial}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-foreground truncate">{displayName}</p>
-                        <p className="text-[11px] text-muted-foreground truncate">{user?.email || 'Logged in'}</p>
-                      </div>
+            {/* User Account Menu / Login (Desktop & Tablet) */}
+            <div className="hidden sm:flex items-center">
+              {isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="ghost" size="sm" aria-label="Open user account menu" className="h-9 sm:h-10 px-2 sm:px-3 rounded-full hover:bg-secondary/60 transition-colors gap-1.5 text-xs font-semibold" />}>
+                    <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shadow-xs">
+                      {userInitial}
                     </div>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="py-2 cursor-pointer rounded-xl font-medium text-xs focus:bg-primary/10 focus:text-primary" onClick={() => router.push('/account')}>
-                    Account Dashboard
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="py-2 cursor-pointer rounded-xl font-medium text-xs focus:bg-primary/10 focus:text-primary" onClick={() => router.push('/orders')}>
-                    My Orders
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="py-2 cursor-pointer rounded-xl font-medium text-xs focus:bg-primary/10 focus:text-primary" onClick={() => router.push('/wishlist')}>
-                    Wishlist ({wishlistCount})
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="py-2 cursor-pointer rounded-xl font-medium text-xs focus:bg-primary/10 focus:text-primary" onClick={() => router.push('/sessions')}>
-                    Active Sessions
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="py-2 cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive rounded-xl font-semibold text-xs gap-1.5" onClick={() => logout.mutate()}>
-                    <LogOut className="h-3.5 w-3.5" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                {/* Mobile Guest Account Icon */}
+                    <span className="hidden md:inline-block max-w-[110px] truncate text-foreground font-bold">
+                      {displayName}
+                    </span>
+                    <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:inline-block" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl border-border/60">
+                    <DropdownMenuGroup>
+                      <div className="px-2 py-2 flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
+                          {userInitial}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-foreground truncate">{displayName}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">{user?.email || 'Logged in'}</p>
+                        </div>
+                      </div>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="py-2 cursor-pointer rounded-xl font-medium text-xs focus:bg-primary/10 focus:text-primary" onClick={() => router.push('/account')}>
+                      Account Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="py-2 cursor-pointer rounded-xl font-medium text-xs focus:bg-primary/10 focus:text-primary" onClick={() => router.push('/orders')}>
+                      My Orders
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="py-2 cursor-pointer rounded-xl font-medium text-xs focus:bg-primary/10 focus:text-primary" onClick={() => router.push('/wishlist')}>
+                      Wishlist ({wishlistCount})
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="py-2 cursor-pointer rounded-xl font-medium text-xs focus:bg-primary/10 focus:text-primary" onClick={() => router.push('/sessions')}>
+                      Active Sessions
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="py-2 cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive rounded-xl font-semibold text-xs gap-1.5" onClick={() => logout.mutate()}>
+                      <LogOut className="h-3.5 w-3.5" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
                 <Link
                   href="/login"
-                  aria-label="Sign In"
                   className={buttonVariants({
                     variant: "ghost",
-                    size: "icon",
-                    className: "sm:hidden h-8 w-8 rounded-full text-muted-foreground hover:text-foreground",
-                  })}
-                >
-                  <User className="h-4 w-4" />
-                </Link>
-                {/* Desktop Guest Sign In Button */}
-                <Link
-                  href="/login"
-                  className={buttonVariants({
-                    variant: "ghost",
-                    className: "hidden sm:flex font-bold hover:text-primary hover:bg-primary/10 rounded-full px-3 sm:px-4 h-9 text-xs",
+                    className: "font-bold hover:text-primary hover:bg-primary/10 rounded-full px-3 sm:px-4 h-9 text-xs",
                   })}
                 >
                   Sign In
                 </Link>
-              </>
-            )}
+              )}
+            </div>
 
             {/* Shopping Cart Button */}
             <button
