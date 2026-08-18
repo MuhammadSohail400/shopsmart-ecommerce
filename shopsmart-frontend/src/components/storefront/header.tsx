@@ -63,9 +63,9 @@ export function Header() {
 
   const navLinks = [
     { label: 'Home', href: '/' },
+    { label: 'Shirts', href: '/products?category=formal-shirts' },
+    { label: 'Pants', href: '/products?category=pants' },
     { label: 'Men', href: '/products?category=men' },
-    { label: 'Women', href: '/products?category=women' },
-    { label: 'Kids', href: '/products?category=kids' },
     { label: 'New Arrivals', href: '/products?category=new-arrivals' },
     { label: 'Sale', href: '/products?category=sale', isSale: true },
   ];

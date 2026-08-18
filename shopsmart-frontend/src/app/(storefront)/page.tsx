@@ -15,24 +15,38 @@ import { SectionErrorBoundary } from '@/components/shared/section-error-boundary
 
 export default function HomePage() {
   const { data: banners, isLoading: isLoadingBanners } = useBanners();
-  const { data: productsData, isLoading: isLoadingProducts } = useProducts({ limit: 24 });
+  const { data: productsData, isLoading: isLoadingProducts } = useProducts({ limit: 60 });
 
-  const [activeTrendingTab, setActiveTrendingTab] = useState<'all' | 'formal' | 'casual' | 'linen' | 'sale'>('all');
+  const [activeTrendingTab, setActiveTrendingTab] = useState<'all' | 'formal' | 'casual' | 'pants' | 'linen' | 'sale'>('all');
 
   const activeBanner = banners && banners.length > 0 ? banners[0] : null;
   const products = productsData?.pages?.[0]?.data || [];
 
+  const shirtsProducts = products.filter(p => p.slug.includes('shirt'));
+  const pantsProducts = products.filter(p => 
+    p.slug.includes('pant') || 
+    p.slug.includes('trouser') || 
+    p.slug.includes('slacks') || 
+    p.slug.includes('chino') || 
+    p.slug.includes('jeans') || 
+    p.category?.slug === 'pants' ||
+    p.category?.slug === 'trousers-chinos' ||
+    p.category?.slug === 'formal-slacks'
+  );
+
   // Filter products by tab
   const filteredTrending = products.filter(p => {
     if (activeTrendingTab === 'formal') return p.slug.includes('formal') || p.slug.includes('oxford');
-    if (activeTrendingTab === 'casual') return p.slug.includes('casual') || p.slug.includes('corduroy');
+    if (activeTrendingTab === 'casual') return (p.slug.includes('casual') || p.slug.includes('corduroy')) && !p.slug.includes('pant');
+    if (activeTrendingTab === 'pants') return p.slug.includes('pant') || p.slug.includes('trouser') || p.slug.includes('slacks') || p.slug.includes('chino') || p.slug.includes('jeans');
     if (activeTrendingTab === 'linen') return p.slug.includes('linen');
     if (activeTrendingTab === 'sale') return p.slug.length % 2 === 0;
     return true;
   }).slice(0, 8);
 
-  const newArrivals = products.slice(0, 8);
-  const bestSellers = products.slice(4, 12);
+  const newArrivals = shirtsProducts.length > 0 ? shirtsProducts.slice(0, 8) : products.slice(0, 8);
+  const bestSellers = shirtsProducts.length > 8 ? shirtsProducts.slice(8, 16) : products.slice(4, 12);
+  const featuredPants = pantsProducts.slice(0, 8);
   const saleProducts = products.filter(p => p.slug.length % 2 === 0).slice(0, 8);
 
   return (
@@ -123,7 +137,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* 2. New Arrivals (Product-First Merchandising immediately after Hero) */}
+      {/* 2. New Arrivals (Shirts & Fresh Drops) */}
       <SectionErrorBoundary fallbackTitle="New arrivals unavailable">
         <section className="container max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
           <div className="flex justify-between items-end mb-6 sm:mb-8">
@@ -131,11 +145,11 @@ export default function HomePage() {
               <div className="inline-flex items-center gap-1.5 text-primary text-xs font-black mb-1 uppercase tracking-widest">
                 <Flame className="h-3.5 w-3.5" /> Fresh Drops
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground uppercase">New Arrivals</h2>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground uppercase">Shirts & New Arrivals</h2>
               <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Fresh styles and fine fabrics just added to the wardrobe.</p>
             </div>
-            <Link href="/products?category=new-arrivals" className="text-primary font-bold hover:underline flex items-center gap-1 group text-xs sm:text-sm">
-              Explore All <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+            <Link href="/products?category=formal-shirts" className="text-primary font-bold hover:underline flex items-center gap-1 group text-xs sm:text-sm">
+              Explore Shirts <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
           
@@ -144,6 +158,34 @@ export default function HomePage() {
           ) : newArrivals.length > 0 ? (
             <ProductGrid>
               {newArrivals.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </ProductGrid>
+          ) : null}
+        </section>
+      </SectionErrorBoundary>
+
+      {/* 3. Dedicated Pants & Trousers Section */}
+      <SectionErrorBoundary fallbackTitle="Pants collection unavailable">
+        <section className="container max-w-7xl mx-auto py-8 sm:py-12 border-t border-border/40 px-4 sm:px-6">
+          <div className="flex justify-between items-end mb-6 sm:mb-8">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-primary text-xs font-black mb-1 uppercase tracking-widest">
+                <Sparkles className="h-3.5 w-3.5" /> Tailored Bottoms
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground uppercase">Pants & Trousers</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Tailored dress slacks, stretch chinos, and comfort denim.</p>
+            </div>
+            <Link href="/products?category=pants" className="text-primary font-bold hover:underline flex items-center gap-1 group text-xs sm:text-sm">
+              Explore All Pants <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+          
+          {isLoadingProducts ? (
+            <ProductGridSkeleton count={8} />
+          ) : featuredPants.length > 0 ? (
+            <ProductGrid>
+              {featuredPants.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </ProductGrid>
@@ -160,7 +202,7 @@ export default function HomePage() {
                 <Sparkles className="h-3.5 w-3.5" /> Customer Favorites
               </div>
               <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground uppercase">Best Sellers</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">The most wanted fashion shirts and everyday essentials.</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">The most wanted fashion shirts, slacks, and everyday essentials.</p>
             </div>
             <Link href="/products?sort=best_selling" className="text-primary font-bold hover:underline flex items-center gap-1 group text-xs sm:text-sm">
               Shop All Best Sellers <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
@@ -192,7 +234,7 @@ export default function HomePage() {
             
             {/* Interactive Category Tabs */}
             <div className="flex items-center gap-1.5 p-1 bg-secondary/50 rounded-full border border-border/60 overflow-x-auto scrollbar-none">
-              {(['all', 'formal', 'casual', 'linen', 'sale'] as const).map((tab) => (
+              {(['all', 'formal', 'casual', 'pants', 'linen', 'sale'] as const).map((tab) => (
                 <button
                   key={tab}
                   type="button"
@@ -203,7 +245,7 @@ export default function HomePage() {
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   }`}
                 >
-                  {tab === 'all' ? 'All Styles' : tab === 'formal' ? 'Formal & Oxford' : tab === 'casual' ? 'Casual Wear' : tab === 'linen' ? 'Linen Shirts' : 'Special Sale'}
+                  {tab === 'all' ? 'All Styles' : tab === 'formal' ? 'Formal Shirts' : tab === 'casual' ? 'Casual Shirts' : tab === 'pants' ? 'Pants & Trousers' : tab === 'linen' ? 'Linen Wear' : 'Special Sale'}
                 </button>
               ))}
             </div>
