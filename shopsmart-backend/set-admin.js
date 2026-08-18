@@ -4,59 +4,71 @@ const argon2 = require('argon2');
 const prisma = new PrismaClient();
 
 /**
- * Configure / Reset Admin Ownership
+ * Configure Sole Admin Ownership
  * Usage:
- *   node set-admin.js <email> <password>
- * Example:
- *   node set-admin.js msohailg212@gmail.com MySecurePass@123
+ *   node set-admin.js <email> [optional_password]
  */
 async function main() {
-  const targetEmail = process.argv[2] || 'msohailg212@gmail.com';
-  const newPassword = process.argv[3] || 'Admin@123456';
+  const targetEmail = (process.argv[2] || 'msohailg211@gmail.com').toLowerCase().trim();
+  const newPassword = process.argv[3]; // optional
 
   console.log('====================================================');
   console.log('🔒 ShopSmart Admin Access & Ownership Management');
   console.log('====================================================');
-  console.log(`Target Admin Email: ${targetEmail}`);
+  console.log(`Setting Sole Admin: ${targetEmail}`);
 
-  // 1. Demote all existing users to 'customer'
+  // 1. Demote ALL other users to 'customer'
   const demoted = await prisma.user.updateMany({
     where: {
-      email: { not: targetEmail.toLowerCase() },
+      email: { not: targetEmail },
       role: 'admin',
     },
     data: { role: 'customer' },
   });
-  console.log(`✓ Demoted ${demoted.count} other accounts to 'customer' role (Admin access revoked).`);
+  console.log(`✓ Demoted ${demoted.count} other accounts to 'customer' (Admin access completely revoked).`);
 
-  // 2. Hash password
-  const passwordHash = await argon2.hash(newPassword, {
-    type: argon2.argon2id,
-    memoryCost: 65536,
-    timeCost: 3,
-    parallelism: 4,
+  // 2. Check if user already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: targetEmail },
   });
 
-  // 3. Promote or Create the primary owner Admin
-  const adminUser = await prisma.user.upsert({
-    where: { email: targetEmail.toLowerCase() },
-    update: {
-      role: 'admin',
-      passwordHash,
-      emailVerified: true,
-    },
-    create: {
-      email: targetEmail.toLowerCase(),
-      role: 'admin',
-      passwordHash,
-      emailVerified: true,
-      phoneVerified: false,
-    },
-  });
+  if (existingUser) {
+    const updateData = { role: 'admin', emailVerified: true };
+    if (newPassword) {
+      updateData.passwordHash = await argon2.hash(newPassword, {
+        type: argon2.argon2id,
+        memoryCost: 65536,
+        timeCost: 3,
+        parallelism: 4,
+      });
+    }
+    const updated = await prisma.user.update({
+      where: { email: targetEmail },
+      data: updateData,
+    });
+    console.log(`✓ Updated existing account: ${updated.email} to Role: ${updated.role}`);
+  } else {
+    const passwordToUse = newPassword || 'Admin@123456';
+    const passwordHash = await argon2.hash(passwordToUse, {
+      type: argon2.argon2id,
+      memoryCost: 65536,
+      timeCost: 3,
+      parallelism: 4,
+    });
+    const created = await prisma.user.create({
+      data: {
+        email: targetEmail,
+        role: 'admin',
+        passwordHash,
+        emailVerified: true,
+        phoneVerified: false,
+      },
+    });
+    console.log(`✓ Created new admin account: ${created.email} (Role: ${created.role})`);
+  }
 
-  console.log(`✓ Admin account configured: ${adminUser.email} (Role: ${adminUser.role})`);
   console.log('====================================================');
-  console.log(`🎉 SUCCESS: Only "${adminUser.email}" now has Admin Panel Access!`);
+  console.log(`🎉 SUCCESS: ONLY "${targetEmail}" now has Admin Panel Access!`);
   console.log('====================================================\n');
 }
 
