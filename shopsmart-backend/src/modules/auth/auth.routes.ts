@@ -15,25 +15,29 @@ import {
 
 const router = Router();
 
-// Strict rate limits on auth endpoints per API Design Specification Section 16
-const strictLimit = rateLimit({ windowSeconds: 900, max: 5, keyPrefix: 'auth-strict' });
+// Rate limits on auth endpoints (generous in development for manual testing)
+const isDev = process.env.NODE_ENV !== 'production';
+const loginLimit = rateLimit({ windowSeconds: 60, max: isDev ? 100 : 10, keyPrefix: 'auth-login' });
+const registerLimit = rateLimit({ windowSeconds: 60, max: isDev ? 100 : 10, keyPrefix: 'auth-register' });
+const resetLimit = rateLimit({ windowSeconds: 300, max: isDev ? 50 : 5, keyPrefix: 'auth-reset' });
+const verifyLimit = rateLimit({ windowSeconds: 60, max: isDev ? 50 : 10, keyPrefix: 'auth-verify' });
 
-router.post('/register', strictLimit, validate(registerSchema), asyncHandler(authController.register));
-router.post('/verify-email', strictLimit, validate(verifyEmailSchema), asyncHandler(authController.verifyEmail));
-router.post('/verify-phone', strictLimit, validate(verifyPhoneSchema), asyncHandler(authController.verifyPhone));
-router.post('/login', strictLimit, validate(loginSchema), asyncHandler(authController.login));
+router.post('/register', registerLimit, validate(registerSchema), asyncHandler(authController.register));
+router.post('/verify-email', verifyLimit, validate(verifyEmailSchema), asyncHandler(authController.verifyEmail));
+router.post('/verify-phone', verifyLimit, validate(verifyPhoneSchema), asyncHandler(authController.verifyPhone));
+router.post('/login', loginLimit, validate(loginSchema), asyncHandler(authController.login));
 router.post('/refresh', asyncHandler(authController.refresh));
 router.post('/logout', authMiddleware, asyncHandler(authController.logout));
 
 router.post(
   '/password-reset/request',
-  strictLimit,
+  resetLimit,
   validate(passwordResetRequestSchema),
   asyncHandler(authController.requestPasswordReset),
 );
 router.post(
   '/password-reset/confirm',
-  strictLimit,
+  resetLimit,
   validate(passwordResetConfirmSchema),
   asyncHandler(authController.confirmPasswordReset),
 );
