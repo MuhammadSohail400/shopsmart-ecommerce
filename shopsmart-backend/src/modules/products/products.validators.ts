@@ -9,6 +9,7 @@ export const createProductSchema = z.object({
   basePrice: moneySchema,
   categoryId: uuidSchema,
   brandId: uuidSchema.optional(),
+  status: z.enum(['draft', 'pending_review', 'approved', 'rejected']).optional(),
 });
 export type CreateProductBody = z.infer<typeof createProductSchema>;
 

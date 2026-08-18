@@ -8,9 +8,12 @@ import {
   Filter,
   Trash2,
   ExternalLink,
+  ImagePlus,
+  Boxes,
+  CheckCircle2
 } from 'lucide-react';
 import { useProducts, useCategories, useBrands } from '@/hooks/use-catalog';
-import { useCreateProduct, useDeleteProduct } from '@/hooks/use-admin';
+import { useCreateProduct, useDeleteProduct, useAddImage, useAddVariant } from '@/hooks/use-admin';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -33,11 +36,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 export default function AdminProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isAddOpen, setIsAddOpen] = useState(false);
+
+  // Quick Add Image Dialog State
+  const [selectedProductForImage, setSelectedProductForImage] = useState<any>(null);
+  const [extraImageUrl, setExtraImageUrl] = useState('/products/shirts/shirt-1.jpeg');
 
   // Queries
   const { data: productsData, isLoading } = useProducts({ limit: 100, q: searchQuery || undefined });
@@ -47,6 +55,8 @@ export default function AdminProductsPage() {
   // Mutations
   const createProductMutation = useCreateProduct();
   const deleteProductMutation = useDeleteProduct();
+  const addImageMutation = useAddImage();
+  const addVariantMutation = useAddVariant();
 
   // Form State
   const [newTitle, setNewTitle] = useState('');
@@ -54,6 +64,9 @@ export default function AdminProductsPage() {
   const [newPrice, setNewPrice] = useState('');
   const [newCategoryId, setNewCategoryId] = useState('');
   const [newBrandId, setNewBrandId] = useState('');
+  const [newImageUrl, setNewImageUrl] = useState('/products/shirts/shirt-1.jpeg');
+  const [newSize, setNewSize] = useState('M');
+  const [newStock, setNewStock] = useState('50');
 
   const products = productsData?.pages?.[0]?.data || [];
 
@@ -74,20 +87,71 @@ export default function AdminProductsPage() {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
 
-    await createProductMutation.mutateAsync({
-      title: newTitle,
-      slug: slug || `product-${Date.now()}`,
-      description: newDescription || `Premium crafted ${newTitle}.`,
-      basePrice: Number(newPrice),
-      categoryId: newCategoryId,
-      brandId: newBrandId && newBrandId !== '' ? newBrandId : undefined,
-      status: 'approved',
-    });
+    try {
+      // 1. Create Product (with status: approved)
+      const created = await createProductMutation.mutateAsync({
+        title: newTitle,
+        slug: slug || `product-${Date.now()}`,
+        description: newDescription || `Premium crafted ${newTitle}.`,
+        basePrice: Number(newPrice),
+        categoryId: newCategoryId,
+        brandId: newBrandId && newBrandId !== '' ? newBrandId : undefined,
+        status: 'approved',
+      });
 
-    setIsAddOpen(false);
-    setNewTitle('');
-    setNewDescription('');
-    setNewPrice('');
+      // 2. Attach initial Image if provided
+      if (created?.id && newImageUrl) {
+        try {
+          await addImageMutation.mutateAsync({
+            productId: created.id,
+            data: { url: newImageUrl, sortOrder: 0 },
+          });
+        } catch {
+          // Non-blocking
+        }
+      }
+
+      // 3. Attach initial Size Variant & Stock if provided
+      if (created?.id && newSize) {
+        try {
+          await addVariantMutation.mutateAsync({
+            productId: created.id,
+            data: {
+              sku: `${slug || 'prod'}-${newSize}-${Math.floor(100 + Math.random() * 900)}`.toUpperCase(),
+              attributes: { size: newSize },
+              initialStock: Number(newStock) || 50,
+            } as any,
+          });
+        } catch {
+          // Non-blocking
+        }
+      }
+
+      setIsAddOpen(false);
+      setNewTitle('');
+      setNewDescription('');
+      setNewPrice('');
+      toast.success(`Product "${newTitle}" created & published!`);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to create product');
+    }
+  };
+
+  const handleAddExtraImage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProductForImage || !extraImageUrl) return;
+
+    try {
+      await addImageMutation.mutateAsync({
+        productId: selectedProductForImage.id,
+        data: { url: extraImageUrl, sortOrder: (selectedProductForImage.images?.length || 0) + 1 },
+      });
+      setSelectedProductForImage(null);
+      setExtraImageUrl('/products/shirts/shirt-1.jpeg');
+      toast.success('Image attached to product successfully');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to attach image');
+    }
   };
 
   const handleDelete = (id: string, title: string) => {
@@ -118,17 +182,17 @@ export default function AdminProductsPage() {
               </Button>
             }
           />
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle className="text-lg font-black uppercase tracking-tight">
-                Add New Product
+                Add & Publish Product
               </DialogTitle>
               <DialogDescription className="text-xs">
-                Create a new shirt or trouser product in the database.
+                Create a new shirt or trouser product with images and size variants.
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleCreateProduct} className="space-y-4 py-2">
+            <form onSubmit={handleCreateProduct} className="space-y-3.5 py-2 max-h-[75vh] overflow-y-auto pr-1">
               <div className="space-y-1.5">
                 <Label htmlFor="title" className="text-xs font-bold">Product Title</Label>
                 <Input
@@ -150,7 +214,7 @@ export default function AdminProductsPage() {
                     placeholder="2950"
                     value={newPrice}
                     onChange={(e) => setNewPrice(e.target.value)}
-                    className="text-xs"
+                    className="text-xs font-bold"
                     required
                   />
                 </div>
@@ -188,12 +252,67 @@ export default function AdminProductsPage() {
                 </Select>
               </div>
 
+              {/* Image URL & Preset Selection */}
+              <div className="space-y-1.5">
+                <Label htmlFor="imgUrl" className="text-xs font-bold">Product Image (URL or Local Path)</Label>
+                <Input
+                  id="imgUrl"
+                  placeholder="/products/shirts/shirt-1.jpeg"
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  className="text-xs font-mono"
+                  required
+                />
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {['/products/shirts/shirt-1.jpeg', '/products/shirts/shirt-10.jpeg', '/products/pants/pant-1.jpeg', '/products/pants/pant-10.jpeg'].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setNewImageUrl(preset)}
+                      className={`text-[10px] px-2 py-0.5 rounded-md border transition-colors ${
+                        newImageUrl === preset ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                      }`}
+                    >
+                      {preset.split('/').pop()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Initial Size Variant & Stock */}
+              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-secondary/20 border border-border">
+                <div className="space-y-1.5">
+                  <Label htmlFor="initialSize" className="text-xs font-bold">Initial Size</Label>
+                  <Input
+                    id="initialSize"
+                    placeholder="M"
+                    value={newSize}
+                    onChange={(e) => setNewSize(e.target.value)}
+                    className="text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="initialStock" className="text-xs font-bold">Initial Warehouse Stock</Label>
+                  <Input
+                    id="initialStock"
+                    type="number"
+                    placeholder="50"
+                    value={newStock}
+                    onChange={(e) => setNewStock(e.target.value)}
+                    className="text-xs"
+                    required
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <Label htmlFor="desc" className="text-xs font-bold">Description</Label>
                 <Textarea
                   id="desc"
-                  rows={3}
-                  placeholder="Describe material, fabric weave, styling, and fit..."
+                  rows={2}
+                  placeholder="Describe fabric weave, cotton styling, and fit..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   className="text-xs"
@@ -216,7 +335,7 @@ export default function AdminProductsPage() {
                   disabled={createProductMutation.isPending}
                   className="text-xs font-bold"
                 >
-                  {createProductMutation.isPending ? 'Creating...' : 'Create Product'}
+                  {createProductMutation.isPending ? 'Publishing...' : 'Publish Product'}
                 </Button>
               </DialogFooter>
             </form>
@@ -348,6 +467,14 @@ export default function AdminProductsPage() {
                       {/* Actions */}
                       <td className="p-3.5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setSelectedProductForImage(p)}
+                            className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
+                            title="Add / Upload Image"
+                          >
+                            <ImagePlus className="h-3.5 w-3.5" />
+                          </button>
+
                           <a
                             href={`/products/${p.slug}`}
                             target="_blank"
@@ -375,6 +502,69 @@ export default function AdminProductsPage() {
           </table>
         </div>
       </Card>
+
+      {/* Attach Extra Image Dialog */}
+      <Dialog open={!!selectedProductForImage} onOpenChange={(open) => !open && setSelectedProductForImage(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-black uppercase tracking-tight">
+              Add Photo to Product
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Attach another photo or lookbook angle for {selectedProductForImage?.title}.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleAddExtraImage} className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="extraImg" className="text-xs font-bold">Image URL or Local Path</Label>
+              <Input
+                id="extraImg"
+                placeholder="/products/shirts/shirt-2.jpeg"
+                value={extraImageUrl}
+                onChange={(e) => setExtraImageUrl(e.target.value)}
+                className="text-xs font-mono"
+                required
+              />
+            </div>
+
+            <div className="p-3 rounded-xl bg-secondary/30 text-xs flex items-center gap-3">
+              <div className="h-12 w-12 rounded-lg bg-muted relative overflow-hidden shrink-0 border border-border">
+                <Image
+                  src={extraImageUrl || '/products/shirts/shirt-1.jpeg'}
+                  alt="Preview"
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Current image preview. You can use any local image path or external HTTPS URL.
+              </div>
+            </div>
+
+            <DialogFooter className="pt-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedProductForImage(null)}
+                className="text-xs font-bold"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={addImageMutation.isPending}
+                className="text-xs font-bold"
+              >
+                {addImageMutation.isPending ? 'Attaching...' : 'Add Image'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

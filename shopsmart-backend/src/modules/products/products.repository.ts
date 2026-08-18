@@ -111,8 +111,14 @@ export const productsRepository = {
     basePrice: number;
     categoryId: string;
     brandId?: string;
+    status?: ProductStatus;
   }) {
-    return prisma.product.create({ data });
+    return prisma.product.create({
+      data: {
+        ...data,
+        status: data.status ?? ProductStatus.approved,
+      },
+    });
   },
 
   update(id: string, data: Prisma.ProductUpdateInput) {
