@@ -83,19 +83,19 @@ export function Header() {
       </div>
 
       <header className="sticky top-0 z-40 w-full h-16 border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 transition-all shadow-xs">
-        <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between gap-3 sm:gap-6 px-4 sm:px-6">
+        <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between gap-1.5 sm:gap-6 px-2.5 sm:px-6">
           
           {/* Left Section: Mobile Drawer Trigger & Brand Logo & Desktop Nav */}
-          <div className="flex items-center gap-3 sm:gap-8">
+          <div className="flex items-center gap-1.5 sm:gap-8 min-w-0">
             {/* Mobile Drawer */}
-            <div className="md:hidden">
+            <div className="md:hidden shrink-0">
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                <SheetTrigger render={<Button variant="ghost" size="icon" aria-label="Open navigation menu" className="h-9 w-9 rounded-full" />}>
-                  <Menu className="h-5 w-5" />
+                <SheetTrigger render={<Button variant="ghost" size="icon" aria-label="Open navigation menu" className="h-8 w-8 sm:h-9 sm:w-9 rounded-full" />}>
+                  <Menu className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[310px] sm:w-[360px] p-0 flex flex-col h-full bg-background border-r border-border/60">
+                <SheetContent side="left" className="w-[300px] sm:w-[360px] p-0 flex flex-col h-full bg-background border-r border-border/60">
                   {/* Drawer Header */}
-                  <div className="p-5 border-b border-border/50 flex items-center justify-between">
+                  <div className="p-4 sm:p-5 border-b border-border/50 flex items-center justify-between">
                     <Link
                       href="/"
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -109,7 +109,7 @@ export function Header() {
                   </div>
 
                   {/* Drawer Navigation Content (Scrollable) */}
-                  <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                  <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6">
                     {/* Logged in User Greeting on Mobile */}
                     {isAuthenticated && (
                       <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/50 border border-border/40">
@@ -264,14 +264,14 @@ export function Header() {
             </div>
 
             {/* Brand Logo */}
-            <Link href="/" className="flex items-center gap-2 font-black tracking-tight hover:opacity-90 transition-opacity">
-              <div className="bg-primary text-primary-foreground p-1.5 rounded-xl shadow-xs">
-                <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Link href="/" className="flex items-center gap-1.5 sm:gap-2 font-black tracking-tight hover:opacity-90 transition-opacity shrink-0">
+              <div className="bg-primary text-primary-foreground p-1 sm:p-1.5 rounded-lg sm:rounded-xl shadow-xs">
+                <ShoppingBag className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
               </div>
-              <span className="text-xl sm:text-2xl tracking-tighter text-foreground font-black">ShopSmart</span>
+              <span className="text-lg sm:text-2xl tracking-tighter text-foreground font-black">ShopSmart</span>
             </Link>
 
-            {/* Desktop Navigation Links (Men, Women, Kids, New Arrivals, Sale) */}
+            {/* Desktop Navigation Links (Home, Men, Women, Kids, New Arrivals, Sale) */}
             <nav className="hidden md:flex items-center gap-5 text-sm font-semibold ml-2">
               {navLinks.map((link) => (
                 <Link
@@ -290,7 +290,7 @@ export function Header() {
           </div>
 
           {/* Right Section: Search, Wishlist, Account, Cart */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             {/* Desktop Search Trigger */}
             <button
               type="button"
@@ -309,7 +309,7 @@ export function Header() {
               variant="ghost"
               size="icon"
               aria-label="Open search dialog"
-              className="sm:hidden h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
+              className="sm:hidden h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
               onClick={() => setIsSearchOpen(true)}
             >
               <Search className="h-4 w-4" />
@@ -321,7 +321,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 aria-label="View wishlist"
-                className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors text-muted-foreground"
+                className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors text-muted-foreground"
               >
                 <Heart className="h-4 w-4" />
                 {wishlistCount > 0 && (
@@ -335,8 +335,8 @@ export function Header() {
             {/* User Account Menu / Login */}
             {isAuthenticated ? (
               <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="sm" aria-label="Open user account menu" className="h-9 sm:h-10 px-2 sm:px-3 rounded-full hover:bg-secondary/60 transition-colors gap-1.5 text-xs font-semibold" />}>
-                  <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shadow-xs">
+                <DropdownMenuTrigger render={<Button variant="ghost" size="sm" aria-label="Open user account menu" className="h-8 sm:h-10 px-1 sm:px-3 rounded-full hover:bg-secondary/60 transition-colors gap-1 sm:gap-1.5 text-xs font-semibold" />}>
+                  <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shadow-xs">
                     {userInitial}
                   </div>
                   <span className="hidden md:inline-block max-w-[110px] truncate text-foreground font-bold">
@@ -377,15 +377,30 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link
-                href="/login"
-                className={buttonVariants({
-                  variant: "ghost",
-                  className: "font-bold hover:text-primary hover:bg-primary/10 rounded-full px-3 sm:px-4 h-9 text-xs",
-                })}
-              >
-                Sign In
-              </Link>
+              <>
+                {/* Mobile Guest Account Icon */}
+                <Link
+                  href="/login"
+                  aria-label="Sign In"
+                  className={buttonVariants({
+                    variant: "ghost",
+                    size: "icon",
+                    className: "sm:hidden h-8 w-8 rounded-full text-muted-foreground hover:text-foreground",
+                  })}
+                >
+                  <User className="h-4 w-4" />
+                </Link>
+                {/* Desktop Guest Sign In Button */}
+                <Link
+                  href="/login"
+                  className={buttonVariants({
+                    variant: "ghost",
+                    className: "hidden sm:flex font-bold hover:text-primary hover:bg-primary/10 rounded-full px-3 sm:px-4 h-9 text-xs",
+                  })}
+                >
+                  Sign In
+                </Link>
+              </>
             )}
 
             {/* Shopping Cart Button */}
@@ -393,11 +408,11 @@ export function Header() {
               type="button"
               onClick={handleCartClick}
               aria-label={`View shopping cart with ${cartItemCount} items`}
-              className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-border/80 bg-card hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-200 shadow-xs inline-flex items-center justify-center group"
+              className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full border border-border/80 bg-card hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-200 shadow-xs inline-flex items-center justify-center group shrink-0"
             >
-              <ShoppingCart className="h-4 w-4 group-hover:scale-110 transition-transform" />
+              <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:scale-110 transition-transform" />
               {cartItemCount > 0 && (
-                <Badge className="absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1 rounded-full p-0 flex items-center justify-center text-[10px] font-black bg-primary text-primary-foreground border-2 border-background shadow-xs animate-in zoom-in-50">
+                <Badge className="absolute -top-1.5 -right-1.5 h-4.5 min-w-4.5 sm:h-5 sm:min-w-5 px-1 rounded-full p-0 flex items-center justify-center text-[9px] sm:text-[10px] font-black bg-primary text-primary-foreground border-2 border-background shadow-xs animate-in zoom-in-50">
                   {cartItemCount}
                 </Badge>
               )}
