@@ -13,6 +13,8 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { RecentlyViewedSection } from '@/components/storefront/recently-viewed-section';
 import { SectionErrorBoundary } from '@/components/shared/section-error-boundary';
 
+import { HeroSection } from '@/components/storefront/hero-section';
+
 export default function HomePage() {
   const { data: banners, isLoading: isLoadingBanners } = useBanners();
   const { data: productsData, isLoading: isLoadingProducts } = useProducts({ limit: 60 });
@@ -52,90 +54,8 @@ export default function HomePage() {
   return (
     <div className="flex flex-col gap-0 pb-12 overflow-x-hidden">
       
-      {/* 1. Compact Hero / Fashion Campaign (400-480px on desktop, 320-380px on mobile) */}
-      <section className="relative overflow-hidden bg-background border-b border-border/40">
-        {isLoadingBanners ? (
-          <Skeleton className="w-full min-h-[380px] md:min-h-[460px] rounded-none" />
-        ) : activeBanner ? (
-          <div className="relative w-full min-h-[380px] sm:min-h-[420px] md:min-h-[480px] flex items-center py-10 sm:py-14 md:py-16">
-            <div 
-              className="absolute inset-0 z-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${activeBanner.imageUrl})` }}
-            />
-            <div className="absolute inset-0 z-0 bg-gradient-to-r from-background via-background/90 md:via-background/75 to-background/30" />
-            
-            <div className="container max-w-7xl mx-auto relative z-10 flex flex-col items-start justify-center px-4 sm:px-6">
-              <Badge className="mb-2.5 sm:mb-4 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 pointer-events-none px-3 py-1 text-xs font-black uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                New Season Collection
-              </Badge>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-2.5 sm:mb-4 max-w-2xl leading-[1.15] text-foreground uppercase">
-                Elevate Your <span className="text-primary">Everyday Style</span>
-              </h1>
-              <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-5 sm:mb-6 max-w-lg font-medium leading-relaxed">
-                Discover premium shirts, modern essentials, and timeless fashion designed for effortless confidence and sophisticated comfort.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-                <Link
-                  href={activeBanner.linkUrl || "/products"}
-                  className={buttonVariants({
-                    size: "lg",
-                    className: "w-full sm:w-auto h-11 sm:h-12 px-6 sm:px-8 text-xs sm:text-sm font-black uppercase tracking-wider shadow-lg hover:shadow-xl transition-all rounded-full flex items-center justify-center gap-2",
-                  })}
-                >
-                  Shop Men&apos;s Collection <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/products?category=new-arrivals"
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "lg",
-                    className: "w-full sm:w-auto h-11 sm:h-12 px-6 sm:px-8 text-xs sm:text-sm font-black uppercase tracking-wider bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center border-border/80",
-                  })}
-                >
-                  Explore New Arrivals
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="relative w-full min-h-[380px] sm:min-h-[420px] md:min-h-[460px] flex items-center py-10 sm:py-14 md:py-16 bg-gradient-to-tr from-primary/10 via-background to-background">
-            <div className="container max-w-7xl mx-auto flex flex-col items-start justify-center px-4 sm:px-6">
-              <Badge className="mb-2.5 sm:mb-4 bg-primary/15 text-primary border-primary/20 hover:bg-primary/20 pointer-events-none px-3 py-1 text-xs font-black uppercase tracking-wider">
-                <Flame className="w-3.5 h-3.5 mr-1.5 text-primary" />
-                New Season Menswear
-              </Badge>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-2.5 sm:mb-4 max-w-2xl leading-[1.15] text-foreground uppercase">
-                Elevate Your <span className="text-primary">Everyday Style</span>
-              </h1>
-              <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-5 sm:mb-6 max-w-lg font-medium leading-relaxed">
-                Discover premium shirts, modern essentials, and timeless fashion crafted with 100% fine cotton and tailored fits.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-                <Link
-                  href="/products"
-                  className={buttonVariants({
-                    size: "lg",
-                    className: "w-full sm:w-auto h-11 sm:h-12 px-6 sm:px-8 text-xs sm:text-sm font-black uppercase tracking-wider shadow-lg hover:shadow-xl transition-all rounded-full flex items-center justify-center gap-2",
-                  })}
-                >
-                  Shop Men&apos;s Collection <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/products?category=new-arrivals"
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "lg",
-                    className: "w-full sm:w-auto h-11 sm:h-12 px-6 sm:px-8 text-xs sm:text-sm font-black uppercase tracking-wider bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center border-border/80",
-                  })}
-                >
-                  Explore New Arrivals
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
+      {/* 1. Split-Layout Men's Fashion Hero */}
+      <HeroSection />
 
       {/* 2. New Arrivals (Shirts & Fresh Drops) */}
       <SectionErrorBoundary fallbackTitle="New arrivals unavailable">
