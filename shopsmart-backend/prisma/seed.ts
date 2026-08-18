@@ -195,7 +195,7 @@ async function main() {
         slug: `${slug}-${i}`,
         description: `Experience exceptional tailoring with the ${title}. Crafted from premium breathable fabrics with reinforced stitching, precise collar styling, and a modern tailored fit designed for all-day comfort and effortless sophistication.`,
         basePrice: price,
-        status: ProductStatus.published,
+        status: ProductStatus.approved,
         categoryId: categories[catSlug]?.id || categories['formal-shirts'].id,
         brandId: brands[brandSlug]?.id,
         images: {
@@ -283,7 +283,7 @@ async function main() {
         slug: `${slug}-${j}`,
         description: `Premium craftsmanship meets modern comfort in the ${title}. Tailored with high-grade stretch fabrics, structured waistbands, and clean tapered lines for everyday versatility and formal refinement.`,
         basePrice: price,
-        status: ProductStatus.published,
+        status: ProductStatus.approved,
         categoryId: categories[catSlug]?.id || categories['pants'].id,
         brandId: brands[brandSlug]?.id,
         images: {
