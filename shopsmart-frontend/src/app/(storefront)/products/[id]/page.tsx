@@ -179,8 +179,46 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const images = product.images && product.images.length > 0 ? product.images : [];
   const activeImage = images[activeImageIndex]?.url;
 
+  const jsonLd = product ? {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description,
+    image: product.images?.map((img) => img.url) || [],
+    brand: {
+      '@type': 'Brand',
+      name: product.brand?.name || 'ShopSmart',
+    },
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'PKR',
+      price: product.basePrice,
+      availability: !isOutOfStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      url: `https://shopsmart-ecommerce-store.netlify.app/products/${product.id}`,
+      seller: {
+        '@type': 'Organization',
+        name: 'ShopSmart',
+      },
+    },
+    ...(reviewSummary && reviewSummary.reviewCount > 0 ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: reviewSummary.averageRating,
+        reviewCount: reviewSummary.reviewCount,
+        bestRating: 5,
+        worstRating: 1,
+      }
+    } : {}),
+  } : null;
+
   return (
     <div className="container max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-12">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       {/* Breadcrumbs */}
       <Breadcrumbs items={[
         { label: 'Home', href: '/' },

@@ -70,6 +70,12 @@ export function Header() {
 
   return (
     <>
+      {/* Announcement Bar */}
+      <div className="w-full bg-foreground text-background py-1.5 px-4 text-center text-[11px] font-extrabold tracking-wider flex items-center justify-center gap-2 border-b border-border/20">
+        <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+        <span>FREE DELIVERY ON ORDERS OVER RS. 2,500 • CASH ON DELIVERY ACROSS PAKISTAN</span>
+      </div>
+
       <header className="sticky top-0 z-40 w-full h-16 border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 transition-all shadow-xs">
         <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between gap-3 sm:gap-6 px-4 sm:px-6">
           

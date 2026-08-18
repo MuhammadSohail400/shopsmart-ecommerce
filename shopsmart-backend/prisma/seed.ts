@@ -20,20 +20,28 @@ async function main() {
   await prisma.banner.deleteMany({});
 
   // --- 2. Categories Hierarchy ---
-  const menRoot = await prisma.category.create({
-    data: { name: 'Men', slug: 'men', depth: 0 },
+  const menRoot = await prisma.category.upsert({
+    where: { slug: 'men' },
+    update: {},
+    create: { name: 'Men', slug: 'men', depth: 0 },
   });
 
-  const womenRoot = await prisma.category.create({
-    data: { name: 'Women', slug: 'women', depth: 0 },
+  const womenRoot = await prisma.category.upsert({
+    where: { slug: 'women' },
+    update: {},
+    create: { name: 'Women', slug: 'women', depth: 0 },
   });
 
-  const kidsRoot = await prisma.category.create({
-    data: { name: 'Kids', slug: 'kids', depth: 0 },
+  const kidsRoot = await prisma.category.upsert({
+    where: { slug: 'kids' },
+    update: {},
+    create: { name: 'Kids', slug: 'kids', depth: 0 },
   });
 
-  const collectionsRoot = await prisma.category.create({
-    data: { name: 'Collections', slug: 'collections', depth: 0 },
+  const collectionsRoot = await prisma.category.upsert({
+    where: { slug: 'collections' },
+    update: {},
+    create: { name: 'Collections', slug: 'collections', depth: 0 },
   });
 
   // Subcategories
@@ -73,7 +81,11 @@ async function main() {
   };
 
   for (const sub of subcategoriesData) {
-    categories[sub.slug] = await prisma.category.create({ data: sub });
+    categories[sub.slug] = await prisma.category.upsert({
+      where: { slug: sub.slug },
+      update: { name: sub.name, parentId: sub.parentId },
+      create: sub,
+    });
   }
 
   console.log(`Created categories hierarchy.`);
@@ -90,7 +102,11 @@ async function main() {
 
   const brands: Record<string, any> = {};
   for (const b of brandsData) {
-    brands[b.slug] = await prisma.brand.create({ data: b });
+    brands[b.slug] = await prisma.brand.upsert({
+      where: { slug: b.slug },
+      update: { name: b.name },
+      create: b,
+    });
   }
   console.log(`Created ${brandsData.length} fashion brands.`);
 
@@ -385,6 +401,225 @@ async function main() {
       images: [
         { url: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=1000', sortOrder: 0 }
       ]
+    },
+    // --- ADDITIONAL MEN'S FASHION SHIRTS & CLOTHING (30 TOTAL) ---
+    {
+      title: 'Charcoal Houndstooth Formal Shirt',
+      slug: 'charcoal-houndstooth-formal-shirt',
+      description: 'Micro-houndstooth woven luxury cotton shirt with spread collar and French front placket. Precision tailored for formal suits.',
+      basePrice: 2850.0,
+      categoryId: categories['formal-shirts'].id,
+      brandId: brands['prime-apparel'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'PA-FRM-HND-S', attributes: { Size: 'S', Color: 'Charcoal' }, priceModifier: 0, stock: 40 },
+        { sku: 'PA-FRM-HND-M', attributes: { Size: 'M', Color: 'Charcoal' }, priceModifier: 0, stock: 60 },
+        { sku: 'PA-FRM-HND-L', attributes: { Size: 'L', Color: 'Charcoal' }, priceModifier: 0, stock: 45 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1620012253295-c15c429fbb41?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Vintage Striped Linen Resort Shirt',
+      slug: 'vintage-striped-linen-resort-shirt',
+      description: 'Retro vertical striped French linen shirt with relaxed revere collar. Ultralight and breathable for hot summer days.',
+      basePrice: 3450.0,
+      categoryId: categories['linen-shirts'].id,
+      brandId: brands['stylecraft'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'SC-LIN-STP-M', attributes: { Size: 'M', Color: 'Navy/White' }, priceModifier: 0, stock: 40 },
+        { sku: 'SC-LIN-STP-L', attributes: { Size: 'L', Color: 'Navy/White' }, priceModifier: 0, stock: 50 },
+        { sku: 'SC-LIN-STP-XL', attributes: { Size: 'XL', Color: 'Navy/White' }, priceModifier: 0, stock: 30 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Classic Indigo Denim Western Shirt',
+      slug: 'classic-indigo-denim-western-shirt',
+      description: '100% rigid washed cotton denim shirt featuring pearl snap buttons, pointed front/back yokes, and twin flap chest pockets.',
+      basePrice: 3250.0,
+      categoryId: categories['casual-shirts'].id,
+      brandId: brands['urban-thread'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'UT-DNM-WST-S', attributes: { Size: 'S', Color: 'Indigo' }, priceModifier: 0, stock: 35 },
+        { sku: 'UT-DNM-WST-M', attributes: { Size: 'M', Color: 'Indigo' }, priceModifier: 0, stock: 75 },
+        { sku: 'UT-DNM-WST-L', attributes: { Size: 'L', Color: 'Indigo' }, priceModifier: 0, stock: 60 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1589310243389-96a5483213a8?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Crimson Heather Pique Polo Shirt',
+      slug: 'crimson-heather-pique-polo-shirt',
+      description: 'Soft combed cotton pique knit with tipping on the collar and cuffs. Tailored slim fit for effortless weekend style.',
+      basePrice: 2150.0,
+      categoryId: categories['polo-shirts'].id,
+      brandId: brands['modern-wear'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'MW-POL-RED-S', attributes: { Size: 'S', Color: 'Crimson' }, priceModifier: 0, stock: 30 },
+        { sku: 'MW-POL-RED-M', attributes: { Size: 'M', Color: 'Crimson' }, priceModifier: 0, stock: 55 },
+        { sku: 'MW-POL-RED-L', attributes: { Size: 'L', Color: 'Crimson' }, priceModifier: 0, stock: 45 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1625910513413-56236b283df8?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Forest Green Oxford Button-Down Shirt',
+      slug: 'forest-green-oxford-shirt',
+      description: 'Rich forest green heavy oxford cloth with durable chalk buttons and curved hem. A versatile staple that softens with each wash.',
+      basePrice: 2499.0,
+      categoryId: categories['oxford-shirts'].id,
+      brandId: brands['urban-thread'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'UT-OXF-GRN-S', attributes: { Size: 'S', Color: 'Forest Green' }, priceModifier: 0, stock: 35 },
+        { sku: 'UT-OXF-GRN-M', attributes: { Size: 'M', Color: 'Forest Green' }, priceModifier: 0, stock: 65 },
+        { sku: 'UT-OXF-GRN-L', attributes: { Size: 'L', Color: 'Forest Green' }, priceModifier: 0, stock: 50 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Monochrome Buffalo Check Flannel Shirt',
+      slug: 'monochrome-check-flannel-shirt',
+      description: 'Double-brushed heavyweight cotton flannel shirt with a classic black-and-grey check pattern. Warm, soft, and durable.',
+      basePrice: 2999.0,
+      categoryId: categories['casual-shirts'].id,
+      brandId: brands['classic-fit'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'CF-FLN-CHK-M', attributes: { Size: 'M', Color: 'Black/Grey' }, priceModifier: 0, stock: 45 },
+        { sku: 'CF-FLN-CHK-L', attributes: { Size: 'L', Color: 'Black/Grey' }, priceModifier: 0, stock: 60 },
+        { sku: 'CF-FLN-CHK-XL', attributes: { Size: 'XL', Color: 'Black/Grey' }, priceModifier: 0, stock: 35 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Essential Pitch Black Crewneck Tee',
+      slug: 'essential-pitch-black-crewneck-tee',
+      description: '240 GSM organic cotton heavyweight black tee with ribbed neckline and clean straight hem.',
+      basePrice: 1299.0,
+      categoryId: categories['t-shirts'].id,
+      brandId: brands['urban-thread'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'UT-TEE-BLK-S', attributes: { Size: 'S', Color: 'Black' }, priceModifier: 0, stock: 100 },
+        { sku: 'UT-TEE-BLK-M', attributes: { Size: 'M', Color: 'Black' }, priceModifier: 0, stock: 150 },
+        { sku: 'UT-TEE-BLK-L', attributes: { Size: 'L', Color: 'Black' }, priceModifier: 0, stock: 120 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Midnight Blue Slim Stretch Chinos',
+      slug: 'midnight-blue-slim-chinos',
+      description: 'Tailored 98% cotton 2% elastane stretch twill chinos. Retains crisp shape from morning meetings to evening dinners.',
+      basePrice: 2850.0,
+      categoryId: categories['trousers-chinos'].id,
+      brandId: brands['stylecraft'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'SC-CHN-NVY-30', attributes: { Waist: '30', Color: 'Navy' }, priceModifier: 0, stock: 40 },
+        { sku: 'SC-CHN-NVY-32', attributes: { Waist: '32', Color: 'Navy' }, priceModifier: 0, stock: 70 },
+        { sku: 'SC-CHN-NVY-34', attributes: { Waist: '34', Color: 'Navy' }, priceModifier: 0, stock: 50 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Pure White Linen Mandarin Collar Shirt',
+      slug: 'white-linen-mandarin-collar-shirt',
+      description: 'Clean band collar shirt woven from pure breathable linen. Clean minimalist front with mother-of-pearl buttons.',
+      basePrice: 3550.0,
+      categoryId: categories['linen-shirts'].id,
+      brandId: brands['stylecraft'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'SC-LIN-MND-S', attributes: { Size: 'S', Color: 'White' }, priceModifier: 0, stock: 35 },
+        { sku: 'SC-LIN-MND-M', attributes: { Size: 'M', Color: 'White' }, priceModifier: 0, stock: 65 },
+        { sku: 'SC-LIN-MND-L', attributes: { Size: 'L', Color: 'White' }, priceModifier: 0, stock: 50 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Slate Grey Waffle Knit Long-Sleeve Henley',
+      slug: 'slate-grey-waffle-knit-henley',
+      description: 'Textured thermal waffle knit in pure combed cotton with a 3-button placket and fitted cuffs.',
+      basePrice: 1850.0,
+      categoryId: categories['casual-shirts'].id,
+      brandId: brands['modern-wear'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'MW-HNL-GRY-M', attributes: { Size: 'M', Color: 'Slate Grey' }, priceModifier: 0, stock: 45 },
+        { sku: 'MW-HNL-GRY-L', attributes: { Size: 'L', Color: 'Slate Grey' }, priceModifier: 0, stock: 55 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1620012253295-c15c429fbb41?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Camel Wool-Blend Tailored Overcoat',
+      slug: 'camel-wool-blend-overcoat',
+      description: 'Sophisticated notch-lapel tailored topcoat crafted with 60% wool blend and satin inner lining for sharp winter layering.',
+      basePrice: 6950.0,
+      categoryId: categories['jackets-outerwear'].id,
+      brandId: brands['prime-apparel'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'PA-COAT-CML-M', attributes: { Size: 'M', Color: 'Camel' }, priceModifier: 0, stock: 20 },
+        { sku: 'PA-COAT-CML-L', attributes: { Size: 'L', Color: 'Camel' }, priceModifier: 0, stock: 25 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Raw Indigo Selvedge Tapered Jeans',
+      slug: 'raw-indigo-selvedge-tapered-jeans',
+      description: '13.5 oz Japanese selvedge denim with signature red-line tape and custom copper hardware. Classic 5-pocket styling.',
+      basePrice: 3950.0,
+      categoryId: categories['jeans'].id,
+      brandId: brands['urban-thread'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'UT-JNS-SLV-30', attributes: { Waist: '30', Color: 'Raw Indigo' }, priceModifier: 0, stock: 30 },
+        { sku: 'UT-JNS-SLV-32', attributes: { Waist: '32', Color: 'Raw Indigo' }, priceModifier: 0, stock: 55 },
+        { sku: 'UT-JNS-SLV-34', attributes: { Waist: '34', Color: 'Raw Indigo' }, priceModifier: 0, stock: 40 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1542272604-780c96856592?q=80&w=1000', sortOrder: 0 }
+      ]
+    },
+    {
+      title: 'Khaki Multi-Pocket Safari Overshirt',
+      slug: 'khaki-multi-pocket-safari-overshirt',
+      description: 'Rugged cotton canvas overshirt with four box-pleated utility pockets and horn buttons.',
+      basePrice: 3650.0,
+      categoryId: categories['casual-shirts'].id,
+      brandId: brands['classic-fit'].id,
+      status: ProductStatus.approved,
+      variants: [
+        { sku: 'CF-SAF-KHK-M', attributes: { Size: 'M', Color: 'Khaki' }, priceModifier: 0, stock: 35 },
+        { sku: 'CF-SAF-KHK-L', attributes: { Size: 'L', Color: 'Khaki' }, priceModifier: 0, stock: 45 },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1000', sortOrder: 0 }
+      ]
     }
   ];
 
@@ -392,6 +627,10 @@ async function main() {
   let variantsCreated = 0;
 
   for (const p of productsData) {
+    const existing = await prisma.product.findUnique({ where: { slug: p.slug } });
+    if (existing) {
+      continue;
+    }
     const created = await prisma.product.create({
       data: {
         title: p.title,

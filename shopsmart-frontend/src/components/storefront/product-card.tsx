@@ -97,7 +97,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.images?.[0] ? (
               <img
                 src={product.images[0].url}
-                alt={product.title}
+                alt={`${product.title} - ${product.brand?.name || 'ShopSmart'} Men's Clothing`}
                 loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
