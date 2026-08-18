@@ -62,6 +62,7 @@ export function Header() {
   };
 
   const navLinks = [
+    { label: 'Home', href: '/' },
     { label: 'Men', href: '/products?category=men' },
     { label: 'Women', href: '/products?category=women' },
     { label: 'Kids', href: '/products?category=kids' },
