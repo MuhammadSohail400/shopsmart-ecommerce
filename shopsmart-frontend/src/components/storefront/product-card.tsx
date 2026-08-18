@@ -99,6 +99,9 @@ export function ProductCard({ product }: ProductCardProps) {
                 src={product.images[0].url}
                 alt={`${product.title} - ${product.brand?.name || 'ShopSmart'} Men's Clothing`}
                 loading="lazy"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=800&q=80';
+                }}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
