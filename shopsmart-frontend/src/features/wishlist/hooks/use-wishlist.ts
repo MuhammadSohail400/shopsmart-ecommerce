@@ -25,12 +25,35 @@ export function useAddToWishlist() {
 
   return useMutation({
     mutationFn: (productId: string) => wishlistService.addItem(productId),
+    onMutate: async (productId: string) => {
+      await queryClient.cancelQueries({ queryKey: wishlistKeys.all });
+      const previousWishlist = queryClient.getQueryData(wishlistKeys.all);
+
+      queryClient.setQueryData(wishlistKeys.all, (old: any) => {
+        const currentItems = old?.items || [];
+        if (currentItems.some((item: any) => item.productId === productId)) return old;
+        return {
+          ...old,
+          items: [...currentItems, { productId, id: `temp-${Date.now()}` }],
+        };
+      });
+
+      return { previousWishlist };
+    },
     onSuccess: (data) => {
-      queryClient.setQueryData(wishlistKeys.all, data);
+      if (data) {
+        queryClient.setQueryData(wishlistKeys.all, data);
+      }
       toast.success('Added to wishlist');
     },
-    onError: (error: Error & { userMessage?: string }) => {
+    onError: (error: Error & { userMessage?: string }, _, context) => {
+      if (context?.previousWishlist) {
+        queryClient.setQueryData(wishlistKeys.all, context.previousWishlist);
+      }
       toast.error(error.userMessage || 'Failed to add to wishlist');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: wishlistKeys.all });
     },
   });
 }
@@ -40,12 +63,31 @@ export function useRemoveFromWishlist() {
 
   return useMutation({
     mutationFn: (productId: string) => wishlistService.removeItem(productId),
+    onMutate: async (productId: string) => {
+      await queryClient.cancelQueries({ queryKey: wishlistKeys.all });
+      const previousWishlist = queryClient.getQueryData(wishlistKeys.all);
+
+      queryClient.setQueryData(wishlistKeys.all, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          items: old.items?.filter((item: any) => item.productId !== productId) || [],
+        };
+      });
+
+      return { previousWishlist };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: wishlistKeys.all });
       toast.success('Removed from wishlist');
     },
-    onError: (error: Error & { userMessage?: string }) => {
+    onError: (error: Error & { userMessage?: string }, _, context) => {
+      if (context?.previousWishlist) {
+        queryClient.setQueryData(wishlistKeys.all, context.previousWishlist);
+      }
       toast.error(error.userMessage || 'Failed to remove from wishlist');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: wishlistKeys.all });
     },
   });
 }

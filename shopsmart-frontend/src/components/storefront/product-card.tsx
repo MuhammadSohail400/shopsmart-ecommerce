@@ -90,9 +90,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <Card className="group flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/40 border-border/50 bg-card relative rounded-2xl h-full shadow-2xs">
-        {/* Image Area - 4:5 Fashion Aspect Ratio */}
-        <div className="relative aspect-[4/5] w-full bg-secondary/30 flex items-center justify-center overflow-hidden">
+      <div className="group flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/40 border border-border/60 bg-card relative rounded-2xl h-full shadow-2xs p-0 m-0">
+        {/* Image Area - 4:5 Fashion Aspect Ratio (Flush to Top) */}
+        <div className="relative aspect-[4/5] w-full bg-secondary/30 flex items-center justify-center overflow-hidden rounded-t-2xl">
           <Link href={`/products/${product.slug}`} className="absolute inset-0 z-0 flex items-center justify-center">
             {product.images?.[0] ? (
               <img
@@ -113,7 +113,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </Link>
           
           {/* Quick View Button (Desktop Hover) */}
-          <div className="absolute inset-x-0 bottom-3 z-10 hidden sm:flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-2 group-hover:translate-y-0 px-3">
+          <div className="absolute inset-x-0 bottom-2.5 z-10 hidden sm:flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-2 group-hover:translate-y-0 px-3">
             <Button
               variant="secondary"
               size="sm"
@@ -139,26 +139,20 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
           
           {/* Wishlist Button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <button 
+            type="button"
             aria-label={isInWishlist ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
-            className={`absolute top-2.5 right-2.5 z-20 h-8 w-8 rounded-full bg-background/90 shadow-2xs backdrop-blur-md transition-all hover:scale-110 hover:bg-background ${
+            className={`absolute top-2.5 right-2.5 z-20 h-8 w-8 rounded-full bg-background/90 shadow-2xs backdrop-blur-md transition-all hover:scale-110 hover:bg-background flex items-center justify-center cursor-pointer ${
               isInWishlist ? 'text-primary opacity-100' : 'text-muted-foreground opacity-90 sm:opacity-0 sm:group-hover:opacity-100 hover:text-primary'
             }`}
             onClick={handleToggleWishlist}
-            disabled={addToWishlist.isPending || removeFromWishlist.isPending}
           >
-            {addToWishlist.isPending || removeFromWishlist.isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-            ) : (
-              <Heart className={`h-3.5 w-3.5 transition-colors ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
-            )}
-          </Button>
+            <Heart className={`h-4 w-4 transition-colors ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
+          </button>
         </div>
 
         {/* Details Area */}
-        <CardContent className="flex flex-col gap-0.5 p-2.5 sm:p-3 flex-1">
+        <div className="flex flex-col gap-0.5 p-2.5 sm:p-3 flex-1 bg-card">
           <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest truncate">
             {product.brand?.name || 'ShopSmart'}
           </div>
@@ -168,10 +162,10 @@ export function ProductCard({ product }: ProductCardProps) {
               {product.title}
             </h3>
           </Link>
-        </CardContent>
+        </div>
 
         {/* Footer Area with Price (Current + Strike-through Original) and Quick Add */}
-        <CardFooter className="p-2.5 sm:p-3 pt-0 flex items-center justify-between mt-auto border-t border-border/30 pt-2">
+        <div className="p-2.5 sm:p-3 pt-0 flex items-center justify-between mt-auto border-t border-border/30 pt-2 pb-2.5 sm:pb-3 bg-card rounded-b-2xl">
           <div className="flex flex-col">
             <span className="text-xs sm:text-sm font-black text-foreground tracking-tight">
               {discount.formattedCurrent}
@@ -197,8 +191,8 @@ export function ProductCard({ product }: ProductCardProps) {
               <ShoppingBag className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             )}
           </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
 
       {/* Quick View Modal */}
       <QuickViewDialog
