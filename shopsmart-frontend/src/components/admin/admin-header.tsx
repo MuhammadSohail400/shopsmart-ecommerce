@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth, useLogout } from '@/hooks/use-auth';
-import { Menu, Bell, Search, LogOut, User, Shield } from 'lucide-react';
+import { Menu, LogOut, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -82,12 +83,14 @@ export function AdminHeader() {
             }
           />
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>
-              <div className="text-xs font-bold text-foreground truncate">{user?.email}</div>
-              <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                Role: {user?.role}
-              </div>
-            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>
+                <div className="text-xs font-bold text-foreground truncate">{user?.email}</div>
+                <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                  Role: {user?.role}
+                </div>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => logout.mutate()}
