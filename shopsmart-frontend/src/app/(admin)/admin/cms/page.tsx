@@ -178,6 +178,7 @@ export default function AdminCmsPage() {
                   src={b.imageUrl}
                   alt={b.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                 />
               </div>

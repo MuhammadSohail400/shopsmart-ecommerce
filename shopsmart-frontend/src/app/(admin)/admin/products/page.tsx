@@ -68,12 +68,19 @@ export default function AdminProductsPage() {
     e.preventDefault();
     if (!newTitle || !newPrice || !newCategoryId) return;
 
+    const slug = newTitle
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
     await createProductMutation.mutateAsync({
       title: newTitle,
+      slug: slug || `product-${Date.now()}`,
       description: newDescription || `Premium crafted ${newTitle}.`,
       basePrice: Number(newPrice),
       categoryId: newCategoryId,
-      brandId: newBrandId || undefined,
+      brandId: newBrandId && newBrandId !== '' ? newBrandId : undefined,
       status: 'approved',
     });
 
@@ -289,6 +296,7 @@ export default function AdminProductsPage() {
                               src={imageSrc}
                               alt={p.title}
                               fill
+                              sizes="(max-width: 768px) 100px, 50px"
                               className="object-cover"
                             />
                           </div>

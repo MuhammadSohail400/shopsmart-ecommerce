@@ -8,9 +8,11 @@ export const adminController = {
   },
 
   async listOrders(req: Request, res: Response) {
-    const query = req.query as unknown as { status?: string; cursor?: string; limit: number };
-    const { items, nextCursor, hasMore } = await adminService.listOrders(req.user!, query);
-    sendPaginated(res, items, { nextCursor, hasMore, limit: query.limit });
+    const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 20));
+    const status = req.query.status as string | undefined;
+    const cursor = req.query.cursor as string | undefined;
+    const { items, nextCursor, hasMore } = await adminService.listOrders(req.user!, { status, cursor, limit });
+    sendPaginated(res, items, { nextCursor, hasMore, limit });
   },
 
   async listStaff(_req: Request, res: Response) {

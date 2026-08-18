@@ -64,14 +64,17 @@ export const ordersRepository = {
     if (filters.userId) where.userId = filters.userId;
     if (filters.status) where.status = filters.status;
 
+    const limit = Math.max(1, Math.min(100, Number(filters.limit) || 20));
+
     const items = await prisma.order.findMany({
       where,
-      take: filters.limit + 1,
+      take: limit + 1,
       ...(filters.cursor ? { cursor: { id: filters.cursor }, skip: 1 } : {}),
       orderBy: { createdAt: 'desc' },
+      include: { items: { include: { productVariant: true } } },
     });
-    const hasMore = items.length > filters.limit;
-    return { items: items.slice(0, filters.limit), hasMore };
+    const hasMore = items.length > limit;
+    return { items: items.slice(0, limit), hasMore };
   },
 
   updateStatus(id: string, status: OrderStatus, changedBy?: string) {
