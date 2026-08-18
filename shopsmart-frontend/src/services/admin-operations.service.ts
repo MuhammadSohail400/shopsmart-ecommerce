@@ -301,4 +301,97 @@ export const adminOperationsService = {
       body: JSON.stringify(data),
     });
   },
+
+  // Phase 11 — Staff & Roles
+  async getStaff(): Promise<StaffMember[]> {
+    return apiClient<StaffMember[]>('/admin/staff');
+  },
+
+  async createStaff(data: {
+    email: string;
+    password: string;
+    role: 'admin' | 'inventory_manager' | 'support_agent';
+  }): Promise<StaffMember> {
+    return apiClient<StaffMember>('/admin/staff', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateStaffRole(staffId: string, role: string): Promise<StaffMember> {
+    return apiClient<StaffMember>(`/admin/staff/${staffId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
+  },
+
+  // Phase 11 — Audit Logs
+  async getAuditLogs(params: {
+    page?: number;
+    limit?: number;
+    actorId?: string;
+    action?: string;
+    entityType?: string;
+    from?: string;
+    to?: string;
+  } = {}): Promise<{ data: AuditLogItem[]; total: number }> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') searchParams.append(k, String(v));
+    });
+    return apiClient(`/admin/audit-logs?${searchParams.toString()}`);
+  },
+
+  // Phase 11 — Analytics & Reports
+  async getSalesAnalytics(startDate?: string, endDate?: string): Promise<any> {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    return apiClient(`/admin/analytics/sales?${params.toString()}`);
+  },
+
+  async getTopProductsAnalytics(limit = 10): Promise<any[]> {
+    return apiClient<any[]>(`/admin/analytics/top-products?limit=${limit}`);
+  },
+
+  async getCustomerAnalytics(startDate?: string, endDate?: string): Promise<any> {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    return apiClient(`/admin/analytics/customers?${params.toString()}`);
+  },
+
+  async getAbandonedCarts(params: { cursor?: string; limit?: number } = {}): Promise<any> {
+    const searchParams = new URLSearchParams();
+    if (params.cursor) searchParams.append('cursor', params.cursor);
+    if (params.limit) searchParams.append('limit', String(params.limit));
+    return apiClient(`/admin/analytics/abandoned-carts?${searchParams.toString()}`);
+  },
 };
+
+export interface StaffMember {
+  id: string;
+  email: string;
+  phone?: string;
+  role: 'admin' | 'inventory_manager' | 'support_agent' | 'customer';
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuditLogItem {
+  id: string;
+  actorId?: string;
+  action: string;
+  entityType: string;
+  entityId?: string;
+  oldValue?: any;
+  newValue?: any;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
+  actor?: {
+    email: string;
+    role: string;
+  };
+}

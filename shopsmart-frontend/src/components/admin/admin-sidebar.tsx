@@ -16,7 +16,10 @@ import {
   Store,
   AlertTriangle,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Users,
+  ScrollText,
+  BarChart3,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useLowStockInventory, useAdminOrders } from '@/hooks/use-admin';
@@ -47,7 +50,7 @@ export function AdminSidebar({ isMobile = false, onItemClick }: { isMobile?: boo
       ],
     },
     {
-      label: 'Catalog & Stock (Phase 9)',
+      label: 'Catalog & Stock',
       items: [
         { title: 'Products', href: '/admin/products', icon: Shirt },
         { title: 'Categories', href: '/admin/categories', icon: FolderTree },
@@ -62,13 +65,21 @@ export function AdminSidebar({ isMobile = false, onItemClick }: { isMobile?: boo
       ],
     },
     {
-      label: 'Store Operations (Phase 10)',
+      label: 'Store Operations',
       items: [
         { title: 'Orders', href: '/admin/orders', icon: ShoppingBag },
         { title: 'Shipping Zones', href: '/admin/shipping', icon: Truck },
         { title: 'Coupons & Promos', href: '/admin/coupons', icon: TicketPercent },
         { title: 'CMS & Banners', href: '/admin/cms', icon: ImageIcon },
         { title: 'Store Settings', href: '/admin/settings', icon: Settings },
+      ],
+    },
+    {
+      label: 'Governance & Insights',
+      items: [
+        { title: 'Staff & Roles', href: '/admin/staff', icon: Users },
+        { title: 'Audit Logs', href: '/admin/audit-logs', icon: ScrollText },
+        { title: 'Analytics & Reports', href: '/admin/analytics', icon: BarChart3 },
       ],
     },
   ];

@@ -18,6 +18,12 @@ export const adminKeys = {
   faqs: () => [...adminKeys.all, 'cms', 'faqs'] as const,
   settings: () => [...adminKeys.all, 'settings'] as const,
   taxRules: () => [...adminKeys.all, 'settings', 'tax-rules'] as const,
+  staff: () => [...adminKeys.all, 'staff'] as const,
+  auditLogs: (params?: any) => [...adminKeys.all, 'audit-logs', params] as const,
+  salesAnalytics: (range?: any) => [...adminKeys.all, 'analytics', 'sales', range] as const,
+  topProductsAnalytics: (limit?: number) => [...adminKeys.all, 'analytics', 'top-products', limit] as const,
+  customerAnalytics: (range?: any) => [...adminKeys.all, 'analytics', 'customers', range] as const,
+  abandonedCarts: (params?: any) => [...adminKeys.all, 'analytics', 'abandoned-carts', params] as const,
 };
 
 // --- Dashboard ---
@@ -359,3 +365,81 @@ export function useCreateTaxRule() {
     onError: (err: any) => toast.error(err?.message || 'Failed to create tax rule'),
   });
 }
+
+// --- Phase 11: Staff Management ---
+export function useStaff() {
+  return useQuery({
+    queryKey: adminKeys.staff(),
+    queryFn: () => adminOperationsService.getStaff(),
+  });
+}
+
+export function useCreateStaff() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { email: string; password: string; role: 'admin' | 'inventory_manager' | 'support_agent' }) =>
+      adminOperationsService.createStaff(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
+      toast.success('Staff member onboarded successfully');
+    },
+    onError: (err: any) => toast.error(err?.message || 'Failed to create staff member'),
+  });
+}
+
+export function useUpdateStaffRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ staffId, role }: { staffId: string; role: string }) =>
+      adminOperationsService.updateStaffRole(staffId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
+      toast.success('Staff role updated');
+    },
+    onError: (err: any) => {
+      if (err?.code === 'LAST_ADMIN_PROTECTED' || err?.message?.includes('last remaining admin')) {
+        toast.error('Last Admin Protection: You cannot demote the only remaining Administrator!');
+      } else {
+        toast.error(err?.message || 'Failed to update staff role');
+      }
+    },
+  });
+}
+
+// --- Phase 11: Audit Logs ---
+export function useAuditLogs(params?: { page?: number; limit?: number; actorId?: string; action?: string; entityType?: string }) {
+  return useQuery({
+    queryKey: adminKeys.auditLogs(params),
+    queryFn: () => adminOperationsService.getAuditLogs(params),
+  });
+}
+
+// --- Phase 11: Analytics & Reports ---
+export function useSalesAnalytics(startDate?: string, endDate?: string) {
+  return useQuery({
+    queryKey: adminKeys.salesAnalytics({ startDate, endDate }),
+    queryFn: () => adminOperationsService.getSalesAnalytics(startDate, endDate),
+  });
+}
+
+export function useTopProductsAnalytics(limit = 10) {
+  return useQuery({
+    queryKey: adminKeys.topProductsAnalytics(limit),
+    queryFn: () => adminOperationsService.getTopProductsAnalytics(limit),
+  });
+}
+
+export function useCustomerAnalytics(startDate?: string, endDate?: string) {
+  return useQuery({
+    queryKey: adminKeys.customerAnalytics({ startDate, endDate }),
+    queryFn: () => adminOperationsService.getCustomerAnalytics(startDate, endDate),
+  });
+}
+
+export function useAbandonedCarts(params?: { cursor?: string; limit?: number }) {
+  return useQuery({
+    queryKey: adminKeys.abandonedCarts(params),
+    queryFn: () => adminOperationsService.getAbandonedCarts(params),
+  });
+}
+
