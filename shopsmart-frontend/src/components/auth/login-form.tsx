@@ -82,6 +82,10 @@ export function LoginForm() {
       },
       onError: (error) => {
         if (error instanceof ApiError) {
+          if (error.status === 429) {
+            setGlobalError('Too many login attempts. Please wait 1 minute before trying again.');
+            return;
+          }
           if (error.validationErrors && error.validationErrors.length > 0) {
             error.validationErrors.forEach((err: { field: string; message: string }) => {
               if (err.field === 'identifier' || err.field === 'password') {
