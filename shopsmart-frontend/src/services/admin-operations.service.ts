@@ -201,14 +201,26 @@ export const adminOperationsService = {
     code: string;
     discountType: 'percentage' | 'flat';
     discountValue: number;
-    minOrderAmount?: number;
-    maxDiscountAmount?: number;
-    usageLimit?: number;
-    expiresAt?: string;
+    minOrderValue?: number;
+    usageLimitPerUser?: number;
+    startDate?: string | Date;
+    endDate?: string | Date;
   }): Promise<Coupon> {
+    const now = new Date();
+    const future = new Date();
+    future.setDate(future.getDate() + 30);
+
     return apiClient<Coupon>('/coupons', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        code: data.code.toUpperCase(),
+        discountType: data.discountType,
+        discountValue: Number(data.discountValue),
+        minOrderValue: data.minOrderValue !== undefined ? Number(data.minOrderValue) : 0,
+        usageLimitPerUser: data.usageLimitPerUser ? Number(data.usageLimitPerUser) : undefined,
+        startDate: (data.startDate ? new Date(data.startDate) : now).toISOString(),
+        endDate: (data.endDate ? new Date(data.endDate) : future).toISOString(),
+      }),
     });
   },
 

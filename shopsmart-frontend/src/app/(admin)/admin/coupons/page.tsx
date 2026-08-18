@@ -49,8 +49,8 @@ export default function AdminCouponsPage() {
       code: code.toUpperCase().trim(),
       discountType,
       discountValue: Number(discountValue),
-      minOrderAmount: minOrder ? Number(minOrder) : undefined,
-      usageLimit: usageLimit ? Number(usageLimit) : undefined,
+      minOrderValue: minOrder ? Number(minOrder) : 0,
+      usageLimitPerUser: usageLimit ? Number(usageLimit) : undefined,
     });
 
     setIsAddOpen(false);
