@@ -212,7 +212,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   } : null;
 
   return (
-    <div className="container max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-12">
+    <div className="container max-w-5xl mx-auto py-6 sm:py-8 px-4 sm:px-6 space-y-6 sm:space-y-8">
       {jsonLd && (
         <script
           type="application/ld+json"
@@ -221,18 +221,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       )}
       {/* Breadcrumbs */}
       <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
-        { label: 'Fashion Catalog', href: '/products' },
+        { label: 'Collection', href: '/products' },
         ...(product.category ? [{ label: product.category.name, href: `/products?category=${product.category.slug}` }] : []),
-        { label: product.title, href: `/products/${product.slug}` },
-      ]} />
+        { label: product.title },
+      ]} className="mb-1" />
 
       {/* Main Product Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         
-        {/* Left Column: Image Gallery (4:5 Ratio) */}
-        <div className="lg:col-span-6 flex flex-col gap-4">
-          <div className="relative aspect-[4/5] w-full rounded-3xl overflow-hidden bg-secondary/30 border border-border/50 shadow-md flex items-center justify-center">
+        {/* Left Column: Image Gallery (Compact 4:5 Ratio) */}
+        <div className="lg:col-span-5 flex flex-col gap-3 max-w-[380px] mx-auto lg:mx-0 w-full">
+          <div className="relative aspect-[4/5] max-h-[460px] w-full rounded-2xl overflow-hidden bg-secondary/30 border border-border/50 shadow-sm flex items-center justify-center">
             {activeImage ? (
               <img
                 src={activeImage}
@@ -241,19 +240,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               />
             ) : (
               <div className="text-muted-foreground/30 flex flex-col items-center">
-                <Package className="h-20 w-20" strokeWidth={1} />
+                <Package className="h-16 w-16" strokeWidth={1} />
               </div>
             )}
 
             {/* Badges */}
-            <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+            <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
               {discount.isSale && (
-                <Badge className="bg-rose-600 text-white font-black text-xs px-3 py-1 shadow-md border-none">
+                <Badge className="bg-rose-600 text-white font-black text-[10px] px-2 py-0.5 shadow-sm border-none">
                   -{discount.discountPercent}% OFF
                 </Badge>
               )}
               {isOutOfStock && (
-                <Badge variant="destructive" className="font-bold text-xs px-3 py-1 shadow-md">
+                <Badge variant="destructive" className="font-bold text-[10px] px-2 py-0.5 shadow-sm">
                   Out of Stock
                 </Badge>
               )}
@@ -265,20 +264,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               size="icon"
               onClick={handleToggleWishlist}
               disabled={addToWishlistMutation.isPending || removeFromWishlistMutation.isPending}
-              className="absolute top-4 right-4 h-10 w-10 rounded-full bg-background/90 backdrop-blur-md shadow-md hover:bg-background transition-all"
+              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/90 backdrop-blur-md shadow-sm hover:bg-background transition-all"
             >
-              <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+              <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
             </Button>
           </div>
 
           {/* Thumbnail Gallery */}
           {images.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto pb-2">
+            <div className="flex gap-2.5 overflow-x-auto pb-1">
               {images.map((img, index) => (
                 <button
                   key={img.id || index}
                   onClick={() => setActiveImageIndex(index)}
-                  className={`relative aspect-[4/5] w-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                  className={`relative aspect-[4/5] w-16 rounded-lg overflow-hidden border transition-all shrink-0 ${
                     activeImageIndex === index
                       ? 'border-primary ring-2 ring-primary/20 shadow-xs'
                       : 'border-border/60 opacity-70 hover:opacity-100'
@@ -292,61 +291,61 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Right Column: Product Info & Purchase Options */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="space-y-2">
+        <div className="lg:col-span-7 space-y-5">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-widest text-primary">
+              <span className="text-[11px] font-black uppercase tracking-widest text-primary">
                 {product.brand?.name || 'ShopSmart'}
               </span>
               {product.category && (
                 <>
                   <span className="text-muted-foreground">•</span>
-                  <span className="text-xs font-semibold text-muted-foreground">{product.category.name}</span>
+                  <span className="text-[11px] font-semibold text-muted-foreground">{product.category.name}</span>
                 </>
               )}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground leading-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground leading-tight">
               {product.title}
             </h1>
 
             {/* Rating */}
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-center gap-2 pt-0.5">
               <div className="flex items-center text-amber-500">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-amber-500" />
+                  <Star key={i} className="h-3.5 w-3.5 fill-amber-500" />
                 ))}
               </div>
               <span className="text-xs font-bold text-foreground">
                 {reviewSummary?.averageRating ? Number(reviewSummary.averageRating).toFixed(1) : '4.9'}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 ({reviewSummary?.reviewCount ?? 24} customer reviews)
               </span>
             </div>
           </div>
 
           {/* Pricing & Availability */}
-          <div className="p-4 rounded-2xl bg-secondary/30 border border-border/50 flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-secondary/30 border border-border/50 flex items-center justify-between">
             <div className="space-y-0.5">
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-black text-foreground">{discount.formattedCurrent}</span>
+              <div className="flex items-baseline gap-2.5">
+                <span className="text-2xl sm:text-3xl font-black text-foreground">{discount.formattedCurrent}</span>
                 {discount.isSale && (
-                  <span className="text-base text-muted-foreground line-through font-bold">{discount.formattedOriginal}</span>
+                  <span className="text-sm text-muted-foreground line-through font-bold">{discount.formattedOriginal}</span>
                 )}
               </div>
-              <p className="text-[11px] text-muted-foreground font-semibold">Inclusive of all local taxes</p>
+              <p className="text-[10px] text-muted-foreground font-semibold">Inclusive of all local taxes</p>
             </div>
 
             <div>
               {isOutOfStock ? (
-                <Badge variant="destructive" className="font-bold text-xs px-3 py-1">Out of Stock</Badge>
+                <Badge variant="destructive" className="font-bold text-[10px] px-2.5 py-0.5">Out of Stock</Badge>
               ) : availableStock <= 5 ? (
-                <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20 font-bold text-xs px-3 py-1">
-                  Only {availableStock} left in stock
+                <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20 font-bold text-[10px] px-2.5 py-0.5">
+                  Only {availableStock} left
                 </Badge>
               ) : (
-                <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold text-xs px-3 py-1">
+                <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold text-[10px] px-2.5 py-0.5">
                   In Stock
                 </Badge>
               )}

@@ -25,6 +25,8 @@ import { useCart } from '@/features/cart/hooks/use-cart';
 import { useWishlist } from '@/features/wishlist/hooks/use-wishlist';
 import { SearchDialog } from '@/components/storefront/search-dialog';
 
+import { getUserDisplayName, getUserInitial } from '@/lib/utils';
+
 export function Header() {
   const pathname = usePathname();
   const { user, isAuthenticated, requireAuth } = useAuth();
@@ -37,6 +39,9 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>('men');
   
+  const displayName = getUserDisplayName(user);
+  const userInitial = getUserInitial(user);
+
   const cartItemCount = isAuthenticated
     ? cart?.items.reduce((total, item) => total + item.quantity, 0) || 0
     : 0;
@@ -71,9 +76,9 @@ export function Header() {
   return (
     <>
       {/* Announcement Bar */}
-      <div className="w-full bg-foreground text-background py-1.5 px-4 text-center text-[11px] font-extrabold tracking-wider flex items-center justify-center gap-2 border-b border-border/20">
-        <Sparkles className="h-3 w-3 text-primary animate-pulse" />
-        <span>FREE DELIVERY ON ORDERS OVER RS. 2,500 • CASH ON DELIVERY ACROSS PAKISTAN</span>
+      <div className="w-full bg-foreground text-background py-1.5 px-3 sm:px-4 text-center text-[10px] sm:text-[11px] font-extrabold tracking-wider flex items-center justify-center gap-1.5 sm:gap-2 border-b border-border/20">
+        <Sparkles className="h-3 w-3 text-primary animate-pulse shrink-0" />
+        <span className="truncate sm:overflow-visible">FREE DELIVERY ON ORDERS OVER RS. 2,500 • CASH ON DELIVERY ACROSS PAKISTAN</span>
       </div>
 
       <header className="sticky top-0 z-40 w-full h-16 border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 transition-all shadow-xs">
@@ -104,6 +109,19 @@ export function Header() {
 
                   {/* Drawer Navigation Content (Scrollable) */}
                   <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                    {/* Logged in User Greeting on Mobile */}
+                    {isAuthenticated && (
+                      <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/50 border border-border/40">
+                        <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-xs">
+                          {userInitial}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-foreground truncate">{displayName}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{user?.email || 'Logged In'}</p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Quick Search Button */}
                     <button
                       type="button"
@@ -271,7 +289,7 @@ export function Header() {
           </div>
 
           {/* Right Section: Search, Wishlist, Account, Cart */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {/* Desktop Search Trigger */}
             <button
               type="button"
@@ -316,25 +334,26 @@ export function Header() {
             {/* User Account Menu / Login */}
             {isAuthenticated ? (
               <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="sm" aria-label="Open user account menu" className="h-10 px-3 rounded-full hover:bg-secondary/60 transition-colors gap-1.5 text-xs font-semibold" />}>
-                  <div className="h-7 w-7 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs">
-                    {user?.firstName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                <DropdownMenuTrigger render={<Button variant="ghost" size="sm" aria-label="Open user account menu" className="h-9 sm:h-10 px-2 sm:px-3 rounded-full hover:bg-secondary/60 transition-colors gap-1.5 text-xs font-semibold" />}>
+                  <div className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs shadow-xs">
+                    {userInitial}
                   </div>
-                  <span className="hidden md:inline-block max-w-[80px] truncate text-foreground">
-                    {user?.firstName || 'Account'}
+                  <span className="hidden md:inline-block max-w-[110px] truncate text-foreground font-bold">
+                    {displayName}
                   </span>
                   <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:inline-block" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl border-border/60">
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="font-bold text-primary text-[11px] uppercase tracking-wider">
-                      My Account
-                    </DropdownMenuLabel>
-                    <DropdownMenuItem className="text-xs text-muted-foreground py-1 focus:bg-transparent">
-                      <span className="truncate max-w-[190px]" title={user?.email || undefined}>
-                        {user?.email || 'Logged In'}
-                      </span>
-                    </DropdownMenuItem>
+                    <div className="px-2 py-2 flex items-center gap-2.5">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
+                        {userInitial}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-foreground truncate">{displayName}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{user?.email || 'Logged in'}</p>
+                      </div>
+                    </div>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="py-2 cursor-pointer rounded-xl font-medium text-xs focus:bg-primary/10 focus:text-primary" onClick={() => router.push('/account')}>
@@ -361,7 +380,7 @@ export function Header() {
                 href="/login"
                 className={buttonVariants({
                   variant: "ghost",
-                  className: "hidden sm:flex font-bold hover:text-primary hover:bg-primary/10 rounded-full px-4 h-9 text-xs",
+                  className: "font-bold hover:text-primary hover:bg-primary/10 rounded-full px-3 sm:px-4 h-9 text-xs",
                 })}
               >
                 Sign In

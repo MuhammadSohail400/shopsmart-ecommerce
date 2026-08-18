@@ -104,7 +104,6 @@ function ProductsPageContent() {
   return (
     <div className="container max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6">
       <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
         { label: 'Collection', href: '/products' },
         ...(activeCategoryObj ? [{ label: activeCategoryObj.name, href: `/products?category=${activeCategoryObj.slug}` }] : []),
       ]} className="mb-4 sm:mb-6" />
@@ -127,9 +126,13 @@ function ProductsPageContent() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-muted-foreground bg-secondary/80 px-3 py-1.5 rounded-full whitespace-nowrap">
-              {products.length} {products.length === 1 ? 'Product' : 'Products'}
-            </span>
+            {isLoading ? (
+              <div className="h-7 w-24 bg-secondary/80 animate-pulse rounded-full" />
+            ) : (
+              <span className="text-xs font-bold text-muted-foreground bg-secondary/80 px-3 py-1.5 rounded-full whitespace-nowrap">
+                {products.length} {products.length === 1 ? 'Product' : 'Products'}
+              </span>
+            )}
           </div>
         </div>
 
@@ -157,10 +160,10 @@ function ProductsPageContent() {
           {/* Mobile Sort Dropdown */}
           <div className="flex-1">
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="outline" className="w-full h-10 rounded-xl text-xs font-bold gap-1.5 border-border/80 justify-center shadow-2xs" />}>
-                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="truncate">Sort</span>
-                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+              <DropdownMenuTrigger render={<Button variant="outline" className="w-full h-10 rounded-xl text-xs font-bold gap-2 border-border/80 justify-center shadow-2xs" />}>
+                <ArrowUpDown className="h-3.5 w-3.5 text-primary" />
+                <span className="truncate">Sort: {sortLabels[currentSort] || 'Featured'}</span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52 p-2 rounded-2xl shadow-xl">
                 <DropdownMenuItem className="text-xs font-semibold py-2 rounded-xl cursor-pointer" onClick={() => handleSortChange('featured')}>
@@ -263,12 +266,12 @@ function ProductsPageContent() {
           {/* Desktop Sort Header */}
           <div className="hidden sm:flex items-center justify-between mb-4 pb-2">
             <span className="text-xs font-semibold text-muted-foreground">
-              Showing {products.length} {products.length === 1 ? 'result' : 'results'}
+              {isLoading ? 'Loading catalog products...' : `Showing ${products.length} ${products.length === 1 ? 'result' : 'results'}`}
             </span>
 
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 rounded-full text-xs font-semibold gap-1.5 border-border/80" />}>
-                <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+              <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-9 px-3.5 rounded-full text-xs font-semibold gap-2 border-border/80 hover:bg-secondary" />}>
+                <ArrowUpDown className="h-3.5 w-3.5 text-primary" />
                 <span>Sort: {sortLabels[currentSort] || 'Featured'}</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-2xl shadow-xl">

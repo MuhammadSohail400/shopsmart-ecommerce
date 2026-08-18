@@ -158,26 +158,26 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Details Area */}
-        <CardContent className="flex flex-col gap-1 p-3 sm:p-3.5 flex-1">
+        <CardContent className="flex flex-col gap-0.5 p-2.5 sm:p-3 flex-1">
           <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest truncate">
             {product.brand?.name || 'ShopSmart'}
           </div>
 
-          <Link href={`/products/${product.slug}`} className="hover:text-primary transition-colors line-clamp-2 mt-0.5">
-            <h3 className="font-bold text-xs sm:text-sm leading-snug tracking-tight text-foreground group-hover:text-primary transition-colors">
+          <Link href={`/products/${product.slug}`} className="hover:text-primary transition-colors line-clamp-1 mt-0.5">
+            <h3 className="font-bold text-xs sm:text-sm leading-snug tracking-tight text-foreground group-hover:text-primary transition-colors truncate">
               {product.title}
             </h3>
           </Link>
         </CardContent>
 
         {/* Footer Area with Price (Current + Strike-through Original) and Quick Add */}
-        <CardFooter className="p-3 sm:p-3.5 pt-0 flex items-center justify-between mt-auto border-t border-border/30 pt-2.5">
+        <CardFooter className="p-2.5 sm:p-3 pt-0 flex items-center justify-between mt-auto border-t border-border/30 pt-2">
           <div className="flex flex-col">
-            <span className="text-sm sm:text-base font-extrabold text-foreground tracking-tight">
+            <span className="text-xs sm:text-sm font-black text-foreground tracking-tight">
               {discount.formattedCurrent}
             </span>
             {discount.isSale && (
-              <span className="text-[11px] text-muted-foreground line-through font-semibold">
+              <span className="text-[10px] text-muted-foreground line-through font-semibold">
                 {discount.formattedOriginal}
               </span>
             )}
@@ -188,13 +188,13 @@ export function ProductCard({ product }: ProductCardProps) {
             variant={isOutOfStock ? 'outline' : 'secondary'} 
             disabled={isOutOfStock || addToCart.isPending} 
             aria-label={`Add ${product.title} to cart`}
-            className="h-8 w-8 sm:h-8.5 sm:w-8.5 rounded-full transition-transform hover:scale-108 hover:bg-primary hover:text-primary-foreground shadow-2xs bg-secondary/80 shrink-0"
+            className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-full transition-transform hover:scale-108 hover:bg-primary hover:text-primary-foreground shadow-2xs bg-secondary/80 shrink-0"
             onClick={handleAddToCart}
           >
             {addToCart.isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <ShoppingBag className="h-3.5 w-3.5" />
+              <ShoppingBag className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             )}
           </Button>
         </CardFooter>

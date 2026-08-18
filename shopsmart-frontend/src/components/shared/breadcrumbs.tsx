@@ -12,24 +12,29 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
+  // Filter out any redundant 'Home' or '/' items passed in items array
+  const sanitizedItems = items.filter(
+    (item) => item.label.toLowerCase() !== 'home' && item.href !== '/'
+  );
+
   return (
     <nav
       aria-label="Breadcrumbs"
-      className={`flex items-center space-x-2 text-xs sm:text-sm text-muted-foreground overflow-x-auto py-2 no-scrollbar ${className}`}
+      className={`flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-muted-foreground overflow-x-auto py-2 no-scrollbar ${className}`}
     >
       <Link
         href="/"
         className="flex items-center hover:text-foreground transition-colors shrink-0 font-medium"
       >
-        <Home className="h-3.5 w-3.5 mr-1" />
+        <Home className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
         <span>Home</span>
       </Link>
 
-      {items.map((item, index) => {
-        const isLast = index === items.length - 1;
+      {sanitizedItems.map((item, index) => {
+        const isLast = index === sanitizedItems.length - 1;
         return (
-          <div key={index} className="flex items-center space-x-2 shrink-0">
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+          <div key={index} className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+            <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground/50 shrink-0" />
             {item.href && !isLast ? (
               <Link
                 href={item.href}
@@ -38,7 +43,7 @@ export function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
                 {item.label}
               </Link>
             ) : (
-              <span className="font-semibold text-foreground truncate max-w-[200px] sm:max-w-[300px]">
+              <span className="font-semibold text-foreground truncate max-w-[160px] sm:max-w-[280px]">
                 {item.label}
               </span>
             )}

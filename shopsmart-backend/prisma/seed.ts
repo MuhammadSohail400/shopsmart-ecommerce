@@ -1,4 +1,3 @@
-import process from 'node:process';
 import { PrismaClient, ProductStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -848,7 +847,7 @@ async function main() {
 main()
   .catch((e) => {
     console.error('Seeding error:', e);
-    process.exit(1);
+    throw e;
   })
   .finally(async () => {
     await prisma.$disconnect();

@@ -33,3 +33,43 @@ export function getDiscountDetails(basePrice: number | string, slug?: string) {
     formattedOriginal: formatCurrency(originalPrice),
   };
 }
+
+/**
+ * Returns a friendly, human display name for an authenticated user.
+ */
+export function getUserDisplayName(user?: {
+  firstName?: string | null;
+  lastName?: string | null;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+} | null): string {
+  if (!user) return 'Account';
+  if (user.firstName) return user.firstName.trim();
+  if (user.name) return user.name.split(' ')[0].trim();
+  if (user.email) {
+    const raw = user.email.split('@')[0];
+    const cleaned = raw.replace(/[0-9_.-]/g, '');
+    if (cleaned.length >= 3) {
+      return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    }
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+  if (user.phone) return user.phone;
+  return 'Account';
+}
+
+/**
+ * Returns a single uppercase character avatar initial for a user.
+ */
+export function getUserInitial(user?: {
+  firstName?: string | null;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+} | null): string {
+  const name = getUserDisplayName(user);
+  if (name && name !== 'Account') return name.charAt(0).toUpperCase();
+  return 'U';
+}
+

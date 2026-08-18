@@ -69,3 +69,27 @@
     @apply bg-background text-foreground antialiased;
   }
 }
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    max-width: 1200px !important;
+  }
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem !important;
+      padding-right: 1.5rem !important;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem !important;
+      padding-right: 2rem !important;
+      max-width: 1200px !important;
+    }
+  }
+}
