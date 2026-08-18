@@ -2,21 +2,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShoppingBag, Sparkles, Truck, ShieldCheck, RefreshCw, Star, CheckCircle2, Flame, Tag, Layers, TrendingUp, Percent } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { ArrowRight, ShoppingBag, Sparkles, Truck, ShieldCheck, RefreshCw, Star, CheckCircle2, Flame, TrendingUp, Percent } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProductCard } from '@/components/storefront/product-card';
 import { ProductGrid, ProductGridSkeleton } from '@/components/storefront/product-grid';
-import { useBanners, useCategories, useProducts } from '@/hooks/use-catalog';
+import { useBanners, useProducts } from '@/hooks/use-catalog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
-import { NewsletterSection } from '@/components/storefront/newsletter-section';
 import { RecentlyViewedSection } from '@/components/storefront/recently-viewed-section';
 import { SectionErrorBoundary } from '@/components/shared/section-error-boundary';
 
 export default function HomePage() {
   const { data: banners, isLoading: isLoadingBanners } = useBanners();
-  const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const { data: productsData, isLoading: isLoadingProducts } = useProducts({ limit: 24 });
 
   const [activeTrendingTab, setActiveTrendingTab] = useState<'all' | 'formal' | 'casual' | 'linen' | 'sale'>('all');
@@ -125,52 +123,9 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* 2. Shop by Category */}
-      <section className="container max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
-        <div className="flex justify-between items-end mb-6 sm:mb-8">
-          <div>
-            <div className="inline-flex items-center gap-1.5 text-primary text-xs font-black mb-1 uppercase tracking-widest">
-              <Tag className="h-3.5 w-3.5" /> Department
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground uppercase">Shop by Category</h2>
-          </div>
-          <Link href="/categories" className="text-primary font-bold hover:underline flex items-center gap-1 group text-xs sm:text-sm">
-            View All <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
-        
-        {isLoadingCategories ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-[4/3] rounded-2xl" />
-            ))}
-          </div>
-        ) : categories && categories.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-            {categories
-              .filter(c => !['men', 'women', 'kids', 'collections'].includes(c.slug))
-              .slice(0, 6)
-              .map((category) => (
-                <Link 
-                  key={category.id} 
-                  href={`/products?category=${category.slug}`}
-                  className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-border/50 bg-card hover:bg-primary/5 hover:border-primary/40 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
-                >
-                  <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shadow-2xs">
-                    <ShoppingBag className="h-5 w-5" />
-                  </div>
-                  <span className="font-bold text-xs sm:text-sm text-center group-hover:text-primary transition-colors line-clamp-1">
-                    {category.name}
-                  </span>
-                </Link>
-              ))}
-          </div>
-        ) : null}
-      </section>
-
-      {/* 3. New Arrivals (Product-First Merchandising) */}
+      {/* 2. New Arrivals (Product-First Merchandising immediately after Hero) */}
       <SectionErrorBoundary fallbackTitle="New arrivals unavailable">
-        <section className="container max-w-7xl mx-auto py-8 sm:py-12 border-t border-border/40 px-4 sm:px-6">
+        <section className="container max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
           <div className="flex justify-between items-end mb-6 sm:mb-8">
             <div>
               <div className="inline-flex items-center gap-1.5 text-primary text-xs font-black mb-1 uppercase tracking-widest">
@@ -451,13 +406,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 10. Recently Viewed */}
+      {/* Recently Viewed */}
       <SectionErrorBoundary fallbackTitle="Recently viewed unavailable">
         <RecentlyViewedSection />
       </SectionErrorBoundary>
-
-      {/* 11. Newsletter Subscription ("Stay in Style") */}
-      <NewsletterSection />
     </div>
   );
 }
