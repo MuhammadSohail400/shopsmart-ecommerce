@@ -18,6 +18,7 @@ export const productsService = {
     brand?: string;
     minPrice?: number;
     maxPrice?: number;
+    sort?: string;
     cursor?: string;
     limit: number;
   }) {

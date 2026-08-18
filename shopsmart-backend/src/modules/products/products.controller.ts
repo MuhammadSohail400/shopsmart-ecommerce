@@ -10,6 +10,7 @@ export const productsController = {
       brand?: string;
       minPrice?: number;
       maxPrice?: number;
+      sort?: string;
       cursor?: string;
       limit: number;
     };

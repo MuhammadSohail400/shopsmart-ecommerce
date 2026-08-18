@@ -19,7 +19,7 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
     <ProductGrid>
       {Array.from({ length: count }).map((_, i) => (
         <Card key={i} className="flex flex-col overflow-hidden border-border/50 bg-card rounded-2xl">
-          <div className="aspect-square w-full bg-muted/40 flex items-center justify-center">
+          <div className="aspect-[4/5] w-full bg-muted/40 flex items-center justify-center">
             <Skeleton className="h-full w-full rounded-none" />
           </div>
           <CardContent className="flex flex-col gap-1.5 p-3 sm:p-3.5 flex-1">

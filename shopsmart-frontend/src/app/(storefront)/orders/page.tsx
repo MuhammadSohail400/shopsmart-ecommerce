@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { OrderStatus } from '@/types/checkout.types';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
+import { formatCurrency } from '@/lib/utils';
 
 // ─── Status helpers (mirroring backend OrderStatus enum) ─────────────────────
 function getStatusConfig(status: OrderStatus) {
@@ -132,10 +133,7 @@ function OrdersContent() {
               month: 'short',
               day: 'numeric',
             });
-            const formattedTotal = new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: 'USD',
-            }).format(Number(order.totalAmount));
+            const formattedTotal = formatCurrency(order.totalAmount);
 
             return (
               <Link

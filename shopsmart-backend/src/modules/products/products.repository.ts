@@ -7,6 +7,7 @@ interface ListFilters {
   brand?: string;
   minPrice?: number;
   maxPrice?: number;
+  sort?: string;
   cursor?: string;
   limit: number;
 }
@@ -19,16 +20,36 @@ export const productsRepository = {
     };
 
     if (filters.q) {
-      // FR-031/033: Postgres full-text-ish search via case-insensitive contains
-      // at Phase 1-3 scope; upgraded to tsvector/GIN once the migration adds
-      // the generated search column (DDD Section 7.6-7.7).
       where.OR = [
         { title: { contains: filters.q, mode: 'insensitive' } },
         { description: { contains: filters.q, mode: 'insensitive' } },
       ];
     }
-    if (filters.category) where.category = { slug: filters.category };
-    if (filters.brand) where.brand = { slug: filters.brand };
+    
+    if (filters.category && filters.category !== 'all') {
+      const matchedCat = await prisma.category.findUnique({
+        where: { slug: filters.category },
+        include: { children: { include: { children: true } } },
+      });
+      if (matchedCat) {
+        const catIds = [matchedCat.id];
+        if (matchedCat.children) {
+          for (const child of matchedCat.children) {
+            catIds.push(child.id);
+            if (child.children) {
+              for (const grandChild of child.children) {
+                catIds.push(grandChild.id);
+              }
+            }
+          }
+        }
+        where.categoryId = { in: catIds };
+      } else {
+        where.category = { slug: filters.category };
+      }
+    }
+
+    if (filters.brand && filters.brand !== 'all') where.brand = { slug: filters.brand };
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
       where.basePrice = {
         ...(filters.minPrice !== undefined ? { gte: filters.minPrice } : {}),
@@ -36,11 +57,22 @@ export const productsRepository = {
       };
     }
 
+    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
+    if (filters.sort === 'price_asc' || filters.sort === 'price-low' || filters.sort === 'price_low_high') {
+      orderBy = { basePrice: 'asc' };
+    } else if (filters.sort === 'price_desc' || filters.sort === 'price-high' || filters.sort === 'price_high_low') {
+      orderBy = { basePrice: 'desc' };
+    } else if (filters.sort === 'newest' || filters.sort === 'date') {
+      orderBy = { createdAt: 'desc' };
+    } else if (filters.sort === 'featured' || filters.sort === 'best_selling') {
+      orderBy = { createdAt: 'desc' };
+    }
+
     const items = await prisma.product.findMany({
       where,
       take: filters.limit + 1, // fetch one extra to determine hasMore
       ...(filters.cursor ? { cursor: { id: filters.cursor }, skip: 1 } : {}),
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       include: { category: true, brand: true, variants: { include: { inventory: true } }, images: true },
     });
 

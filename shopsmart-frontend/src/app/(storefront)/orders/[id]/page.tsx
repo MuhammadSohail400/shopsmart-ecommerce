@@ -26,6 +26,7 @@ import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { toast } from 'sonner';
 import { OrderStatus } from '@/types/checkout.types';
 import { ApiError } from '@/lib/api-client';
+import { formatCurrency } from '@/lib/utils';
 import {
   Alert,
   AlertDescription,
@@ -209,8 +210,8 @@ function OrderDetailContent() {
                   <p className="text-xs text-muted-foreground">Quantity: {item.quantity}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-sm font-semibold">${(Number(item.priceAtPurchase) * item.quantity).toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground">${Number(item.priceAtPurchase).toFixed(2)} ea.</p>
+                  <p className="text-sm font-semibold">{formatCurrency(Number(item.priceAtPurchase) * item.quantity)}</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(item.priceAtPurchase)} ea.</p>
                 </div>
               </div>
             ))}
@@ -221,30 +222,30 @@ function OrderDetailContent() {
             <div className="space-y-1.5 text-sm pt-1">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>${Number(order.subtotal).toFixed(2)}</span>
+                <span className="font-bold">{formatCurrency(order.subtotal)}</span>
               </div>
               {Number(order.shippingAmount) > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
-                  <span>${Number(order.shippingAmount).toFixed(2)}</span>
+                  <span>{formatCurrency(order.shippingAmount)}</span>
                 </div>
               )}
               {Number(order.taxAmount) > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax</span>
-                  <span>${Number(order.taxAmount).toFixed(2)}</span>
+                  <span>{formatCurrency(order.taxAmount)}</span>
                 </div>
               )}
               {Number(order.discountAmount) > 0 && (
-                <div className="flex justify-between text-green-600">
+                <div className="flex justify-between text-green-600 font-bold">
                   <span>Discount</span>
-                  <span>−${Number(order.discountAmount).toFixed(2)}</span>
+                  <span>−{formatCurrency(order.discountAmount)}</span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between font-bold text-base pt-1">
                 <span>Total</span>
-                <span>${Number(order.totalAmount).toFixed(2)}</span>
+                <span className="text-primary font-black">{formatCurrency(order.totalAmount)}</span>
               </div>
             </div>
           </CardContent>

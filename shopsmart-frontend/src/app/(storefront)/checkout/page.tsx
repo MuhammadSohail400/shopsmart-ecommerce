@@ -46,6 +46,7 @@ import { CheckoutSession, ConfirmCheckoutResult } from '@/types/checkout.types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/lib/api-client';
 import { ProtectedRoute } from '@/components/auth/protected-route';
+import { formatCurrency } from '@/lib/utils';
 
 // ─── Stripe setup (publishable key only — never the secret) ─────────────────
 const isStripeConfigured =
@@ -712,7 +713,7 @@ function CheckoutContent() {
                       <p className="text-xs text-muted-foreground mt-0.5">Qty: {item.quantity}</p>
                     </div>
                     <div className="text-sm font-semibold shrink-0">
-                      ${item.subtotal.toFixed(2)}
+                      {formatCurrency(item.subtotal)}
                     </div>
                   </div>
                 ))}
@@ -724,25 +725,25 @@ function CheckoutContent() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>${(step === 2 && sessionData ? Number(sessionData.subtotal) : cart.subtotal).toFixed(2)}</span>
+                  <span className="font-bold">{formatCurrency(step === 2 && sessionData ? Number(sessionData.subtotal) : cart.subtotal)}</span>
                 </div>
 
                 {step === 2 && sessionData ? (
                   <>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Shipping</span>
-                      <span>${Number(sessionData.shippingAmount).toFixed(2)}</span>
+                      <span>{formatCurrency(sessionData.shippingAmount)}</span>
                     </div>
                     {Number(sessionData.taxAmount) > 0 && (
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Tax</span>
-                        <span>${Number(sessionData.taxAmount).toFixed(2)}</span>
+                        <span>{formatCurrency(sessionData.taxAmount)}</span>
                       </div>
                     )}
                     {Number(sessionData.discountAmount) > 0 && (
-                      <div className="flex justify-between text-green-600">
+                      <div className="flex justify-between text-green-600 font-bold">
                         <span>Discount</span>
-                        <span>−${Number(sessionData.discountAmount).toFixed(2)}</span>
+                        <span>−{formatCurrency(sessionData.discountAmount)}</span>
                       </div>
                     )}
                   </>
@@ -755,8 +756,8 @@ function CheckoutContent() {
                 <Separator />
                 <div className="flex justify-between font-bold text-base pt-1">
                   <span>Total</span>
-                  <span>
-                    ${(step === 2 && sessionData ? Number(sessionData.totalAmount) : cart.subtotal).toFixed(2)}
+                  <span className="text-primary font-black">
+                    {formatCurrency(step === 2 && sessionData ? Number(sessionData.totalAmount) : cart.subtotal)}
                   </span>
                 </div>
               </div>

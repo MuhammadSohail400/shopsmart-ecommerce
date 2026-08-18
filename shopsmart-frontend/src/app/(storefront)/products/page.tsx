@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ShoppingBag, SlidersHorizontal, Loader2, X, Sparkles, ArrowUpDown } from 'lucide-react';
+import { ShoppingBag, SlidersHorizontal, Loader2, X, Sparkles, ArrowUpDown, ChevronDown } from 'lucide-react';
 import { buttonVariants, Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { CatalogFilters } from '@/components/storefront/catalog-filters';
@@ -34,7 +34,8 @@ function ProductsPageContent() {
     brand: searchParams.get('brand') || undefined,
     minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
     maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
-    limit: 12,
+    sort: currentSort,
+    limit: 24,
   };
 
   const { data: categories } = useCategories();
@@ -93,38 +94,75 @@ function ProductsPageContent() {
     'price-low': 'Price: Low to High',
     'price-high': 'Price: High to Low',
     newest: 'Newest Arrivals',
+    discount: 'Discount (High to Low)',
   };
+
+  // Determine category heading title
+  const activeCategoryObj = categories?.find(c => c.slug === currentCategory);
+  const pageTitle = activeCategoryObj ? activeCategoryObj.name.toUpperCase() : 'MEN\'S CASUAL & FORMAL APPAREL';
 
   return (
     <div className="container max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6">
-      <Breadcrumbs items={[{ label: 'Products' }]} className="mb-4 sm:mb-6" />
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Collection', href: '/products' },
+        ...(activeCategoryObj ? [{ label: activeCategoryObj.name, href: `/products?category=${activeCategoryObj.slug}` }] : []),
+      ]} className="mb-4 sm:mb-6" />
 
-      {/* Header and Controls */}
-      <div className="flex flex-col gap-4 mb-6">
+      {/* Collection Banner / Title Header */}
+      <div className="flex flex-col gap-4 mb-6 pb-4 border-b border-border/40">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-              All Products
+            <span className="text-[11px] font-black text-primary uppercase tracking-widest">
+              Collection
+            </span>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground uppercase">
+              {pageTitle}
             </h1>
-            {filters.q ? (
-              <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
-                Showing results for <span className="font-bold text-foreground">&quot;{filters.q}&quot;</span>
-              </p>
-            ) : (
-              <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
-                Explore our curated catalog with authentic quality guaranteed.
-              </p>
-            )}
+            <p className="text-muted-foreground mt-1 text-xs sm:text-sm max-w-xl">
+              {activeCategoryObj 
+                ? `Explore our refined selection of ${activeCategoryObj.name.toLowerCase()} tailored with fine fabrics and modern cuts.`
+                : 'Premium shirts, trousers, and modern fashion designed for effortless confidence.'}
+            </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
-            {/* Sort Dropdown */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-muted-foreground bg-secondary/80 px-3 py-1.5 rounded-full whitespace-nowrap">
+              {products.length} {products.length === 1 ? 'Product' : 'Products'}
+            </span>
+          </div>
+        </div>
+
+        {/* Mobile Filter & Sort Bar (Sticky/Prominent) */}
+        <div className="flex sm:hidden items-center gap-2 pt-2">
+          {/* Mobile Filter Sheet */}
+          <div className="flex-1">
+            <Sheet>
+              <SheetTrigger render={<Button variant="outline" className="w-full h-10 rounded-xl text-xs font-bold gap-2 border-border/80 justify-center shadow-2xs" />}>
+                <SlidersHorizontal className="h-4 w-4 text-primary" />
+                <span>Filter</span>
+                {hasActiveFilters && (
+                  <span className="h-2 w-2 rounded-full bg-primary" />
+                )}
+              </SheetTrigger>
+              <SheetContent side="left" className="w-full sm:max-w-md overflow-y-auto p-6">
+                <SheetHeader className="mb-6 text-left">
+                  <SheetTitle className="text-lg font-black uppercase tracking-tight">Filter Collection</SheetTitle>
+                </SheetHeader>
+                <CatalogFilters />
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* Mobile Sort Dropdown */}
+          <div className="flex-1">
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-9 rounded-full text-xs font-semibold gap-1.5 border-border/80" />}>
+              <DropdownMenuTrigger render={<Button variant="outline" className="w-full h-10 rounded-xl text-xs font-bold gap-1.5 border-border/80 justify-center shadow-2xs" />}>
                 <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>Sort: {sortLabels[currentSort] || 'Featured'}</span>
+                <span className="truncate">Sort</span>
+                <ChevronDown className="h-3 w-3 text-muted-foreground" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-2xl shadow-xl">
+              <DropdownMenuContent align="end" className="w-52 p-2 rounded-2xl shadow-xl">
                 <DropdownMenuItem className="text-xs font-semibold py-2 rounded-xl cursor-pointer" onClick={() => handleSortChange('featured')}>
                   Featured
                 </DropdownMenuItem>
@@ -139,31 +177,12 @@ function ProductsPageContent() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Mobile Filter Sheet Trigger */}
-            <div className="md:hidden">
-              <Sheet>
-                <SheetTrigger render={<Button variant="outline" size="sm" className="h-9 rounded-full text-xs font-semibold gap-1.5 border-border/80" />}>
-                  <SlidersHorizontal className="h-3.5 w-3.5" />
-                  <span>Filters</span>
-                  {hasActiveFilters && (
-                    <span className="h-2 w-2 rounded-full bg-primary" />
-                  )}
-                </SheetTrigger>
-                <SheetContent side="left" className="w-full sm:max-w-md overflow-y-auto p-6">
-                  <SheetHeader className="mb-6 text-left">
-                    <SheetTitle className="text-lg font-bold">Filter Products</SheetTitle>
-                  </SheetHeader>
-                  <CatalogFilters />
-                </SheetContent>
-              </Sheet>
-            </div>
           </div>
         </div>
 
-        {/* Category Horizontal Quick Filter Chips */}
+        {/* Desktop Quick Category Chips */}
         {categories && categories.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="hidden sm:flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-2">
             <Link
               href="/products"
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
@@ -174,25 +193,27 @@ function ProductsPageContent() {
             >
               All Items
             </Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/products?category=${cat.slug}`}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                  currentCategory === cat.slug
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                {cat.name}
-              </Link>
-            ))}
+            {categories
+              .filter(c => !['men', 'women', 'kids', 'collections'].includes(c.slug))
+              .map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/products?category=${cat.slug}`}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                    currentCategory === cat.slug
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  {cat.name}
+                </Link>
+              ))}
           </div>
         )}
 
-        {/* Active Filter Chips */}
+        {/* Active Filter Badges */}
         {hasActiveFilters && (
-          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/40">
+          <div className="flex flex-wrap items-center gap-2 pt-2">
             <span className="text-xs font-bold text-muted-foreground">Active:</span>
             {filters.q && (
               <Badge variant="secondary" className="gap-1.5 text-xs py-1 px-2.5 rounded-full font-medium">
@@ -218,48 +239,75 @@ function ProductsPageContent() {
                 </button>
               </Badge>
             )}
-            {(filters.minPrice || filters.maxPrice) && (
-              <Badge variant="secondary" className="gap-1.5 text-xs py-1 px-2.5 rounded-full font-medium">
-                Price: ${filters.minPrice ?? 0} - ${filters.maxPrice ?? 'Max'}
-                <button type="button" onClick={() => { handleRemoveFilter('minPrice'); handleRemoveFilter('maxPrice'); }} className="hover:text-destructive">
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            <button
-              type="button"
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={handleClearFilters}
-              className="text-xs font-bold text-primary hover:underline ml-1"
+              className="text-xs h-7 px-2 text-destructive hover:bg-destructive/10 rounded-full font-semibold"
             >
-              Clear All
-            </button>
+              Reset all
+            </Button>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8">
-        {/* Desktop Filters Sidebar */}
-        <aside className="hidden md:block col-span-1 border-r border-border/50 pr-6">
-          <div className="sticky top-24">
-            <CatalogFilters />
-          </div>
+      {/* Main Catalog Body: Desktop Sidebar Filter + Product Grid */}
+      <div className="flex gap-8 items-start">
+        {/* Desktop Sidebar (Left) */}
+        <aside className="hidden md:block w-60 lg:w-64 shrink-0 sticky top-24">
+          <CatalogFilters />
         </aside>
 
-        {/* Product Grid Area */}
-        <div className="col-span-1 md:col-span-3 lg:col-span-4 flex flex-col gap-6">
+        {/* Product Grid Area (Right) */}
+        <main className="flex-1 min-w-0">
+          {/* Desktop Sort Header */}
+          <div className="hidden sm:flex items-center justify-between mb-4 pb-2">
+            <span className="text-xs font-semibold text-muted-foreground">
+              Showing {products.length} {products.length === 1 ? 'result' : 'results'}
+            </span>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 rounded-full text-xs font-semibold gap-1.5 border-border/80" />}>
+                <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                <span>Sort: {sortLabels[currentSort] || 'Featured'}</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-2xl shadow-xl">
+                <DropdownMenuItem className="text-xs font-semibold py-2 rounded-xl cursor-pointer" onClick={() => handleSortChange('featured')}>
+                  Featured
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-xs font-semibold py-2 rounded-xl cursor-pointer" onClick={() => handleSortChange('price-low')}>
+                  Price: Low to High
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-xs font-semibold py-2 rounded-xl cursor-pointer" onClick={() => handleSortChange('price-high')}>
+                  Price: High to Low
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-xs font-semibold py-2 rounded-xl cursor-pointer" onClick={() => handleSortChange('newest')}>
+                  Newest Arrivals
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           {isLoading ? (
             <ProductGridSkeleton count={8} />
           ) : isError ? (
-            <div className="p-8 text-center bg-card rounded-2xl border border-destructive/20 text-destructive">
-              Failed to load products. Please check your connection and try again.
-            </div>
+            <EmptyState
+              icon={<ShoppingBag />}
+              title="Error loading collection"
+              description="Failed to retrieve products. Please check your internet connection."
+              action={
+                <Button onClick={() => window.location.reload()} variant="outline" className="rounded-full">
+                  Retry
+                </Button>
+              }
+            />
           ) : products.length === 0 ? (
             <EmptyState
               icon={<ShoppingBag />}
               title="No products found"
-              description="Try adjusting your search criteria or clearing active filters."
+              description="We couldn't find any products matching your selected filters. Try broadening your criteria."
               action={
-                <Button variant="outline" className="rounded-full" onClick={handleClearFilters}>
+                <Button onClick={handleClearFilters} className="rounded-full">
                   Clear All Filters
                 </Button>
               }
@@ -273,17 +321,27 @@ function ProductsPageContent() {
               </ProductGrid>
 
               {/* Infinite Scroll Trigger */}
-              <div ref={ref} className="py-8 flex justify-center w-full">
-                {isFetchingNextPage && (
-                  <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    Loading more products...
-                  </div>
-                )}
-              </div>
+              {hasNextPage && (
+                <div ref={ref} className="py-12 flex justify-center items-center">
+                  {isFetchingNextPage ? (
+                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground bg-secondary/80 px-4 py-2 rounded-full">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <span>Loading more styles...</span>
+                    </div>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => fetchNextPage()}
+                      className="rounded-full px-6 font-bold text-xs"
+                    >
+                      Load More Products
+                    </Button>
+                  )}
+                </div>
+              )}
             </>
           )}
-        </div>
+        </main>
       </div>
     </div>
   );

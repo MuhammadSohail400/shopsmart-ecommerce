@@ -25,7 +25,7 @@ export default function CategoriesPage() {
           Explore All Categories
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
-          Browse our entire catalog across premium fashion, electronics, lifestyle, and home collections.
+          Browse our entire fashion collection across Men, Women, Kids, Shirts, and Accessories.
         </p>
       </div>
 
