@@ -30,9 +30,10 @@ const envSchema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
-  // Email (Phase 6) — supports Resend API key OR standard SMTP (e.g. free Gmail SMTP)
+  // Email (Phase 6) — supports Brevo API, Resend API, or standard SMTP
+  BREVO_API_KEY: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM_ADDRESS: z.string().default('no-reply@shopsmart.ai'),
+  EMAIL_FROM_ADDRESS: z.string().default('msohailg211@gmail.com'),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),
   SMTP_USER: z.string().optional(),
