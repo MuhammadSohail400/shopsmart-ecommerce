@@ -33,14 +33,25 @@ export const analyticsService = {
     const summary = await this.getSalesSummary(startDate, endDate);
     const topProducts = await this.getTopProducts(20);
 
+    const sanitizeCell = (text: string) => {
+      let str = String(text ?? '');
+      if (str.startsWith('=') || str.startsWith('+') || str.startsWith('-') || str.startsWith('@')) {
+        str = `'${str}`;
+      }
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
     const lines = [
       'Metric,Value',
       `Total Revenue,${summary.totalRevenue}`,
       `Order Count,${summary.orderCount}`,
-      `Average Order Value,${summary.averageOrderValue.toFixed(2)}`,
+      `Average Order Value,${(summary.averageOrderValue || 0).toFixed(2)}`,
       '',
       'Product,Units Sold,Revenue',
-      ...topProducts.map((p: { productTitle: string; unitsSold: number; revenue: number }) => `"${p.productTitle}",${p.unitsSold},${p.revenue.toFixed(2)}`),
+      ...topProducts.map(
+        (p: { productTitle: string; unitsSold: number; revenue: number }) =>
+          `${sanitizeCell(p.productTitle)},${p.unitsSold},${(p.revenue || 0).toFixed(2)}`,
+      ),
     ];
     return lines.join('\n');
   },
