@@ -5,6 +5,13 @@ import { DiscountType } from '@prisma/client';
 type Client = typeof prisma | Prisma.TransactionClient;
 
 export const couponsRepository = {
+  listAll() {
+    return prisma.coupon.findMany({
+      where: { deletedAt: null },
+      orderBy: { startDate: 'desc' },
+    });
+  },
+
   findByCode(code: string) {
     return prisma.coupon.findFirst({
       where: { code: code.toUpperCase(), deletedAt: null },

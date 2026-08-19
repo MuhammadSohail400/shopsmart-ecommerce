@@ -12,6 +12,11 @@ export const adminService = {
   },
 
   async createStaff(data: CreateStaffBody, actorId?: string) {
+    const existing = await adminRepository.findUserByEmail(data.email);
+    if (existing) {
+      throw new ConflictError('USER_ALREADY_EXISTS', 'An account with this email address already exists');
+    }
+
     const passwordHash = await hashPassword(data.password);
     const staff = await adminRepository.createStaff(data.email, passwordHash, data.role as Role);
     await recordAuditLog(actorId, 'staff.created', 'User', staff.id, undefined, { email: data.email, role: data.role });

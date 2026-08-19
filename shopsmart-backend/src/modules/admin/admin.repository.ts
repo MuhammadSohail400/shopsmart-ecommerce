@@ -19,6 +19,12 @@ export const adminRepository = {
     });
   },
 
+  findUserByEmail(email: string) {
+    return prisma.user.findFirst({
+      where: { email: email.toLowerCase().trim() },
+    });
+  },
+
   createStaff(email: string, passwordHash: string, role: Role) {
     return prisma.user.create({
       data: { email, passwordHash, role, emailVerified: true }, // staff accounts are pre-verified

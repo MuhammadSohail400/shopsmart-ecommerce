@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useStaff, useCreateStaff, useUpdateStaffRole } from '@/hooks/use-admin';
 import { useAuth } from '@/hooks/use-auth';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -88,16 +89,28 @@ export default function AdminStaffPage() {
     e.preventDefault();
     if (!newEmail || !newPassword) return;
 
-    await createStaffMutation.mutateAsync({
-      email: newEmail.trim().toLowerCase(),
-      password: newPassword,
-      role: newRole,
-    });
+    const hasUpper = /[A-Z]/.test(newPassword);
+    const hasLower = /[a-z]/.test(newPassword);
+    const hasNumber = /[0-9]/.test(newPassword);
+    if (newPassword.length < 8 || !hasUpper || !hasLower || !hasNumber) {
+      toast.error('Password must be at least 8 characters with at least 1 uppercase, 1 lowercase, and 1 number (e.g. Staff@123456)');
+      return;
+    }
 
-    setIsAddOpen(false);
-    setNewEmail('');
-    setNewPassword('');
-    setNewRole('support_agent');
+    try {
+      await createStaffMutation.mutateAsync({
+        email: newEmail.trim().toLowerCase(),
+        password: newPassword,
+        role: newRole,
+      });
+
+      setIsAddOpen(false);
+      setNewEmail('');
+      setNewPassword('');
+      setNewRole('support_agent');
+    } catch (err: any) {
+      // Handled by mutation onError toast
+    }
   };
 
   const handleRoleChange = (staffId: string, currentRole: string, newRoleValue: string) => {

@@ -9,6 +9,13 @@ import { ROLES } from '@shared/constants/roles';
 
 const router = Router();
 
+router.get(
+  '/',
+  authMiddleware,
+  requireRole(ROLES.ADMIN, ROLES.SUPPORT_AGENT),
+  asyncHandler(couponsController.list),
+);
+
 router.post(
   '/',
   authMiddleware,

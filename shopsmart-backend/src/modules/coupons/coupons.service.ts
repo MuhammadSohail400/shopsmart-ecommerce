@@ -5,6 +5,10 @@ import { DiscountType } from '@prisma/client';
 import type { CreateCouponBody } from './coupons.validators';
 
 export const couponsService = {
+  async listAll() {
+    return couponsRepository.listAll();
+  },
+
   async create(data: CreateCouponBody, actorId?: string) {
     const existing = await couponsRepository.findByCode(data.code);
     if (existing) throw new ConflictError('COUPON_CODE_EXISTS', 'A coupon with this code already exists');

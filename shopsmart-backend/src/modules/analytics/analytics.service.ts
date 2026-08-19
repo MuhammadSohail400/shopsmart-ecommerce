@@ -1,6 +1,20 @@
 import { analyticsRepository } from './analytics.repository';
 
 export const analyticsService = {
+  async getOverview() {
+    const { adminRepository } = await import('@modules/admin/admin.repository');
+    const [orderCountsByStatus, totalRevenue, lowStockResult] = await Promise.all([
+      adminRepository.orderCountsByStatus(),
+      adminRepository.totalRevenue(),
+      adminRepository.countLowStockItems(),
+    ]);
+    return {
+      orderCountsByStatus,
+      totalRevenue,
+      lowStockItemCount: Number(lowStockResult[0]?.count ?? 0),
+    };
+  },
+
   async getSalesSummary(startDate: Date, endDate: Date) {
     return analyticsRepository.salesSummary(startDate, endDate);
   },

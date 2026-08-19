@@ -3,6 +3,10 @@ import { couponsService } from './coupons.service';
 import { sendSuccess } from '@shared/utils/response.util';
 
 export const couponsController = {
+  async list(_req: Request, res: Response) {
+    sendSuccess(res, await couponsService.listAll());
+  },
+
   async create(req: Request, res: Response) {
     sendSuccess(res, await couponsService.create(req.body, req.user?.id), 201);
   },

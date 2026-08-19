@@ -9,6 +9,10 @@ function resolveRange(query: { startDate?: Date; endDate?: Date }) {
 }
 
 export const analyticsController = {
+  async overview(_req: Request, res: Response) {
+    sendSuccess(res, await analyticsService.getOverview());
+  },
+
   async sales(req: Request, res: Response) {
     const { startDate, endDate } = resolveRange(req.query as never);
     sendSuccess(res, await analyticsService.getSalesSummary(startDate, endDate));
