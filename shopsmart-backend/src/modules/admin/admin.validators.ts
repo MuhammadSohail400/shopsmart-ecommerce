@@ -9,5 +9,5 @@ export const createStaffSchema = z.object({
 export type CreateStaffBody = z.infer<typeof createStaffSchema>;
 
 export const updateStaffRoleSchema = z.object({
-  role: z.enum(['admin', 'inventory_manager', 'support_agent']),
+  role: z.enum(['admin', 'inventory_manager', 'support_agent', 'customer']),
 });
