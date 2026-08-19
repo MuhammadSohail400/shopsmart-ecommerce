@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { usePublicSettings } from '@/hooks/use-admin';
 import { toast } from 'sonner';
 import { ApiError } from '@/lib/api-client';
 
@@ -28,6 +29,11 @@ export default function ContactPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const submitContactMutation = useSubmitContactMessage();
+  const { data: publicSettings } = usePublicSettings();
+
+  const supportEmail = publicSettings?.support_email || 'support@shopsmart.ai';
+  const supportPhone = publicSettings?.support_phone || '+92 300 1234567';
+  const storeName = publicSettings?.store_name || 'ShopSmart';
 
   const {
     register,
@@ -94,7 +100,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">Email Support</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">support@shopsmart.ai</p>
+                  <a href={`mailto:${supportEmail}`} className="text-xs text-primary hover:underline mt-0.5 block">{supportEmail}</a>
                 </div>
               </div>
 
@@ -103,8 +109,8 @@ export default function ContactPage() {
                   <Phone className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">Phone Hotline</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">+1 (800) 555-SMART</p>
+                  <p className="font-semibold text-foreground">Helpline & WhatsApp</p>
+                  <a href={`tel:${supportPhone}`} className="text-xs text-primary hover:underline mt-0.5 block">{supportPhone}</a>
                 </div>
               </div>
 

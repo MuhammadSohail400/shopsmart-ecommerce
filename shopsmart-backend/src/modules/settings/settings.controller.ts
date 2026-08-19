@@ -7,8 +7,16 @@ export const settingsController = {
     sendSuccess(res, await settingsService.list());
   },
 
+  async getPublicStoreInfo(_req: Request, res: Response) {
+    sendSuccess(res, await settingsService.getPublicStoreInfo());
+  },
+
   async update(req: Request, res: Response) {
     sendSuccess(res, await settingsService.update(req.body.key, req.body.value));
+  },
+
+  async updateBulk(req: Request, res: Response) {
+    sendSuccess(res, await settingsService.updateBulk(req.body));
   },
 
   async listTaxRules(_req: Request, res: Response) {

@@ -280,6 +280,10 @@ export const adminOperationsService = {
   },
 
   // Settings & Tax Rules
+  async getPublicSettings(): Promise<Record<string, string>> {
+    return apiClient<Record<string, string>>('/admin/settings/public');
+  },
+
   async getSettings(): Promise<StoreSetting[]> {
     return apiClient<StoreSetting[]>('/admin/settings');
   },
@@ -288,6 +292,13 @@ export const adminOperationsService = {
     return apiClient('/admin/settings', {
       method: 'PATCH',
       body: JSON.stringify({ key, value }),
+    });
+  },
+
+  async updateBulkSettings(settings: Record<string, string>): Promise<any> {
+    return apiClient('/admin/settings/bulk', {
+      method: 'PATCH',
+      body: JSON.stringify(settings),
     });
   },
 

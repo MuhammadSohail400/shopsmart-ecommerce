@@ -8,10 +8,16 @@ import { updateSettingSchema, createTaxRuleSchema } from './settings.validators'
 import { ROLES } from '@shared/constants/roles';
 
 const router = Router();
+
+// Public: Storefront dynamic brand, currency & helpline info
+router.get('/public', asyncHandler(settingsController.getPublicStoreInfo));
+
+// Admin-guarded settings operations
 router.use(authMiddleware, requireRole(ROLES.ADMIN));
 
 router.get('/', asyncHandler(settingsController.list));
 router.patch('/', validate(updateSettingSchema), asyncHandler(settingsController.update));
+router.patch('/bulk', asyncHandler(settingsController.updateBulk));
 
 router.get('/tax-rules', asyncHandler(settingsController.listTaxRules));
 router.post('/tax-rules', validate(createTaxRuleSchema), asyncHandler(settingsController.createTaxRule));

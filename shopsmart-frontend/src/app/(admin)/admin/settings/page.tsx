@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Settings, Save, ShieldCheck, Globe, Percent, Plus, Trash2, RefreshCw, CheckCircle2 } from 'lucide-react';
 import {
   useAdminSettings,
-  useUpdateSetting,
+  useUpdateBulkSettings,
   useTaxRules,
   useCreateTaxRule,
   useDeleteTaxRule,
@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 export default function AdminSettingsPage() {
   const { data: settings, isLoading: isLoadingSettings, refetch, isFetching } = useAdminSettings();
   const { data: taxRules, isLoading: isLoadingTax } = useTaxRules();
-  const updateSettingMutation = useUpdateSetting();
+  const updateBulkMutation = useUpdateBulkSettings();
   const createTaxRuleMutation = useCreateTaxRule();
   const deleteTaxRuleMutation = useDeleteTaxRule();
 
@@ -54,14 +54,13 @@ export default function AdminSettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await Promise.all([
-        updateSettingMutation.mutateAsync({ key: 'store_name', value: storeName }),
-        updateSettingMutation.mutateAsync({ key: 'currency', value: currency }),
-        updateSettingMutation.mutateAsync({ key: 'free_shipping_threshold', value: freeShippingThreshold }),
-        updateSettingMutation.mutateAsync({ key: 'support_email', value: supportEmail }),
-        updateSettingMutation.mutateAsync({ key: 'support_phone', value: supportPhone }),
-      ]);
-      toast.success('All store settings saved successfully!');
+      await updateBulkMutation.mutateAsync({
+        store_name: storeName.trim(),
+        currency: currency.trim().toUpperCase(),
+        free_shipping_threshold: freeShippingThreshold.trim(),
+        support_email: supportEmail.trim(),
+        support_phone: supportPhone.trim(),
+      });
     } catch (err: any) {
       toast.error(err?.message || 'Failed to save settings');
     } finally {

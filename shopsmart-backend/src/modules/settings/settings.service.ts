@@ -24,6 +24,33 @@ export const settingsService = {
     return settingsRepository.upsert(key, value);
   },
 
+  async updateBulk(settings: Record<string, string>) {
+    const entries = Object.entries(settings);
+    const results = [];
+    for (const [key, value] of entries) {
+      if (key && typeof value === 'string') {
+        const saved = await settingsRepository.upsert(key, value);
+        results.push(saved);
+      }
+    }
+    return results;
+  },
+
+  async getPublicStoreInfo() {
+    const all = await settingsRepository.listAll();
+    const map: Record<string, string> = {
+      store_name: 'ShopSmart',
+      currency: 'PKR',
+      free_shipping_threshold: '2500',
+      support_email: 'support@shopsmart.ai',
+      support_phone: '+92 300 1234567',
+    };
+    all.forEach((s) => {
+      map[s.key] = s.value;
+    });
+    return map;
+  },
+
   async listTaxRules() {
     return settingsRepository.listTaxRules();
   },

@@ -23,6 +23,7 @@ import { useAuth, useLogout } from '@/hooks/use-auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { useCart } from '@/features/cart/hooks/use-cart';
 import { useWishlist } from '@/features/wishlist/hooks/use-wishlist';
+import { usePublicSettings } from '@/hooks/use-admin';
 import { SearchDialog } from '@/components/storefront/search-dialog';
 
 import { getUserDisplayName, getUserInitial } from '@/lib/utils';
@@ -34,6 +35,11 @@ export function Header() {
   const router = useRouter();
   const { data: cart } = useCart();
   const { data: wishlist } = useWishlist();
+  const { data: publicSettings } = usePublicSettings();
+
+  const storeName = publicSettings?.store_name || 'ShopSmart';
+  const currency = publicSettings?.currency || 'PKR';
+  const freeShipping = publicSettings?.free_shipping_threshold || '2,500';
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -79,7 +85,7 @@ export function Header() {
       {/* Announcement Bar */}
       <div className="w-full bg-foreground text-background py-1.5 px-3 sm:px-4 text-center text-[10px] sm:text-[11px] font-extrabold tracking-wider flex items-center justify-center gap-1.5 sm:gap-2 border-b border-border/20">
         <Sparkles className="h-3 w-3 text-primary animate-pulse shrink-0" />
-        <span className="truncate sm:overflow-visible">FREE DELIVERY ON ORDERS OVER RS. 2,500 • CASH ON DELIVERY ACROSS PAKISTAN</span>
+        <span className="truncate sm:overflow-visible">FREE DELIVERY ON ORDERS OVER {currency} {Number(freeShipping).toLocaleString()} • CASH ON DELIVERY AVAILABLE</span>
       </div>
 
       <header className="sticky top-0 z-40 w-full h-16 border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 transition-all shadow-xs">
@@ -104,7 +110,7 @@ export function Header() {
                       <div className="bg-primary text-primary-foreground p-1.5 rounded-xl shadow-xs">
                         <ShoppingBag className="h-4 w-4" />
                       </div>
-                      <span>ShopSmart</span>
+                      <span>{storeName}</span>
                     </Link>
                   </div>
 
@@ -306,7 +312,7 @@ export function Header() {
               <div className="bg-primary text-primary-foreground p-1 sm:p-1.5 rounded-lg sm:rounded-xl shadow-xs">
                 <ShoppingBag className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
               </div>
-              <span className="text-lg sm:text-2xl tracking-tighter text-foreground font-black">ShopSmart</span>
+              <span className="text-lg sm:text-2xl tracking-tighter text-foreground font-black">{storeName}</span>
             </Link>
 
             {/* Desktop Navigation Links (Home, Men, Women, Kids, New Arrivals, Sale) */}

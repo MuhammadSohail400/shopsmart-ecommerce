@@ -23,7 +23,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useLowStockInventory, useAdminOrders, useContactMessages } from '@/hooks/use-admin';
+import { useLowStockInventory, useAdminOrders, useContactMessages, usePublicSettings } from '@/hooks/use-admin';
 
 interface SidebarNavGroup {
   label: string;
@@ -41,6 +41,8 @@ export function AdminSidebar({ isMobile = false, onItemClick }: { isMobile?: boo
   const { data: lowStock } = useLowStockInventory();
   const { data: ordersData } = useAdminOrders({ limit: 1 });
   const { data: contactMessages } = useContactMessages('unread');
+  const { data: publicSettings } = usePublicSettings();
+  const storeName = publicSettings?.store_name || 'ShopSmart';
 
   const lowStockCount = lowStock?.length || 0;
   const unreadMessagesCount = contactMessages?.length || 0;
@@ -103,8 +105,8 @@ export function AdminSidebar({ isMobile = false, onItemClick }: { isMobile?: boo
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div>
-            <span className="font-black text-sm tracking-tight uppercase block leading-tight text-foreground">
-              ShopSmart
+            <span className="font-black text-sm tracking-tight uppercase block leading-tight text-foreground truncate max-w-[140px]">
+              {storeName}
             </span>
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-primary block">
               Admin Console

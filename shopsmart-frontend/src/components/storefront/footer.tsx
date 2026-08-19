@@ -5,6 +5,7 @@ import { ShoppingBag, ShieldCheck, Truck, RefreshCw, Headphones, Mail, Globe } f
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useSubscribeNewsletter } from '@/features/marketing/hooks/use-newsletter';
+import { usePublicSettings } from '@/hooks/use-admin';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +18,11 @@ const footerNewsletterSchema = z.object({
 type FooterNewsletterForm = z.infer<typeof footerNewsletterSchema>;
 
 export function Footer() {
+  const { data: publicSettings } = usePublicSettings();
+  const storeName = publicSettings?.store_name || 'ShopSmart';
+  const currency = publicSettings?.currency || 'PKR';
+  const freeShipping = publicSettings?.free_shipping_threshold || '2,500';
+
   const subscribeMutation = useSubscribeNewsletter();
   const { register, handleSubmit, reset } = useForm<FooterNewsletterForm>({
     resolver: zodResolver(footerNewsletterSchema),
@@ -25,7 +31,7 @@ export function Footer() {
   const onSubscribe = (data: FooterNewsletterForm) => {
     subscribeMutation.mutate(data.email, {
       onSuccess: () => {
-        toast.success('Thank you for subscribing to ShopSmart Fashion updates!');
+        toast.success(`Thank you for subscribing to ${storeName} updates!`);
         reset();
       },
       onError: () => {
@@ -46,7 +52,7 @@ export function Footer() {
               </div>
               <div>
                 <p className="text-xs sm:text-sm font-bold text-foreground">Free Delivery</p>
-                <p className="text-[10px] sm:text-[11px] text-muted-foreground">On all orders over Rs. 2,500</p>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">On all orders over {currency} {Number(freeShipping).toLocaleString()}</p>
               </div>
             </div>
 
@@ -92,7 +98,7 @@ export function Footer() {
               <div className="bg-primary text-primary-foreground p-1.5 rounded-xl shadow-xs">
                 <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <span className="text-xl sm:text-2xl tracking-tighter text-foreground font-black">ShopSmart</span>
+              <span className="text-xl sm:text-2xl tracking-tighter text-foreground font-black">{storeName}</span>
             </Link>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm">
               Discover refined menswear, effortless staples, and premium fashion designed with fine fabrics and tailored silhouettes.
@@ -247,7 +253,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-border/40 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} ShopSmart Fashion. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link href="/contact" className="hover:text-primary transition-colors">Privacy Policy</Link>
             <Link href="/contact" className="hover:text-primary transition-colors">Terms of Service</Link>

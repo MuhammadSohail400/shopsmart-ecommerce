@@ -329,6 +329,14 @@ export function useDeleteBanner() {
 }
 
 // --- Settings & Tax Rules ---
+export function usePublicSettings() {
+  return useQuery({
+    queryKey: ['public-settings'],
+    queryFn: () => adminOperationsService.getPublicSettings(),
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
+}
+
 export function useAdminSettings() {
   return useQuery({
     queryKey: adminKeys.settings(),
@@ -342,9 +350,23 @@ export function useUpdateSetting() {
     mutationFn: ({ key, value }: { key: string; value: string }) => adminOperationsService.updateSetting(key, value),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.settings() });
+      queryClient.invalidateQueries({ queryKey: ['public-settings'] });
       toast.success('Setting saved');
     },
     onError: (err: any) => toast.error(err?.message || 'Failed to save setting'),
+  });
+}
+
+export function useUpdateBulkSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (settings: Record<string, string>) => adminOperationsService.updateBulkSettings(settings),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.settings() });
+      queryClient.invalidateQueries({ queryKey: ['public-settings'] });
+      toast.success('All platform settings updated successfully');
+    },
+    onError: (err: any) => toast.error(err?.message || 'Failed to save settings'),
   });
 }
 
