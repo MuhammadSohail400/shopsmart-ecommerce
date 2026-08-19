@@ -15,5 +15,6 @@ router.patch('/', validate(updateSettingSchema), asyncHandler(settingsController
 
 router.get('/tax-rules', asyncHandler(settingsController.listTaxRules));
 router.post('/tax-rules', validate(createTaxRuleSchema), asyncHandler(settingsController.createTaxRule));
+router.delete('/tax-rules/:id', asyncHandler(settingsController.deleteTaxRule));
 
 export { router as settingsRoutes };

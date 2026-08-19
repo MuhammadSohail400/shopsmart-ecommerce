@@ -34,6 +34,10 @@ export const settingsService = {
     return settingsRepository.createTaxRule(data);
   },
 
+  async deleteTaxRule(id: string) {
+    return settingsRepository.deleteTaxRule(id);
+  },
+
   /**
    * BR-010: tax calculated based on shipping destination's applicable
    * rate. Falls back to the country-wide default rule if no region-specific

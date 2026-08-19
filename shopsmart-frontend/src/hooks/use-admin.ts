@@ -367,6 +367,18 @@ export function useCreateTaxRule() {
   });
 }
 
+export function useDeleteTaxRule() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminOperationsService.deleteTaxRule(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.taxRules() });
+      toast.success('Tax rule deleted');
+    },
+    onError: (err: any) => toast.error(err?.message || 'Failed to delete tax rule'),
+  });
+}
+
 // --- Phase 11: Staff Management ---
 export function useStaff() {
   return useQuery({

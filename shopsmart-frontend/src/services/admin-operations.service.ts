@@ -295,10 +295,20 @@ export const adminOperationsService = {
     return apiClient<TaxRule[]>('/admin/settings/tax-rules');
   },
 
-  async createTaxRule(data: { country: string; region?: string; rate: number; name: string }): Promise<TaxRule> {
+  async createTaxRule(data: { country: string; region?: string; rate: number; name?: string }): Promise<TaxRule> {
     return apiClient<TaxRule>('/admin/settings/tax-rules', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        country: data.country,
+        region: data.region,
+        rate: data.rate,
+      }),
+    });
+  },
+
+  async deleteTaxRule(id: string): Promise<void> {
+    return apiClient<void>(`/admin/settings/tax-rules/${id}`, {
+      method: 'DELETE',
     });
   },
 

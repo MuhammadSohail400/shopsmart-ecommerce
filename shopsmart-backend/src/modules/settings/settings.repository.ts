@@ -40,4 +40,11 @@ export const settingsRepository = {
       data: { ...data, country: data.country.toUpperCase() },
     });
   },
+
+  deleteTaxRule(id: string) {
+    return prisma.taxRule.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  },
 };

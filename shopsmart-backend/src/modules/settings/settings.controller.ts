@@ -18,4 +18,8 @@ export const settingsController = {
   async createTaxRule(req: Request, res: Response) {
     sendSuccess(res, await settingsService.createTaxRule(req.body), 201);
   },
+
+  async deleteTaxRule(req: Request, res: Response) {
+    sendSuccess(res, await settingsService.deleteTaxRule(req.params.id));
+  },
 };
