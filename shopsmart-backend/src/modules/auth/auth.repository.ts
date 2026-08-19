@@ -7,20 +7,21 @@ import { Role } from '@prisma/client';
  */
 export const authRepository = {
   findByEmailOrPhone(identifier: string) {
+    const trimmed = identifier.trim();
     return prisma.user.findFirst({
       where: {
         deletedAt: null,
-        OR: [{ email: identifier.toLowerCase() }, { phone: identifier }],
+        OR: [{ email: trimmed.toLowerCase() }, { phone: trimmed }],
       },
     });
   },
 
   findByEmail(email: string) {
-    return prisma.user.findFirst({ where: { email: email.toLowerCase(), deletedAt: null } });
+    return prisma.user.findFirst({ where: { email: email.trim().toLowerCase(), deletedAt: null } });
   },
 
   findByPhone(phone: string) {
-    return prisma.user.findFirst({ where: { phone, deletedAt: null } });
+    return prisma.user.findFirst({ where: { phone: phone.trim(), deletedAt: null } });
   },
 
   findById(id: string) {
