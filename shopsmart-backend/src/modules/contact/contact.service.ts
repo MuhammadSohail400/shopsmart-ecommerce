@@ -10,4 +10,16 @@ export const contactService = {
       createdAt: message.createdAt,
     };
   },
+
+  async listMessages(status?: string) {
+    return contactRepository.listMessages(status);
+  },
+
+  async updateMessageStatus(id: string, status: string) {
+    return contactRepository.updateStatus(id, status);
+  },
+
+  async deleteMessage(id: string) {
+    return contactRepository.deleteMessage(id);
+  },
 };

@@ -367,7 +367,36 @@ export const adminOperationsService = {
     if (params.limit) searchParams.append('limit', String(params.limit));
     return apiClient(`/admin/analytics/abandoned-carts?${searchParams.toString()}`);
   },
+
+  // Contact Inquiries & Messages
+  async getContactMessages(status?: string): Promise<AdminContactMessage[]> {
+    const query = status && status !== 'all' ? `?status=${status}` : '';
+    return apiClient<AdminContactMessage[]>(`/contact/messages${query}`);
+  },
+
+  async updateContactMessageStatus(id: string, status: string): Promise<AdminContactMessage> {
+    return apiClient<AdminContactMessage>(`/contact/messages/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  },
+
+  async deleteContactMessage(id: string): Promise<{ message: string }> {
+    return apiClient<{ message: string }>(`/contact/messages/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
+
+export interface AdminContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'unread' | 'read' | 'responded' | 'archived';
+  createdAt: string;
+}
 
 export interface StaffMember {
   id: string;

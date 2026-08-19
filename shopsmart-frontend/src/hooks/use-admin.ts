@@ -24,6 +24,7 @@ export const adminKeys = {
   topProductsAnalytics: (limit?: number) => [...adminKeys.all, 'analytics', 'top-products', limit] as const,
   customerAnalytics: (range?: any) => [...adminKeys.all, 'analytics', 'customers', range] as const,
   abandonedCarts: (params?: any) => [...adminKeys.all, 'analytics', 'abandoned-carts', params] as const,
+  contactMessages: (status?: string) => [...adminKeys.all, 'contact-messages', status] as const,
 };
 
 // --- Dashboard ---
@@ -440,6 +441,43 @@ export function useAbandonedCarts(params?: { cursor?: string; limit?: number }) 
   return useQuery({
     queryKey: adminKeys.abandonedCarts(params),
     queryFn: () => adminOperationsService.getAbandonedCarts(params),
+  });
+}
+
+// --- Customer Inquiries & Messages ---
+export function useContactMessages(status?: string) {
+  return useQuery({
+    queryKey: adminKeys.contactMessages(status),
+    queryFn: () => adminOperationsService.getContactMessages(status),
+  });
+}
+
+export function useUpdateContactMessageStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      adminOperationsService.updateContactMessageStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.all });
+      toast.success('Message status updated');
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to update message status');
+    },
+  });
+}
+
+export function useDeleteContactMessage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminOperationsService.deleteContactMessage(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.all });
+      toast.success('Message deleted');
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to delete message');
+    },
   });
 }
 

@@ -15,8 +15,21 @@ export const contactRepository = {
 
   async listMessages(status?: string) {
     return prisma.contactMessage.findMany({
-      where: status ? { status } : {},
+      where: status && status !== 'all' ? { status } : {},
       orderBy: { createdAt: 'desc' },
+    });
+  },
+
+  async updateStatus(id: string, status: string) {
+    return prisma.contactMessage.update({
+      where: { id },
+      data: { status },
+    });
+  },
+
+  async deleteMessage(id: string) {
+    return prisma.contactMessage.delete({
+      where: { id },
     });
   },
 };

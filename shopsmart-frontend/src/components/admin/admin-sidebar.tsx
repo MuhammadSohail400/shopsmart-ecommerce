@@ -20,9 +20,10 @@ import {
   Users,
   ScrollText,
   BarChart3,
+  MessageSquare,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useLowStockInventory, useAdminOrders } from '@/hooks/use-admin';
+import { useLowStockInventory, useAdminOrders, useContactMessages } from '@/hooks/use-admin';
 
 interface SidebarNavGroup {
   label: string;
@@ -39,8 +40,10 @@ export function AdminSidebar({ isMobile = false, onItemClick }: { isMobile?: boo
   const pathname = usePathname();
   const { data: lowStock } = useLowStockInventory();
   const { data: ordersData } = useAdminOrders({ limit: 1 });
+  const { data: contactMessages } = useContactMessages('unread');
 
   const lowStockCount = lowStock?.length || 0;
+  const unreadMessagesCount = contactMessages?.length || 0;
 
   const navGroups: SidebarNavGroup[] = [
     {
@@ -68,6 +71,13 @@ export function AdminSidebar({ isMobile = false, onItemClick }: { isMobile?: boo
       label: 'Store Operations',
       items: [
         { title: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+        {
+          title: 'Customer Inquiries',
+          href: '/admin/messages',
+          icon: MessageSquare,
+          badge: unreadMessagesCount > 0 ? `${unreadMessagesCount} New` : undefined,
+          badgeVariant: 'default',
+        },
         { title: 'Shipping Zones', href: '/admin/shipping', icon: Truck },
         { title: 'Coupons & Promos', href: '/admin/coupons', icon: TicketPercent },
         { title: 'CMS & Banners', href: '/admin/cms', icon: ImageIcon },
