@@ -20,6 +20,8 @@ export default function robots(): MetadataRoute.Robots {
           '/verify-email',
           '/verify-phone',
           '/admin',
+          '/admin/',
+          '/admin/*',
         ],
       },
     ],
