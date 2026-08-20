@@ -35,9 +35,11 @@ export const adminInventoryService = {
   },
 
   async updateInventory(variantId: string, data: UpdateInventoryInput): Promise<any> {
+    const { version, ...rest } = data;
     return apiClient(`/inventory/${variantId}`, {
       method: 'PATCH',
-      body: JSON.stringify(data),
+      headers: version !== undefined ? { 'If-Match': String(version) } : undefined,
+      body: JSON.stringify(rest),
     });
   },
 };

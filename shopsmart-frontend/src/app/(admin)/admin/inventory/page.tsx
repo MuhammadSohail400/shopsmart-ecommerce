@@ -49,16 +49,20 @@ export default function AdminInventoryPage() {
     e.preventDefault();
     if (!selectedVariant) return;
 
-    await updateInventoryMutation.mutateAsync({
-      variantId: selectedVariant.id,
-      data: {
-        quantity: Number(editQuantity),
-        lowStockThreshold: Number(editThreshold),
-        version: selectedVariant.inventory?.version ?? 1,
-      },
-    });
+    try {
+      await updateInventoryMutation.mutateAsync({
+        variantId: selectedVariant.id,
+        data: {
+          quantity: Number(editQuantity),
+          lowStockThreshold: Number(editThreshold),
+          version: selectedVariant.inventory?.version ?? 1,
+        },
+      });
 
-    setSelectedVariant(null);
+      setSelectedVariant(null);
+    } catch {
+      // Handled by onError toast
+    }
   };
 
   return (

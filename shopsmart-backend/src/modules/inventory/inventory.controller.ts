@@ -10,13 +10,28 @@ export const inventoryController = {
   },
 
   async update(req: Request, res: Response) {
-    const ifMatch = req.header('If-Match');
-    if (ifMatch === undefined || Number.isNaN(Number(ifMatch))) {
-      throw new ValidationError('If-Match header with the current version is required', [
-        { field: 'If-Match', message: 'Required header missing or invalid' },
-      ]);
+    let rawVersion = req.header('If-Match');
+    if (rawVersion !== undefined) {
+      rawVersion = rawVersion.replace(/"/g, '').trim();
     }
-    const inventory = await inventoryService.update(req.params.variantId, Number(ifMatch), req.body);
+
+    let versionNum: number;
+    if (rawVersion !== undefined && rawVersion !== '' && !Number.isNaN(Number(rawVersion))) {
+      versionNum = Number(rawVersion);
+    } else if (typeof req.body?.version === 'number') {
+      versionNum = req.body.version;
+    } else if (typeof req.body?.version === 'string' && !Number.isNaN(Number(req.body.version))) {
+      versionNum = Number(req.body.version);
+    } else {
+      const existing = await inventoryService.getByVariantId(req.params.variantId);
+      versionNum = existing.version;
+    }
+
+    const { quantity, lowStockThreshold } = req.body;
+    const inventory = await inventoryService.update(req.params.variantId, versionNum, {
+      quantity,
+      lowStockThreshold,
+    });
     sendSuccess(res, inventory);
   },
 
