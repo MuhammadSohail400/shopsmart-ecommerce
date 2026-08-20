@@ -195,7 +195,7 @@ function CheckoutContent() {
     resolver: zodResolver(shippingSchema),
     defaultValues: {
       shippingMethod: 'standard',
-      country: 'US',
+      country: 'PK',
     },
   });
 
@@ -374,47 +374,47 @@ function CheckoutContent() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="fullName">Full Name *</Label>
-                      <Input id="fullName" {...register('fullName')} placeholder="John Doe" />
+                      <Input id="fullName" {...register('fullName')} placeholder="Muhammad Sohail" />
                       {errors.fullName && <p className="text-xs text-destructive">{errors.fullName.message}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="phone">Phone *</Label>
-                      <Input id="phone" {...register('phone')} placeholder="+1 555 000 0000" type="tel" />
+                      <Input id="phone" {...register('phone')} placeholder="+92 311 0297772" type="tel" />
                       {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="line1">Street Address *</Label>
-                    <Input id="line1" {...register('line1')} placeholder="123 Main Street, Apt 4B" />
+                    <Input id="line1" {...register('line1')} placeholder="House #14, Street 5, Phase 6, DHA" />
                     {errors.line1 && <p className="text-xs text-destructive">{errors.line1.message}</p>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="city">City *</Label>
-                      <Input id="city" {...register('city')} placeholder="New York" />
+                      <Input id="city" {...register('city')} placeholder="Karachi" />
                       {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="region">State / Region *</Label>
-                      <Input id="region" {...register('region')} placeholder="NY" />
+                      <Input id="region" {...register('region')} placeholder="Sindh" />
                       {errors.region && <p className="text-xs text-destructive">{errors.region.message}</p>}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="postalCode">Postal Code</Label>
-                      <Input id="postalCode" {...register('postalCode')} placeholder="10001" />
+                      <Input id="postalCode" {...register('postalCode')} placeholder="75500" />
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="country">Country Code *</Label>
                       <Input
                         id="country"
                         {...register('country')}
-                        placeholder="US"
+                        placeholder="PK"
                         maxLength={2}
                         className="uppercase"
                       />
-                      <p className="text-xs text-muted-foreground">2-letter ISO code: US, GB, PK, AU…</p>
+                      <p className="text-xs text-muted-foreground">2-letter ISO code: PK, AE, US, GB, SA…</p>
                       {errors.country && <p className="text-xs text-destructive">{errors.country.message}</p>}
                     </div>
                   </div>
