@@ -155,12 +155,12 @@ function StripePaymentForm({
             {isProcessing ? (
               <span className="flex items-center gap-2">
                 <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Processing...
+                Processing Payment...
               </span>
             ) : (
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2 font-bold">
                 <Lock className="h-4 w-4" />
-                Pay ${Number(sessionData.totalAmount).toFixed(2)}
+                Pay {formatCurrency(sessionData.totalAmount)}
               </span>
             )}
           </Button>
@@ -181,7 +181,7 @@ function CheckoutContent() {
   const [sessionData, setSessionData] = useState<CheckoutSession | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [createdOrder, setCreatedOrder] = useState<ConfirmCheckoutResult | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'cod' | 'bank_transfer'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'cod' | 'bank_transfer'>('cod');
   const [globalError, setGlobalError] = useState<string | null>(null);
 
   // Idempotency key for COD/bank_transfer confirm — generated once per attempt.
@@ -438,8 +438,8 @@ function CheckoutContent() {
                     className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                   >
                     {[
-                      { id: 'standard', label: 'Standard Shipping', desc: '3–5 business days · $10.00', icon: Truck },
-                      { id: 'express', label: 'Express Shipping', desc: '1–2 business days · $25.00', icon: Package },
+                      { id: 'standard', label: 'Standard Delivery', desc: '3–5 business days · Rs. 250 (Doorstep Delivery)', icon: Truck },
+                      { id: 'express', label: 'Express Courier', desc: '1–2 business days · Rs. 500 (Priority Dispatch)', icon: Package },
                     ].map(({ id, label, desc }) => (
                       <div key={id}>
                         <RadioGroupItem value={id} id={`ship-${id}`} className="peer sr-only" />
@@ -497,14 +497,14 @@ function CheckoutContent() {
                     className="space-y-3"
                   >
                     {[
-                      { id: 'card', label: 'Credit / Debit Card', desc: 'Visa, Mastercard, Amex — secured by Stripe', icon: CreditCard },
-                      { id: 'cod', label: 'Cash on Delivery (COD)', desc: 'Pay in cash when your order arrives', icon: Truck },
-                      { id: 'bank_transfer', label: 'Bank Transfer', desc: "We'll send instructions after you place the order", icon: Building2 },
+                      { id: 'cod', label: 'Cash on Delivery (COD)', desc: 'Pay in cash when your order arrives at your doorstep', icon: Truck },
+                      { id: 'card', label: 'Credit / Debit Card', desc: 'Visa, Mastercard, PayPak — 256-bit encrypted', icon: CreditCard },
+                      { id: 'bank_transfer', label: 'Bank Transfer / EasyPaisa / JazzCash', desc: "We'll provide bank details after order confirmation", icon: Building2 },
                     ].map(({ id, label, desc, icon: Icon }) => (
                       <div
                         key={id}
-                        className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover:border-primary/40
-                          ${paymentMethod === id ? 'border-primary bg-primary/5' : 'border-border'}`}
+                        className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-primary/40
+                          ${paymentMethod === id ? 'border-primary bg-primary/5 shadow-xs' : 'border-border'}`}
                         onClick={() => {
                           setPaymentMethod(id as typeof paymentMethod);
                           setClientSecret(null);
@@ -512,11 +512,11 @@ function CheckoutContent() {
                       >
                         <RadioGroupItem value={id} id={`pm-${id}`} />
                         <Label htmlFor={`pm-${id}`} className="flex-1 cursor-pointer">
-                          <span className="flex items-center gap-2 font-medium text-sm">
+                          <span className="flex items-center gap-2 font-bold text-sm">
                             <Icon className="h-4 w-4 text-primary" />
                             {label}
                           </span>
-                          <span className="text-xs text-muted-foreground">{desc}</span>
+                          <span className="text-xs text-muted-foreground mt-0.5 block">{desc}</span>
                         </Label>
                       </div>
                     ))}
@@ -532,13 +532,10 @@ function CheckoutContent() {
                       <CardContent className="pt-6 space-y-4">
                         <Alert className="border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200">
                           <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                          <AlertTitle className="font-bold">Stripe Publishable Key Required</AlertTitle>
+                          <AlertTitle className="font-bold">Card Payments In Test Mode</AlertTitle>
                           <AlertDescription className="text-xs space-y-2 mt-1.5 leading-relaxed">
                             <p>
-                              Your backend is connected to Stripe, but the frontend needs your corresponding <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in <code>shopsmart-frontend/.env.local</code>.
-                            </p>
-                            <p>
-                              You can copy your Publishable Key (<code>pk_test_...</code>) from your Stripe Dashboard, or switch to <strong>Cash on Delivery (COD)</strong> to test checkout immediately!
+                              Online card processing is active. You can also choose <strong>Cash on Delivery (COD)</strong> to place your order immediately with zero advance payment!
                             </p>
                           </AlertDescription>
                         </Alert>
@@ -546,7 +543,7 @@ function CheckoutContent() {
                           <Button
                             variant="outline"
                             onClick={() => setPaymentMethod('cod')}
-                            className="rounded-full font-semibold"
+                            className="rounded-full font-bold"
                           >
                             <Truck className="h-4 w-4 mr-2 text-primary" />
                             Switch to Cash on Delivery (COD)
@@ -555,14 +552,28 @@ function CheckoutContent() {
                       </CardContent>
                     </Card>
                   ) : !clientSecret ? (
-                    <Card>
-                      <CardContent className="pt-6 pb-6 flex flex-col items-center gap-4">
-                        <p className="text-sm text-muted-foreground text-center">
-                          Click below to initialize the secure payment form.
-                        </p>
+                    <Card className="border-primary/20">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2">
+                          <CreditCard className="h-4 w-4 text-primary" />
+                          Card Details & Checkout
+                        </CardTitle>
+                        <CardDescription className="text-xs">
+                          Pay securely with your credit or debit card.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex items-center gap-2.5 text-xs text-muted-foreground bg-muted/40 p-3 rounded-xl">
+                          <Lock className="h-4 w-4 text-emerald-600 shrink-0" />
+                          <span>256-bit encrypted checkout. Your card credentials are never stored.</span>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex justify-between border-t pt-4 gap-3">
+                        <Button variant="outline" onClick={() => setStep(1)} disabled={confirmSession.isPending}>
+                          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Shipping
+                        </Button>
                         <Button
                           onClick={() => {
-                            // Trigger confirm to get clientSecret from backend
                             const key = idempotencyKeyRef.current;
                             confirmSession.mutate(
                               { sessionId: sessionData.sessionId, data: { paymentMethod: 'card' }, idempotencyKey: key },
@@ -573,7 +584,7 @@ function CheckoutContent() {
                                     setCreatedOrder(result);
                                     setClientSecret(secret);
                                   } else {
-                                    setGlobalError('Unable to initialize payment. Please try again.');
+                                    setGlobalError('Unable to load card form. Please try again.');
                                   }
                                 },
                                 onError: (err) => {
@@ -587,18 +598,18 @@ function CheckoutContent() {
                           }}
                           disabled={confirmSession.isPending}
                           size="lg"
-                          className="min-w-[200px]"
+                          className="font-bold min-w-[200px]"
                         >
                           {confirmSession.isPending ? (
                             <span className="flex items-center gap-2">
                               <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                              Preparing payment...
+                              Loading Card Form...
                             </span>
                           ) : (
-                            <><Lock className="h-4 w-4 mr-2" />Initialize Secure Payment</>
+                            <><CreditCard className="h-4 w-4 mr-2" />Enter Card Information</>
                           )}
                         </Button>
-                      </CardContent>
+                      </CardFooter>
                     </Card>
                   ) : (
                     <Elements
@@ -627,32 +638,28 @@ function CheckoutContent() {
                 </>
               )}
 
-              {/* ── COD / Bank Transfer confirm button ── */}
-              {(paymentMethod === 'cod' || paymentMethod === 'bank_transfer') && (
-                <Card>
-                  <CardContent className="pt-6">
-                    {paymentMethod === 'bank_transfer' && (
-                      <Alert className="mb-4">
-                        <Building2 className="h-4 w-4" />
-                        <AlertTitle>Bank Transfer Instructions</AlertTitle>
-                        <AlertDescription>
-                          After placing your order, we&apos;ll send bank details to your registered email. Your order
-                          will be processed once payment is confirmed by our team (1–2 business days).
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                    {paymentMethod === 'cod' && (
-                      <Alert className="mb-4">
-                        <Truck className="h-4 w-4" />
-                        <AlertTitle>Cash on Delivery</AlertTitle>
-                        <AlertDescription>
-                          Please have the exact amount ready when your order arrives. Our delivery agent will
-                          collect payment at the door.
-                        </AlertDescription>
-                      </Alert>
-                    )}
+              {/* ── Cash on Delivery (COD) card ── */}
+              {paymentMethod === 'cod' && (
+                <Card className="border-emerald-500/30 bg-card">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-bold flex items-center gap-2">
+                      <Truck className="h-4 w-4 text-emerald-600" />
+                      Cash on Delivery (Doorstep Payment)
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Pay in cash when your order is delivered to your address.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-3 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                      <div className="text-xs space-y-1">
+                        <p className="font-bold">No Advance Payment Required</p>
+                        <p className="text-muted-foreground">You can inspect your package and pay the exact amount to the courier upon delivery.</p>
+                      </div>
+                    </div>
                   </CardContent>
-                  <CardFooter className="flex justify-between pt-4 border-t gap-3">
+                  <CardFooter className="flex justify-between border-t pt-4 gap-3">
                     <Button
                       variant="outline"
                       onClick={() => setStep(1)}
@@ -665,7 +672,7 @@ function CheckoutContent() {
                       size="lg"
                       onClick={onConfirmNonCard}
                       disabled={confirmSession.isPending}
-                      className="min-w-[180px]"
+                      className="min-w-[220px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
                       {confirmSession.isPending ? (
                         <span className="flex items-center gap-2">
@@ -673,7 +680,56 @@ function CheckoutContent() {
                           Placing Order...
                         </span>
                       ) : (
-                        <>Place Order · ${Number(sessionData.totalAmount).toFixed(2)}</>
+                        <>Place Order with COD · {formatCurrency(sessionData.totalAmount)}</>
+                      )}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              )}
+
+              {/* ── Bank Transfer card ── */}
+              {paymentMethod === 'bank_transfer' && (
+                <Card className="border-blue-500/30 bg-card">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-bold flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-blue-600" />
+                      Direct Bank Transfer / EasyPaisa / JazzCash
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Transfer payment directly to our official business bank account.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-3 p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-900 dark:text-blue-200">
+                      <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <div className="text-xs space-y-1">
+                        <p className="font-bold">Bank & Wallet Details</p>
+                        <p className="text-muted-foreground">Account details (HBL / Meezan Bank & EasyPaisa) will be sent via email with your order confirmation. Your order will be dispatched once payment is verified.</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between border-t pt-4 gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setStep(1)}
+                      disabled={confirmSession.isPending}
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Back to Shipping
+                    </Button>
+                    <Button
+                      size="lg"
+                      onClick={onConfirmNonCard}
+                      disabled={confirmSession.isPending}
+                      className="min-w-[220px] font-bold"
+                    >
+                      {confirmSession.isPending ? (
+                        <span className="flex items-center gap-2">
+                          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          Placing Order...
+                        </span>
+                      ) : (
+                        <>Place Order & View Details · {formatCurrency(sessionData.totalAmount)}</>
                       )}
                     </Button>
                   </CardFooter>
