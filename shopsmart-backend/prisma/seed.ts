@@ -393,7 +393,29 @@ async function main() {
     });
   }
 
-  console.log('✅ Seeding complete: 24 authentic ASORA products, Admin users, and Settings seeded successfully.');
+  // --- 6. Seed Pakistan Shipping Zone & Rates ---
+  console.log('Seeding Nationwide Pakistan Shipping Zone & Rates...');
+  const existingZone = await prisma.shippingZone.findFirst({
+    where: { countries: { has: 'PK' } },
+    include: { rates: true },
+  });
+
+  if (!existingZone) {
+    await prisma.shippingZone.create({
+      data: {
+        name: 'Pakistan Nationwide',
+        countries: ['PK'],
+        rates: {
+          create: [
+            { method: 'standard', cost: 200, etaDays: 3 },
+            { method: 'express', cost: 350, etaDays: 1 },
+          ],
+        },
+      },
+    });
+  }
+
+  console.log('✅ Seeding complete: 24 authentic ASORA products, Admin users, Settings, and Shipping Zones seeded successfully.');
 }
 
 main()
