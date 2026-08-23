@@ -39,11 +39,13 @@ export const settingsService = {
   async getPublicStoreInfo() {
     const all = await settingsRepository.listAll();
     const map: Record<string, string> = {
-      store_name: 'ShopSmart',
+      store_name: 'ASORA',
+      tagline: 'WEAR YOUR STORY.',
       currency: 'PKR',
       free_shipping_threshold: '2500',
-      support_email: 'support@shopsmart.ai',
-      support_phone: '+92 300 1234567',
+      support_email: 'support@asora.pk',
+      support_phone: '03110297772',
+      whatsapp_number: '03110297772',
     };
     all.forEach((s) => {
       map[s.key] = s.value;

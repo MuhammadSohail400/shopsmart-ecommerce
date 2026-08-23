@@ -32,7 +32,7 @@ export default function ContactPage() {
   const { data: publicSettings } = usePublicSettings();
 
   const supportEmail = publicSettings?.support_email || 'support@asora.pk';
-  const supportPhone = publicSettings?.support_phone || '+92 311 0297772';
+  const supportPhone = publicSettings?.whatsapp_number || publicSettings?.support_phone || '03110297772';
   const storeName = publicSettings?.store_name || 'ASORA';
 
   const {

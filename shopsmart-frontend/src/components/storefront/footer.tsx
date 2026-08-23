@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { formatCurrency, parseNumericAmount } from '@/lib/utils';
+import { formatCurrency, parseNumericAmount, formatWhatsAppUrl } from '@/lib/utils';
 
 const footerNewsletterSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -22,6 +22,7 @@ export function Footer() {
   const { data: publicSettings } = usePublicSettings();
   const storeName = 'ASORA';
   const freeShippingThreshold = parseNumericAmount(publicSettings?.free_shipping_threshold, 2500);
+  const whatsappUrl = formatWhatsAppUrl(publicSettings?.whatsapp_number || publicSettings?.support_phone || '03110297772');
 
   const subscribeMutation = useSubscribeNewsletter();
   const { register, handleSubmit, reset } = useForm<FooterNewsletterForm>({
@@ -145,7 +146,7 @@ export function Footer() {
               </a>
 
               <a
-                href="https://wa.me/923110297772"
+                href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Chat on WhatsApp"

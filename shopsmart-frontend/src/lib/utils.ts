@@ -85,3 +85,28 @@ export function getUserInitial(user?: {
   return 'U';
 }
 
+/**
+ * Normalizes any Pakistani or International phone format (e.g. 03110297772, +92 311 0297772)
+ * into a valid WhatsApp wa.me click-to-chat URL with optional prefilled message.
+ */
+export function formatWhatsAppUrl(rawPhone?: string, message?: string): string {
+  const defaultNumber = '923110297772';
+  if (!rawPhone) {
+    return message 
+      ? `https://wa.me/${defaultNumber}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/${defaultNumber}`;
+  }
+
+  let digits = rawPhone.replace(/\D/g, '');
+  if (digits.startsWith('0')) {
+    digits = '92' + digits.slice(1);
+  } else if (!digits.startsWith('92') && digits.length === 10) {
+    digits = '92' + digits;
+  }
+
+  const finalNumber = digits || defaultNumber;
+  return message 
+    ? `https://wa.me/${finalNumber}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/${finalNumber}`;
+}
+

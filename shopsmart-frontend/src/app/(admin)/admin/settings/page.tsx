@@ -24,10 +24,12 @@ export default function AdminSettingsPage() {
   const createTaxRuleMutation = useCreateTaxRule();
   const deleteTaxRuleMutation = useDeleteTaxRule();
 
-  const [storeName, setStoreName] = useState('ShopSmart Fashion');
+  const [storeName, setStoreName] = useState('ASORA');
+  const [tagline, setTagline] = useState('WEAR YOUR STORY.');
   const [currency, setCurrency] = useState('PKR');
-  const [supportEmail, setSupportEmail] = useState('support@shopsmart.ai');
-  const [supportPhone, setSupportPhone] = useState('+92 300 1234567');
+  const [supportEmail, setSupportEmail] = useState('support@asora.pk');
+  const [supportPhone, setSupportPhone] = useState('03110297772');
+  const [whatsappNumber, setWhatsappNumber] = useState('03110297772');
   const [freeShippingThreshold, setFreeShippingThreshold] = useState('2500');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -42,9 +44,11 @@ export default function AdminSettingsPage() {
     if (settings && Array.isArray(settings)) {
       settings.forEach((s) => {
         if (s.key === 'store_name') setStoreName(s.value);
+        if (s.key === 'tagline') setTagline(s.value);
         if (s.key === 'currency') setCurrency(s.value);
         if (s.key === 'support_email') setSupportEmail(s.value);
         if (s.key === 'support_phone') setSupportPhone(s.value);
+        if (s.key === 'whatsapp_number') setWhatsappNumber(s.value);
         if (s.key === 'free_shipping_threshold') setFreeShippingThreshold(s.value);
       });
     }
@@ -56,10 +60,12 @@ export default function AdminSettingsPage() {
     try {
       await updateBulkMutation.mutateAsync({
         store_name: storeName.trim(),
+        tagline: tagline.trim(),
         currency: currency.trim().toUpperCase(),
         free_shipping_threshold: freeShippingThreshold.trim(),
         support_email: supportEmail.trim(),
         support_phone: supportPhone.trim(),
+        whatsapp_number: whatsappNumber.trim(),
       });
     } catch (err: any) {
       toast.error(err?.message || 'Failed to save settings');
@@ -142,16 +148,29 @@ export default function AdminSettingsPage() {
               </div>
             ) : (
               <form onSubmit={handleSaveGeneral} className="space-y-4 text-xs">
-                <div className="space-y-1.5">
-                  <Label htmlFor="sname" className="text-xs font-bold">Store Brand Name</Label>
-                  <Input
-                    id="sname"
-                    value={storeName}
-                    onChange={(e) => setStoreName(e.target.value)}
-                    className="text-xs rounded-xl"
-                    placeholder="e.g. ShopSmart Fashion"
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="sname" className="text-xs font-bold">Store Brand Name</Label>
+                    <Input
+                      id="sname"
+                      value={storeName}
+                      onChange={(e) => setStoreName(e.target.value)}
+                      className="text-xs rounded-xl"
+                      placeholder="ASORA"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="stagline" className="text-xs font-bold">Brand Tagline</Label>
+                    <Input
+                      id="stagline"
+                      value={tagline}
+                      onChange={(e) => setTagline(e.target.value)}
+                      className="text-xs rounded-xl"
+                      placeholder="WEAR YOUR STORY."
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -190,22 +209,45 @@ export default function AdminSettingsPage() {
                       value={supportEmail}
                       onChange={(e) => setSupportEmail(e.target.value)}
                       className="text-xs rounded-xl"
-                      placeholder="support@shopsmart.ai"
+                      placeholder="support@asora.pk"
                       required
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="sphone" className="text-xs font-bold">Support WhatsApp / Helpline</Label>
+                    <Label htmlFor="sphone" className="text-xs font-bold">Help Desk Phone</Label>
                     <Input
                       id="sphone"
                       value={supportPhone}
                       onChange={(e) => setSupportPhone(e.target.value)}
                       className="text-xs rounded-xl"
-                      placeholder="+92 300 1234567"
+                      placeholder="03110297772"
                       required
                     />
                   </div>
+                </div>
+
+                <div className="space-y-1.5 p-3 rounded-xl bg-secondary/30 border border-border">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="swhatsapp" className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      Official WhatsApp Order & Support Number
+                    </Label>
+                    <Badge variant="outline" className="text-[10px] font-mono border-emerald-500/30 text-emerald-400">
+                      Active on Storefront
+                    </Badge>
+                  </div>
+                  <Input
+                    id="swhatsapp"
+                    value={whatsappNumber}
+                    onChange={(e) => setWhatsappNumber(e.target.value)}
+                    className="text-xs font-mono rounded-xl bg-background"
+                    placeholder="03110297772 or 923110297772"
+                    required
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    This number receives instant 1-click &quot;ORDER ON WHATSAPP&quot; messages and footer support chats from customers.
+                  </p>
                 </div>
 
                 <Button

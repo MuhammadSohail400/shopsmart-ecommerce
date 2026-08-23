@@ -22,7 +22,8 @@ import { useRecentlyViewed } from '@/features/products/hooks/use-recently-viewed
 import { ProductCard } from '@/components/storefront/product-card';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { SectionErrorBoundary } from '@/components/shared/section-error-boundary';
-import { formatCurrency, getDiscountDetails } from '@/lib/utils';
+import { formatCurrency, getDiscountDetails, formatWhatsAppUrl } from '@/lib/utils';
+import { usePublicSettings } from '@/hooks/use-admin';
 import {
   Dialog,
   DialogContent,
@@ -43,6 +44,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const resolvedParams = use(params);
   const router = useRouter();
   const { user, requireAuth } = useAuth();
+  const { data: publicSettings } = usePublicSettings();
   const { data: product, isLoading, isError } = useProduct(resolvedParams.id);
   const { data: reviewSummary } = useProductReviewSummary(product?.id || '');
   const { data: relatedProductsData } = useProducts({ limit: 4 });
@@ -167,17 +169,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     );
   };
 
-  // WhatsApp Order Link
-  const whatsappMessage = encodeURIComponent(
+  // WhatsApp Order Link (Driven dynamically by Admin Settings)
+  const activeWhatsApp = publicSettings?.whatsapp_number || publicSettings?.support_phone || '03110297772';
+  const whatsappMessage = 
     `Hi ASORA! I would like to order:\n` +
     `Piece: ${product.title}\n` +
     `Size: ${selectedSize}\n` +
     `Color: ${selectedColor}\n` +
     `Quantity: ${quantity}\n` +
     `Price: ${formatCurrency(finalPrice * quantity)}\n` +
-    `Link: https://asora-streetwear.netlify.app/products/${product.slug || product.id}`
-  );
-  const whatsappUrl = `https://wa.me/923110297772?text=${whatsappMessage}`;
+    `Product ID: ${product.slug || product.id}`;
+  const whatsappUrl = formatWhatsAppUrl(activeWhatsApp, whatsappMessage);
 
   const relatedProducts = relatedProductsData?.pages?.[0]?.data?.filter(p => p.id !== product.id).slice(0, 4) || [];
 
