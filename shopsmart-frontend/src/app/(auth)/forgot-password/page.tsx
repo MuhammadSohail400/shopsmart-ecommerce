@@ -5,8 +5,8 @@ import { Suspense } from 'react';
 import { Spinner } from '@/components/ui/spinner';
 
 export const metadata: Metadata = {
-  title: 'Forgot Password - ShopSmart',
-  description: 'Reset your ShopSmart account password.',
+  title: 'Forgot Password | ASORA',
+  description: 'Reset your ASORA account password.',
 };
 
 export default function ForgotPasswordPage() {

@@ -141,7 +141,7 @@ export function RegisterForm() {
       <CardHeader className="space-y-1 text-center pb-4">
         <CardTitle className="text-2xl font-black tracking-tight">Create an account</CardTitle>
         <CardDescription className="text-xs text-muted-foreground">
-          Enter your email or phone to create your ShopSmart account
+          Enter your email or phone to create your ASORA account
         </CardDescription>
       </CardHeader>
       <CardContent>

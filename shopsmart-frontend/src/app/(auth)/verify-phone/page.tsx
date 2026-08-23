@@ -92,7 +92,7 @@ function VerifyPhoneContent() {
         <CardContent className="flex flex-col items-center space-y-6">
           <CheckCircle2 className="h-16 w-16 text-primary" />
           <Link href="/" className={buttonVariants({ variant: 'default', className: 'w-full' })}>
-            Continue to ShopSmart
+            Continue to ASORA
           </Link>
         </CardContent>
       </Card>

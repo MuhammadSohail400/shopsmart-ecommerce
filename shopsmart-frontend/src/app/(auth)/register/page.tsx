@@ -5,8 +5,8 @@ import { Suspense } from 'react';
 import { Spinner } from '@/components/ui/spinner';
 
 export const metadata: Metadata = {
-  title: 'Sign Up - ShopSmart',
-  description: 'Create a new ShopSmart account.',
+  title: 'Create Account | ASORA Streetwear',
+  description: 'Create an ASORA account to unlock early drops, member discounts, and custom designs.',
 };
 
 export default function RegisterPage() {

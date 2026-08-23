@@ -5,8 +5,8 @@ import { Suspense } from 'react';
 import { Spinner } from '@/components/ui/spinner';
 
 export const metadata: Metadata = {
-  title: 'Sign In - ShopSmart',
-  description: 'Sign in to your ShopSmart account.',
+  title: 'Sign In | ASORA Streetwear',
+  description: 'Sign in to your ASORA account to track drops, orders, and wishlist.',
 };
 
 export default function LoginPage() {
