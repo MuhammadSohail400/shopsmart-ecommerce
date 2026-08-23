@@ -42,7 +42,7 @@ export function AdminSidebar({ isMobile = false, onItemClick }: { isMobile?: boo
   const { data: ordersData } = useAdminOrders({ limit: 1 });
   const { data: contactMessages } = useContactMessages('unread');
   const { data: publicSettings } = usePublicSettings();
-  const storeName = publicSettings?.store_name || 'ShopSmart';
+  const storeName = publicSettings?.store_name || 'ASORA';
 
   const lowStockCount = lowStock?.length || 0;
   const unreadMessagesCount = contactMessages?.length || 0;

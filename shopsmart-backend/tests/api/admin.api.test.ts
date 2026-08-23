@@ -12,6 +12,9 @@ vi.mock('../../src/modules/admin/admin.repository', () => ({
     orderCountsByStatus: vi.fn().mockResolvedValue({}),
     totalRevenue: vi.fn().mockResolvedValue(0),
     countLowStockItems: vi.fn().mockResolvedValue([{ count: 0n }]),
+    countProducts: vi.fn().mockResolvedValue(10),
+    countCustomers: vi.fn().mockResolvedValue(5),
+    countCustomOrders: vi.fn().mockResolvedValue(2),
   },
 }));
 

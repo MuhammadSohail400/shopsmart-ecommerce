@@ -49,7 +49,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
           </div>
           <h2 className="text-2xl font-black uppercase tracking-tight text-foreground mb-2">Access Restricted</h2>
           <p className="text-sm text-muted-foreground mb-6">
-            Your account ({user.email}) does not have staff privileges to access the ShopSmart Management Console.
+            Your account ({user.email}) does not have staff privileges to access the ASORA Management Console.
           </p>
           <div className="flex flex-col gap-3">
             <Link href="/">

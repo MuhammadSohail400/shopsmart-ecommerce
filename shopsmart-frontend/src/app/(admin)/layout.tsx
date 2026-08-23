@@ -3,8 +3,8 @@ import { AdminSidebar } from '@/components/admin/admin-sidebar';
 import { AdminHeader } from '@/components/admin/admin-header';
 
 export const metadata = {
-  title: 'Admin Console | ShopSmart',
-  description: 'ShopSmart administrative back-office, catalog management, and operations center.',
+  title: 'Admin Console | ASORA',
+  description: 'ASORA administrative back-office, catalog management, and operations center.',
 };
 
 export default function AdminLayout({

@@ -6,6 +6,14 @@ import {
   Search,
   Filter,
   RefreshCw,
+  Scissors,
+  ExternalLink,
+  MapPin,
+  Clock,
+  CheckCircle2,
+  Package,
+  Truck,
+  AlertCircle
 } from 'lucide-react';
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks/use-admin';
 import { Card } from '@/components/ui/card';
@@ -28,6 +36,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { formatCurrency } from '@/lib/utils';
 
 const ORDER_STATUSES = [
   'all',
@@ -43,6 +52,7 @@ const ORDER_STATUSES = [
 
 export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'custom' | 'standard'>('all');
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [newStatus, setNewStatus] = useState('');
@@ -55,7 +65,14 @@ export default function AdminOrdersPage() {
 
   const updateStatusMutation = useUpdateOrderStatus();
 
-  const orders = ordersData?.data || [];
+  let orders = ordersData?.data || [];
+
+  // Filter by custom vs standard if selected
+  if (typeFilter === 'custom') {
+    orders = orders.filter((o: any) => o.items?.some((i: any) => Boolean(i.customConfig)));
+  } else if (typeFilter === 'standard') {
+    orders = orders.filter((o: any) => !o.items?.some((i: any) => Boolean(i.customConfig)));
+  }
 
   const handleOpenDetail = (order: any) => {
     setSelectedOrder(order);
@@ -75,83 +92,113 @@ export default function AdminOrdersPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'delivered':
-        return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px] font-black uppercase">Delivered</Badge>;
+        return <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] font-mono font-black uppercase">Delivered</Badge>;
       case 'shipped':
-        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/30 text-[10px] font-black uppercase">Shipped</Badge>;
+        return <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/30 text-[10px] font-mono font-black uppercase">Shipped</Badge>;
       case 'processing':
-        return <Badge className="bg-indigo-500/10 text-indigo-600 border-indigo-500/30 text-[10px] font-black uppercase">Processing</Badge>;
+        return <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/30 text-[10px] font-mono font-black uppercase">Processing</Badge>;
       case 'confirmed':
-        return <Badge className="bg-primary/10 text-primary border-primary/30 text-[10px] font-black uppercase">Confirmed</Badge>;
+        return <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] font-mono font-black uppercase">Confirmed</Badge>;
       case 'cancelled':
-        return <Badge className="bg-destructive/10 text-destructive border-destructive/30 text-[10px] font-black uppercase">Cancelled</Badge>;
+        return <Badge className="bg-rose-950/40 text-rose-500 border-rose-800/80 text-[10px] font-mono font-black uppercase">Cancelled</Badge>;
       default:
-        return <Badge variant="outline" className="text-[10px] font-black uppercase">{status}</Badge>;
+        return <Badge variant="outline" className="text-[10px] font-mono font-black uppercase">{status}</Badge>;
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-left">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-rose-400 text-[10px] font-mono font-bold uppercase tracking-widest mb-1">
+            OPERATIONS CONSOLE
+          </div>
           <h2 className="text-xl sm:text-2xl font-black text-foreground uppercase tracking-tight">
-            Orders Management
+            Orders & Custom Fulfillment
           </h2>
-          <p className="text-xs text-muted-foreground font-medium">
-            Inspect customer orders, track package shipments, and execute status overrides.
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Manage customer orders, view custom artwork files, and update shipping progress.
           </p>
         </div>
-
         <Button
-          variant="outline"
           size="sm"
+          variant="outline"
           onClick={() => refetch()}
-          className="font-bold text-xs gap-1.5 rounded-full"
+          className="font-mono text-xs uppercase h-9 gap-1.5"
         >
           <RefreshCw className="h-3.5 w-3.5" /> Refresh Orders
         </Button>
       </div>
 
       {/* Filters Bar */}
-      <Card className="p-3.5 rounded-2xl border-border flex flex-col sm:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by Order ID or customer email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 text-xs h-9"
-          />
-        </div>
+      <Card className="p-4 rounded-xl border-border bg-card shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by order #, email, customer name..."
+              className="pl-9 text-xs h-9 bg-secondary/30 font-mono"
+            />
+          </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-none">
-          <Select value={statusFilter} onValueChange={(val) => val && setStatusFilter(val)}>
-            <SelectTrigger className="h-9 text-xs w-full sm:w-44">
-              <Filter className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              {ORDER_STATUSES.map((st) => (
-                <SelectItem key={st} value={st} className="text-xs capitalize">
-                  {st === 'all' ? 'All Statuses' : st}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Type Filter */}
+            <div className="flex bg-secondary/30 border border-border rounded-lg p-0.5 text-[11px] font-mono">
+              <button
+                type="button"
+                onClick={() => setTypeFilter('all')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${typeFilter === 'all' ? 'bg-primary text-primary-foreground font-bold' : 'text-muted-foreground'}`}
+              >
+                ALL
+              </button>
+              <button
+                type="button"
+                onClick={() => setTypeFilter('custom')}
+                className={`px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 ${typeFilter === 'custom' ? 'bg-rose-600 text-white font-bold' : 'text-muted-foreground'}`}
+              >
+                <Scissors className="h-3 w-3" /> CUSTOM ONLY
+              </button>
+              <button
+                type="button"
+                onClick={() => setTypeFilter('standard')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${typeFilter === 'standard' ? 'bg-primary text-primary-foreground font-bold' : 'text-muted-foreground'}`}
+              >
+                STANDARD
+              </button>
+            </div>
+
+            {/* Status Filter */}
+            <Select value={statusFilter} onValueChange={(val) => val && setStatusFilter(val)}>
+              <SelectTrigger className="w-[140px] text-xs h-9 bg-secondary/30 font-mono">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                {ORDER_STATUSES.map((st) => (
+                  <SelectItem key={st} value={st} className="text-xs uppercase font-mono">
+                    {st === 'all' ? 'All Statuses' : st}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Card>
 
       {/* Orders Table */}
-      <Card className="rounded-2xl border-border overflow-hidden shadow-xs">
+      <Card className="rounded-xl border-border bg-card shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-secondary/40 text-muted-foreground font-extrabold uppercase text-[10px] tracking-wider border-b border-border">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-secondary/40 text-muted-foreground font-extrabold uppercase text-[10px] font-mono tracking-wider border-b border-border">
               <tr>
-                <th className="p-3.5">Order ID</th>
+                <th className="p-3.5">Order Number</th>
                 <th className="p-3.5">Date</th>
-                <th className="p-3.5">Customer</th>
+                <th className="p-3.5">Customer & Phone</th>
                 <th className="p-3.5">Items</th>
                 <th className="p-3.5">Total Amount</th>
                 <th className="p-3.5">Status</th>
@@ -161,86 +208,104 @@ export default function AdminOrdersPage() {
             <tbody className="divide-y divide-border font-medium">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-xs text-muted-foreground">
-                    Loading orders...
+                  <td colSpan={7} className="p-8 text-center text-xs font-mono text-muted-foreground">
+                    Loading ASORA orders...
                   </td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-xs text-muted-foreground">
-                    No orders found.
+                  <td colSpan={7} className="p-8 text-center text-xs font-mono text-muted-foreground">
+                    No orders match your filter.
                   </td>
                 </tr>
               ) : (
-                orders.map((ord) => (
-                  <tr key={ord.id} className="hover:bg-secondary/20 transition-colors">
-                    <td className="p-3.5 font-bold font-mono text-[11px] text-foreground">
-                      #{ord.id.slice(0, 8)}
-                    </td>
-                    <td className="p-3.5 text-muted-foreground text-[11px]">
-                      {new Date(ord.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-3.5 text-foreground">
-                      <div className="font-bold">
-                        {ord.user?.profile?.firstName ? `${ord.user.profile.firstName} ${ord.user.profile.lastName || ''}` : 'Customer'}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground font-mono">
-                        {ord.user?.email || 'guest'}
-                      </div>
-                    </td>
-                    <td className="p-3.5 text-muted-foreground font-mono">
-                      {ord.items?.length || 1} item(s)
-                    </td>
-                    <td className="p-3.5 font-bold text-foreground">
-                      Rs. {Number(ord.total).toLocaleString()}
-                    </td>
-                    <td className="p-3.5">
-                      {getStatusBadge(ord.status)}
-                    </td>
-                    <td className="p-3.5 text-right">
-                      <Button
-                        size="xs"
-                        variant="outline"
-                        onClick={() => handleOpenDetail(ord)}
-                        className="font-bold text-[11px]"
-                      >
-                        Inspect & Override
-                      </Button>
-                    </td>
-                  </tr>
-                ))
+                orders.map((ord: any) => {
+                  const hasCustom = ord.items?.some((i: any) => Boolean(i.customConfig));
+                  const total = Number(ord.totalAmount ?? ord.total ?? 0);
+                  const shipping = ord.shippingAddress;
+                  const customerName = shipping?.fullName || ord.user?.profile?.firstName || 'Customer';
+                  const customerPhone = shipping?.phone || ord.user?.profile?.phone || '—';
+
+                  return (
+                    <tr key={ord.id} className="hover:bg-secondary/20 transition-colors">
+                      <td className="p-3.5 font-bold font-mono text-[11px] text-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <span>{ord.orderNumber || `#${ord.id.slice(0, 8)}`}</span>
+                          {hasCustom && (
+                            <span className="px-1.5 py-0.2 rounded bg-rose-600/10 text-rose-400 border border-rose-500/20 text-[9px] font-bold">
+                              CUSTOM
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3.5 text-muted-foreground font-mono text-[11px]">
+                        {new Date(ord.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-3.5 text-foreground">
+                        <div className="font-bold text-xs">{customerName}</div>
+                        <div className="text-[10px] text-muted-foreground font-mono">
+                          {customerPhone} • {ord.user?.email || 'guest'}
+                        </div>
+                      </td>
+                      <td className="p-3.5 text-muted-foreground font-mono">
+                        {ord.items?.length || 1} piece(s)
+                      </td>
+                      <td className="p-3.5 font-bold font-mono text-foreground">
+                        {formatCurrency(total)}
+                      </td>
+                      <td className="p-3.5">
+                        {getStatusBadge(ord.status)}
+                      </td>
+                      <td className="p-3.5 text-right">
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={() => handleOpenDetail(ord)}
+                          className="font-mono text-[11px] uppercase h-8 px-2.5"
+                        >
+                          Inspect & Fulfill
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </Card>
 
-      {/* Order Detail & Status Override Dialog */}
+      {/* Order Detail & Custom Artwork Inspection Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-2xl bg-card border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-lg font-black uppercase tracking-tight">
-              Order #{selectedOrder?.id?.slice(0, 8)}
+            <DialogTitle className="text-base font-black font-mono uppercase tracking-tight text-foreground flex items-center gap-2">
+              <span>ORDER {selectedOrder?.orderNumber || `#${selectedOrder?.id?.slice(0, 8)}`}</span>
+              {selectedOrder?.items?.some((i: any) => Boolean(i.customConfig)) && (
+                <Badge className="bg-rose-600/20 text-rose-400 border-rose-500/30 font-mono text-[10px] uppercase">
+                  CUSTOM ORDER
+                </Badge>
+              )}
             </DialogTitle>
-            <DialogDescription className="text-xs">
+            <DialogDescription className="text-xs font-mono text-muted-foreground">
               Placed on {selectedOrder && new Date(selectedOrder.createdAt).toLocaleString()}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2 text-xs">
             {/* Status Override Selector */}
-            <div className="p-3 rounded-2xl bg-secondary/40 border border-border space-y-2">
-              <Label className="text-xs font-black uppercase tracking-wider text-foreground">
-                Override Order Status
+            <div className="p-3.5 rounded-xl bg-secondary/40 border border-border space-y-2">
+              <Label className="text-xs font-mono font-bold uppercase tracking-wider text-foreground">
+                Update Fulfillment Status
               </Label>
               <div className="flex items-center gap-3">
                 <Select value={newStatus} onValueChange={(val) => val && setNewStatus(val)}>
-                  <SelectTrigger className="text-xs h-9 bg-card">
+                  <SelectTrigger className="text-xs h-9 bg-card font-mono uppercase">
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
                     {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'].map((st) => (
-                      <SelectItem key={st} value={st} className="text-xs capitalize font-bold">
+                      <SelectItem key={st} value={st} className="text-xs font-mono uppercase">
                         {st}
                       </SelectItem>
                     ))}
@@ -250,51 +315,137 @@ export default function AdminOrdersPage() {
                   size="sm"
                   onClick={handleStatusChange}
                   disabled={updateStatusMutation.isPending || newStatus === selectedOrder?.status}
-                  className="font-bold text-xs shrink-0"
+                  className="bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold text-xs uppercase shrink-0 h-9"
                 >
-                  {updateStatusMutation.isPending ? 'Updating...' : 'Apply Status'}
+                  {updateStatusMutation.isPending ? 'Updating...' : 'Save Status'}
                 </Button>
               </div>
             </div>
 
-            {/* Customer & Address */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl border border-border">
-              <div>
-                <span className="text-[10px] font-extrabold uppercase text-muted-foreground block">Customer</span>
-                <span className="font-bold text-foreground block">{selectedOrder?.user?.email}</span>
-                <span className="text-muted-foreground block">{selectedOrder?.user?.profile?.phone || 'No phone'}</span>
+            {/* Customer & Shipping Destination */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl border border-border bg-secondary/20 font-mono">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground block">Customer Details</span>
+                <span className="font-bold text-foreground block text-xs">
+                  {selectedOrder?.shippingAddress?.fullName || selectedOrder?.user?.profile?.firstName || 'Customer'}
+                </span>
+                <span className="text-muted-foreground block text-[11px]">
+                  Phone: {selectedOrder?.shippingAddress?.phone || selectedOrder?.user?.profile?.phone || '—'}
+                </span>
+                <span className="text-muted-foreground block text-[11px]">
+                  Email: {selectedOrder?.user?.email || 'Guest checkout'}
+                </span>
               </div>
-              <div>
-                <span className="text-[10px] font-extrabold uppercase text-muted-foreground block">Shipping Destination</span>
-                <span className="font-bold text-foreground block">{selectedOrder?.shippingAddress?.line1 || 'Standard Address'}</span>
-                <span className="text-muted-foreground block">{selectedOrder?.shippingAddress?.city || 'Pakistan'}</span>
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground block">Shipping Destination</span>
+                <span className="font-bold text-foreground block text-xs">
+                  {selectedOrder?.shippingAddress?.line1 || 'Address on file'}
+                </span>
+                <span className="text-muted-foreground block text-[11px]">
+                  {selectedOrder?.shippingAddress?.city}, {selectedOrder?.shippingAddress?.region} ({selectedOrder?.shippingAddress?.country || 'PK'})
+                </span>
               </div>
             </div>
 
-            {/* Itemized list */}
-            <div>
-              <span className="text-[10px] font-extrabold uppercase text-muted-foreground mb-2 block">
-                Purchased Items
+            {/* Itemized list with Custom T-Shirt Config */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono font-bold uppercase text-muted-foreground block">
+                Purchased Pieces ({selectedOrder?.items?.length || 0})
               </span>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {selectedOrder?.items?.map((it: any) => (
-                  <div key={it.id} className="p-2.5 rounded-lg bg-secondary/20 border border-border flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-foreground">{it.product?.title || 'Product Item'}</div>
-                      <div className="text-[10px] text-muted-foreground font-mono">Qty: {it.quantity} × Rs. {Number(it.unitPrice).toLocaleString()}</div>
+
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                {selectedOrder?.items?.map((it: any) => {
+                  const isCustom = Boolean(it.customConfig);
+                  const custom = it.customConfig;
+                  const itemPrice = Number(it.priceAtPurchase || it.unitPrice || 0);
+
+                  return (
+                    <div
+                      key={it.id}
+                      className="p-3 rounded-lg bg-secondary/20 border border-border flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center"
+                    >
+                      <div className="flex gap-3 items-center">
+                        <div className="w-14 h-16 bg-card rounded border border-border shrink-0 overflow-hidden flex items-center justify-center p-1">
+                          <img
+                            src={custom?.previewUrl || custom?.designUrl || it.productVariant?.product?.images?.[0]?.url || '/images/asora-hero.jpg'}
+                            alt=""
+                            className="object-contain w-full h-full"
+                          />
+                        </div>
+
+                        <div className="space-y-0.5">
+                          {isCustom ? (
+                            <div>
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-rose-600/10 text-rose-400 border border-rose-500/20 text-[9px] font-mono font-bold uppercase">
+                                <Scissors className="h-2.5 w-2.5" /> CUSTOM TEE
+                              </span>
+                              <div className="font-bold text-xs text-foreground mt-0.5">
+                                {custom?.shirtType?.toUpperCase() || 'OVERSIZED'} T-SHIRT
+                              </div>
+                              <div className="text-[10px] font-mono text-muted-foreground">
+                                Color: <strong className="text-foreground">{custom?.color}</strong> • Size: <strong className="text-foreground">{custom?.size}</strong> • Print: <strong className="text-rose-400">{custom?.printPosition?.replace('_', ' + ').toUpperCase()}</strong>
+                              </div>
+                              {custom?.designUrl && (
+                                <a
+                                  href={custom.designUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 text-rose-400 hover:underline text-[10px] font-mono pt-0.5"
+                                >
+                                  <span>Download Print Artwork</span>
+                                  <ExternalLink className="h-2.5 w-2.5" />
+                                </a>
+                              )}
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="font-bold text-xs text-foreground">
+                                {it.productVariant?.product?.title || it.product?.title || 'ASORA STREETWEAR PIECE'}
+                              </div>
+                              {it.productVariant?.attributes && (
+                                <div className="text-[10px] font-mono text-muted-foreground">
+                                  {Object.values(it.productVariant.attributes).join(' / ')}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div className="text-[10px] text-muted-foreground font-mono">
+                            Qty: {it.quantity} × {formatCurrency(itemPrice)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="font-mono font-bold text-xs text-foreground self-end sm:self-center">
+                        {formatCurrency(itemPrice * it.quantity)}
+                      </div>
                     </div>
-                    <div className="font-bold text-foreground">
-                      Rs. {Number(it.totalPrice).toLocaleString()}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
             {/* Financial Summary */}
-            <div className="pt-2 border-t border-border flex justify-between font-black text-sm text-foreground">
-              <span>Total Paid:</span>
-              <span className="text-primary">Rs. {Number(selectedOrder?.total ?? 0).toLocaleString()}</span>
+            <div className="p-3 rounded-xl border border-border bg-secondary/30 space-y-1 font-mono text-xs">
+              <div className="flex justify-between text-muted-foreground text-[11px]">
+                <span>Subtotal:</span>
+                <span className="text-foreground">{formatCurrency(Number(selectedOrder?.subtotal ?? 0))}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground text-[11px]">
+                <span>Shipping:</span>
+                <span className="text-foreground">
+                  {Number(selectedOrder?.shippingAmount ?? 0) === 0 ? 'FREE' : formatCurrency(Number(selectedOrder?.shippingAmount ?? 0))}
+                </span>
+              </div>
+              {Number(selectedOrder?.discountAmount ?? 0) > 0 && (
+                <div className="flex justify-between text-rose-400 text-[11px]">
+                  <span>Discount:</span>
+                  <span>-{formatCurrency(Number(selectedOrder?.discountAmount ?? 0))}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-sm text-foreground pt-1 border-t border-border">
+                <span>Grand Total:</span>
+                <span className="text-rose-400">{formatCurrency(Number(selectedOrder?.totalAmount ?? selectedOrder?.total ?? 0))}</span>
+              </div>
             </div>
           </div>
 
@@ -303,7 +454,7 @@ export default function AdminOrdersPage() {
               variant="outline"
               size="sm"
               onClick={() => setSelectedOrder(null)}
-              className="text-xs font-bold"
+              className="text-xs font-mono uppercase h-9"
             >
               Close
             </Button>

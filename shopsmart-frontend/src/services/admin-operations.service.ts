@@ -1,14 +1,21 @@
 import { apiClient } from '@/lib/api-client';
 
 export interface DashboardSummary {
-  kpis: {
+  orderCountsByStatus?: Record<string, number>;
+  totalRevenue?: number;
+  totalOrders?: number;
+  totalProducts?: number;
+  totalCustomers?: number;
+  customOrderCount?: number;
+  lowStockItemCount?: number;
+  kpis?: {
     totalRevenue: number;
     totalOrders: number;
     totalProducts: number;
     lowStockCount: number;
     totalCustomers: number;
   };
-  recentOrders: Array<{
+  recentOrders?: Array<{
     id: string;
     total: number;
     status: string;

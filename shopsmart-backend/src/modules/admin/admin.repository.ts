@@ -1,5 +1,5 @@
 import { prisma } from '@config/database';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 
 export const adminRepository = {
   listStaff() {
@@ -61,5 +61,23 @@ export const adminRepository = {
     return prisma.$queryRaw<Array<{ count: bigint }>>`
       SELECT COUNT(*) as count FROM inventory WHERE quantity <= low_stock_threshold
     `;
+  },
+
+  countProducts() {
+    return prisma.product.count({ where: { deletedAt: null } });
+  },
+
+  countCustomers() {
+    return prisma.user.count({ where: { role: 'customer', deletedAt: null } });
+  },
+
+  countCustomOrders() {
+    return prisma.orderItem.count({
+      where: {
+        customConfig: {
+          not: Prisma.DbNull,
+        },
+      },
+    });
   },
 };

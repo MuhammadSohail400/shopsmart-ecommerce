@@ -44,14 +44,24 @@ export const adminService = {
   },
 
   async getDashboardSummary() {
-    const [orderCountsByStatus, totalRevenue, lowStockResult] = await Promise.all([
+    const [orderCountsByStatus, totalRevenue, lowStockResult, totalProducts, totalCustomers, customOrderCount] = await Promise.all([
       adminRepository.orderCountsByStatus(),
       adminRepository.totalRevenue(),
       adminRepository.countLowStockItems(),
+      adminRepository.countProducts(),
+      adminRepository.countCustomers(),
+      adminRepository.countCustomOrders(),
     ]);
+
+    const totalOrders = Object.values(orderCountsByStatus).reduce((sum, c) => sum + c, 0);
+
     return {
       orderCountsByStatus,
       totalRevenue,
+      totalOrders,
+      totalProducts,
+      totalCustomers,
+      customOrderCount,
       lowStockItemCount: Number(lowStockResult[0]?.count ?? 0),
     };
   },

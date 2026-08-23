@@ -23,12 +23,20 @@ export default function AdminDashboardPage() {
   const { data: lowStock } = useLowStockInventory();
   const { data: ordersData } = useAdminOrders({ limit: 5 });
 
-  const kpis = summary?.kpis || {
-    totalRevenue: 148500,
-    totalOrders: 28,
-    totalProducts: 56,
-    lowStockCount: lowStock?.length || 0,
-    totalCustomers: 14,
+  const totalRevenue = summary?.totalRevenue ?? (summary as any)?.kpis?.totalRevenue ?? 0;
+  const totalOrders = summary?.totalOrders ?? (summary as any)?.kpis?.totalOrders ?? 0;
+  const totalProducts = summary?.totalProducts ?? (summary as any)?.kpis?.totalProducts ?? 0;
+  const lowStockCount = summary?.lowStockItemCount ?? lowStock?.length ?? 0;
+  const totalCustomers = summary?.totalCustomers ?? (summary as any)?.kpis?.totalCustomers ?? 0;
+  const customOrderCount = (summary as any)?.customOrderCount ?? 0;
+
+  const kpis = {
+    totalRevenue,
+    totalOrders,
+    totalProducts,
+    lowStockCount,
+    totalCustomers,
+    customOrderCount,
   };
 
   const recentOrders = ordersData?.data || [];
