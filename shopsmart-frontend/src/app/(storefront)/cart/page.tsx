@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { formatCurrency } from '@/lib/utils';
+import { WhatsAppOrderDialog } from '@/components/storefront/whatsapp-order-dialog';
 import { toast } from 'sonner';
 
 export default function CartPage() {
@@ -344,7 +345,7 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-2">
                 <Link
                   href="/checkout"
                   className={buttonVariants({
@@ -354,6 +355,20 @@ export default function CartPage() {
                   <Lock className="h-4 w-4" />
                   <span>PROCEED TO CHECKOUT</span>
                 </Link>
+
+                <WhatsAppOrderDialog
+                  items={items.map((it: any) => ({
+                    title: it.title,
+                    size: it.attributes?.size || it.attributes?.Size,
+                    color: it.attributes?.color || it.attributes?.Color,
+                    quantity: it.quantity,
+                    price: it.price,
+                  }))}
+                  totalPrice={subtotal + (amountNeeded === 0 ? 0 : 200) - (appliedCoupon?.discountAmount || 0)}
+                  triggerText="ORDER CART ON WHATSAPP"
+                  triggerClassName="w-full h-11 border-emerald-900/40 bg-emerald-950/30 hover:bg-emerald-900/50 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider rounded gap-2 flex items-center justify-center shadow-md"
+                  isCart={true}
+                />
               </div>
 
               {/* Trust Badges */}

@@ -24,6 +24,7 @@ import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { SectionErrorBoundary } from '@/components/shared/section-error-boundary';
 import { formatCurrency, getDiscountDetails, formatWhatsAppUrl } from '@/lib/utils';
 import { usePublicSettings } from '@/hooks/use-admin';
+import { WhatsAppOrderDialog } from '@/components/storefront/whatsapp-order-dialog';
 import {
   Dialog,
   DialogContent,
@@ -458,18 +459,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   <span>BUY NOW</span>
                 </Button>
 
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={buttonVariants({
-                    variant: "outline",
-                    className: "h-10 border-emerald-900/40 bg-emerald-950/30 hover:bg-emerald-900/40 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider rounded gap-2",
-                  })}
-                >
-                  <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>ORDER ON WHATSAPP</span>
-                </a>
+                <WhatsAppOrderDialog
+                  items={[{
+                    title: product.title,
+                    size: selectedSize,
+                    color: selectedColor,
+                    quantity: quantity,
+                    price: finalPrice,
+                    slugOrId: product.slug || product.id,
+                  }]}
+                  totalPrice={finalPrice * quantity}
+                  triggerText="ORDER ON WHATSAPP"
+                  triggerClassName="h-10 border-emerald-900/40 bg-emerald-950/30 hover:bg-emerald-900/50 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider rounded gap-2 w-full flex items-center justify-center shadow-md"
+                />
               </div>
             </div>
 
