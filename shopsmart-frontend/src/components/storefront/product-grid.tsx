@@ -8,7 +8,7 @@ interface ProductGridProps {
 
 export function ProductGrid({ children }: ProductGridProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
       {children}
     </div>
   );
@@ -18,20 +18,16 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   return (
     <ProductGrid>
       {Array.from({ length: count }).map((_, i) => (
-        <Card key={i} className="flex flex-col overflow-hidden border-border/50 bg-card rounded-2xl">
-          <div className="aspect-[4/5] w-full bg-muted/40 flex items-center justify-center">
-            <Skeleton className="h-full w-full rounded-none" />
+        <div key={i} className="flex flex-col overflow-hidden border border-zinc-850 bg-zinc-900/60 rounded-md">
+          <div className="aspect-[4/5] w-full bg-zinc-900/80">
+            <Skeleton className="h-full w-full bg-zinc-800/50 rounded-none animate-pulse" />
           </div>
-          <CardContent className="flex flex-col gap-1.5 p-3 sm:p-3.5 flex-1">
-            <Skeleton className="h-2.5 w-16" />
-            <Skeleton className="h-4 w-3/4 mt-1" />
-            <Skeleton className="h-3.5 w-1/2" />
-          </CardContent>
-          <CardFooter className="p-3 sm:p-3.5 pt-0 flex justify-between items-center border-t border-border/20 pt-2">
-            <Skeleton className="h-5 w-16" />
-            <Skeleton className="h-8 w-8 rounded-full" />
-          </CardFooter>
-        </Card>
+          <div className="flex flex-col gap-2 p-3 sm:p-4 flex-1">
+            <Skeleton className="h-3 w-16 bg-zinc-800/60" />
+            <Skeleton className="h-4 w-5/6 bg-zinc-800/60 mt-1" />
+            <Skeleton className="h-3.5 w-1/3 bg-zinc-800/60" />
+          </div>
+        </div>
       ))}
     </ProductGrid>
   );
