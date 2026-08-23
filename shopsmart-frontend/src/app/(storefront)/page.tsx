@@ -429,25 +429,38 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Visual Community Grid using authentic streetwear photography */}
+        {/* Visual Community Grid using authentic ASORA shirt photography */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          {['/images/asora-hero.jpg', '/images/asora-streetwear-1.jpg', '/images/asora-streetwear-2.jpg', 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80'].map((imgUrl, idx) => (
-            <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-zinc-900 border border-zinc-800 group">
+          {[
+            { img: '/products/shirts/shirt-1.jpeg', tag: '@asora.pk • SHADOW MONARCH', slug: 'shadow-monarch-oversized-tee' },
+            { img: '/products/shirts/shirt-4.jpeg', tag: '@asora.pk • DOMAIN EXPANSION', slug: 'domain-expansion-heavyweight-tee' },
+            { img: '/products/shirts/shirt-10.jpeg', tag: '@asora.pk • GEAR 5 SUN GOD', slug: 'one-piece-gear-5-sun-god-nika-tee' },
+            { img: '/products/shirts/shirt-17.jpeg', tag: '@asora.pk • BRAND OF SACRIFICE', slug: 'berserk-brand-of-sacrifice-tee' },
+          ].map((item, idx) => (
+            <Link 
+              key={idx} 
+              href={`/products?category=anime-collection`}
+              className="relative aspect-square rounded-md overflow-hidden bg-zinc-900 border border-zinc-800 group block"
+            >
               <img
-                src={imgUrl}
-                alt="ASORA Streetwear Fit"
+                src={item.img}
+                alt="ASORA Streetwear Authentic Piece"
                 loading="lazy"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80';
+                  (e.target as HTMLImageElement).src = '/products/shirts/shirt-1.jpeg';
                 }}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
               />
-              <div className="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3">
-                <span className="text-xs font-mono font-bold text-white uppercase tracking-wider bg-zinc-950/80 px-2.5 py-1 rounded border border-zinc-700">
-                  @asora.pk
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3.5">
+                <span className="text-[10px] font-mono font-bold text-rose-400 uppercase tracking-wider bg-zinc-950/90 px-2 py-1 rounded border border-zinc-800 w-fit backdrop-blur-md mb-1">
+                  {item.tag}
+                </span>
+                <span className="text-[10px] text-zinc-300 font-mono flex items-center gap-1">
+                  <span>TAP TO EXPLORE</span>
+                  <ArrowRight className="h-3 w-3 text-rose-500" />
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
