@@ -32,7 +32,7 @@ export function NewsletterSection() {
   const onSubmit = (data: NewsletterFormData) => {
     subscribeMutation.mutate(data.email, {
       onSuccess: () => {
-        toast.success('Subscribed! Welcome to the ShopSmart insider community.');
+        toast.success("You're on the list! Welcome to ASORA Drops.");
         reset();
       },
       onError: (err) => {

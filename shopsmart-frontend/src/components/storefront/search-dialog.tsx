@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { useProducts, useCategories } from '@/hooks/use-catalog';
 import { Search, Sparkles, Clock, X, ArrowRight, ShoppingBag, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { formatCurrency } from '@/lib/utils';
 
 interface SearchDialogProps {
   open: boolean;
@@ -165,8 +166,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                         <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
                           {product.title}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          ${parseFloat(product.basePrice).toFixed(2)} • {product.brand?.name || 'ShopSmart'}
+                        <p className="text-xs text-zinc-400 font-mono">
+                          {formatCurrency(product.basePrice)} • {product.brand?.name || 'ASORA'}
                         </p>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />

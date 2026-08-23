@@ -187,17 +187,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     image: product.images?.map((img) => img.url) || [],
     brand: {
       '@type': 'Brand',
-      name: product.brand?.name || 'ShopSmart',
+      name: product.brand?.name || 'ASORA',
     },
     offers: {
       '@type': 'Offer',
       priceCurrency: 'PKR',
       price: product.basePrice,
       availability: !isOutOfStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      url: `https://shopsmart-ecommerce-store.netlify.app/products/${product.id}`,
+      url: `https://asora-streetwear.netlify.app/products/${product.slug || product.id}`,
       seller: {
         '@type': 'Organization',
-        name: 'ShopSmart',
+        name: 'ASORA',
       },
     },
     ...(reviewSummary && reviewSummary.reviewCount > 0 ? {
@@ -295,7 +295,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-black uppercase tracking-widest text-primary">
-                {product.brand?.name || 'ShopSmart'}
+                {product.brand?.name || 'ASORA'}
               </span>
               {product.category && (
                 <>

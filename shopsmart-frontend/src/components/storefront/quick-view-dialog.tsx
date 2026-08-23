@@ -144,23 +144,16 @@ export function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialog
           <div className="p-6 flex flex-col justify-between max-h-[80vh] overflow-y-auto">
             <div>
               <DialogHeader className="p-0 text-left">
-                <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
-                  {product.brand?.name || 'ShopSmart'}
+                <div className="text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-widest mb-1">
+                  {product.brand?.name || 'ASORA'}
                 </div>
-                <DialogTitle className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground leading-snug">
+                <DialogTitle className="text-xl sm:text-2xl font-extrabold tracking-tight text-zinc-100 leading-snug">
                   {product.title}
                 </DialogTitle>
                 <DialogDescription className="sr-only">
                   Quick view details for {product.title}
                 </DialogDescription>
               </DialogHeader>
-
-              {/* Rating and Reviews */}
-              <div className="flex items-center gap-2 mt-2">
-                <StarRating rating={4.8} size="sm" />
-                <span className="text-xs font-bold text-foreground">4.8</span>
-                <span className="text-xs text-muted-foreground">(18 reviews)</span>
-              </div>
 
               {/* Price & Stock */}
               <div className="flex items-center gap-3 mt-4 pb-4 border-b border-border/50">

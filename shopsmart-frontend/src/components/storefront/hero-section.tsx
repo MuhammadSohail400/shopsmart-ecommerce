@@ -2,117 +2,122 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Flame, Scissors, Zap, ShieldCheck } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
+import { useProducts } from '@/hooks/use-catalog';
 
 export function HeroSection() {
+  const { data: productsData } = useProducts({ limit: 4 });
+  const products = productsData?.pages?.[0]?.data || [];
+  
+  // Real product images from backend catalog
+  const heroImage = products[0]?.images?.[0]?.url || '/products/shirts/shirt-1.jpeg';
+  const secondaryImage = products[1]?.images?.[0]?.url || '/products/shirts/shirt-2.jpeg';
+
   return (
-    <section className="relative bg-background border-b border-border/40 overflow-hidden">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[460px] lg:min-h-[500px] lg:max-h-[580px]">
+    <section className="relative bg-zinc-950 border-b border-zinc-850 overflow-hidden text-zinc-100">
+      {/* Background Subtle Ambience */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(225,29,72,0.08),transparent_60%)] pointer-events-none" />
+      
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 lg:py-20 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           
-          {/* Mobile Image (Shown first on mobile/tablet < 1024px) */}
-          <div className="block lg:hidden w-full">
-            <div className="relative aspect-[4/3] sm:aspect-[16/10] w-full rounded-2xl overflow-hidden bg-muted border border-border/50 shadow-xs">
-              <Image
-                src="/images/hero-menswear.jpg"
-                alt="Men's Fashion - Tailored Shirts and Smart Trousers"
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 55vw"
-                className="object-cover object-[center_15%]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent pointer-events-none" />
-              
-              {/* Feature Pill Overlay */}
-              <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur-md px-3 py-1 rounded-full border border-border/60 text-[11px] font-black uppercase tracking-wider text-foreground flex items-center gap-1.5 shadow-2xs">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                Shirts & Trousers
-              </div>
-            </div>
-          </div>
-
-          {/* Left Content (45% width on desktop) */}
-          <div className="lg:col-span-5 flex flex-col justify-center items-start text-left z-10">
-            {/* Eyebrow */}
-            <div className="inline-flex items-center gap-1.5 text-primary text-xs font-black tracking-widest uppercase mb-3 sm:mb-4">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>New Collection</span>
+          {/* Left Column: Editorial Headline & Actions (7 cols on desktop) */}
+          <div className="lg:col-span-7 flex flex-col justify-center items-start text-left">
+            {/* Small Brand Eyebrow */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-zinc-900 border border-zinc-800 text-rose-500 text-[11px] font-mono font-bold tracking-widest uppercase mb-4 sm:mb-6">
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+              <span>ASORA / PREMIUM STREETWEAR</span>
             </div>
 
-            {/* Main Heading */}
-            <h1 className="text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-black tracking-tight text-foreground uppercase leading-[1.1] mb-3 sm:mb-4">
-              Elevate Your <br />
-              <span className="text-primary">Everyday Style</span>
+            {/* Large Cinematic Headline */}
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter text-zinc-100 uppercase leading-[0.9] sm:leading-[0.88] mb-5 sm:mb-6 font-sans">
+              WEAR <br />
+              <span className="text-rose-500">YOUR</span> <br />
+              STORY.
             </h1>
 
-            {/* Description */}
-            <p className="text-muted-foreground text-xs sm:text-sm lg:text-base leading-relaxed max-w-md mb-6 sm:mb-8 font-medium">
-              Premium shirts and modern trousers designed for effortless confidence.
+            {/* Supporting Text */}
+            <p className="text-zinc-400 text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mb-8 sm:mb-10 font-normal">
+              Premium anime-inspired and graphic T-shirts made for people who want to stand out. Heavyweight cotton, custom prints, engineered for everyday rebellion.
             </p>
 
-            {/* CTAs (Max 2 buttons, equal height, consistent radii) */}
+            {/* Action CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
               <Link
-                href="/products?category=formal-shirts"
+                href="/products"
                 className={buttonVariants({
                   size: "lg",
-                  className: "h-11 sm:h-12 px-6 sm:px-8 text-xs sm:text-sm font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all rounded-full flex items-center justify-center gap-2",
+                  className: "h-12 sm:h-14 px-8 text-xs sm:text-sm font-black uppercase tracking-widest bg-rose-600 hover:bg-rose-700 text-white shadow-xl shadow-rose-950/40 rounded flex items-center justify-center gap-2.5 transition-all group",
                 })}
               >
-                <span>Shop Shirts</span>
-                <ArrowRight className="h-4 w-4" />
+                <span>SHOP COLLECTION</span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
 
               <Link
-                href="/products?category=pants"
+                href="/products?category=custom-t-shirts"
                 className={buttonVariants({
                   variant: "outline",
                   size: "lg",
-                  className: "h-11 sm:h-12 px-6 sm:px-8 text-xs sm:text-sm font-black uppercase tracking-wider bg-background/80 hover:bg-secondary border-border/80 rounded-full flex items-center justify-center transition-all",
+                  className: "h-12 sm:h-14 px-8 text-xs sm:text-sm font-black uppercase tracking-widest bg-zinc-900/80 hover:bg-zinc-850 text-zinc-100 border-zinc-800 hover:border-zinc-700 rounded flex items-center justify-center gap-2 transition-all",
                 })}
               >
-                <span>Shop Pants</span>
+                <Scissors className="h-4 w-4 text-rose-500" />
+                <span>CUSTOMIZE YOUR SHIRT</span>
               </Link>
             </div>
 
-            {/* Catalog Focus Micro-Stats */}
-            <div className="mt-8 pt-6 border-t border-border/40 w-full grid grid-cols-2 gap-4 text-left">
+            {/* Brand Pillars Micro-Badge Row */}
+            <div className="mt-10 pt-6 border-t border-zinc-850/80 w-full grid grid-cols-3 gap-4 text-left">
               <div>
-                <div className="text-base sm:text-lg font-black text-foreground">34+ Styles</div>
-                <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Formal & Linen Shirts</div>
+                <div className="text-sm sm:text-base font-mono font-bold text-zinc-100 uppercase">240+ GSM</div>
+                <div className="text-[10px] sm:text-[11px] text-zinc-400 font-medium uppercase tracking-wider mt-0.5">Heavyweight Cotton</div>
               </div>
               <div>
-                <div className="text-base sm:text-lg font-black text-foreground">22+ Cuts</div>
-                <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Tailored Pants & Chinos</div>
+                <div className="text-sm sm:text-base font-mono font-bold text-zinc-100 uppercase">HD PRINTS</div>
+                <div className="text-[10px] sm:text-[11px] text-zinc-400 font-medium uppercase tracking-wider mt-0.5">Fade-Resistant Art</div>
+              </div>
+              <div>
+                <div className="text-sm sm:text-base font-mono font-bold text-zinc-100 uppercase">CUSTOM CUT</div>
+                <div className="text-[10px] sm:text-[11px] text-zinc-400 font-medium uppercase tracking-wider mt-0.5">Boxy & Oversized</div>
               </div>
             </div>
           </div>
 
-          {/* Right Image (55% width on desktop, hidden on mobile in favor of top image) */}
-          <div className="hidden lg:block lg:col-span-7 h-full w-full">
-            <div className="relative w-full h-[480px] xl:h-[520px] rounded-3xl overflow-hidden bg-muted/60 border border-border/50 shadow-md group">
-              <Image
-                src="/images/hero-menswear.jpg"
-                alt="Men's Fashion - Tailored Shirts and Smart Trousers"
-                fill
-                priority
-                sizes="(min-width: 1024px) 55vw, 100vw"
-                className="object-cover object-[center_20%] transition-transform duration-700 ease-out group-hover:scale-102"
+          {/* Right Column: Layered Editorial Product Visual (5 cols on desktop) */}
+          <div className="lg:col-span-5 relative w-full flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-md lg:max-w-none aspect-[4/5] rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl group">
+              <img
+                src={heroImage}
+                alt="ASORA Premium Anime Streetwear Collection"
+                loading="eager"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1000&q=80';
+                }}
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
               
-              {/* Subtle gradient scrim */}
-              <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-transparent pointer-events-none" />
+              {/* Dark Gradient Overlay for Cinematic Depth */}
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent pointer-events-none" />
 
-              {/* Floating Quality Tag */}
-              <div className="absolute bottom-5 left-5 bg-background/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-border/60 shadow-lg flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                  <Sparkles className="h-4 w-4" />
+              {/* Floating Streetwear Badge Overlay */}
+              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between p-3.5 rounded bg-zinc-950/90 backdrop-blur-md border border-zinc-800 shadow-xl">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded bg-rose-600/20 text-rose-500 border border-rose-500/30 flex items-center justify-center font-bold text-xs">
+                    <Zap className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-zinc-100 uppercase font-mono">NEW SEASON DROP</p>
+                    <p className="text-[10px] text-zinc-400">Limited Edition Graphic Fits</p>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-xs font-black text-foreground uppercase tracking-wider">100% Fine Weave</div>
-                  <div className="text-[11px] text-muted-foreground font-medium">Tailored Fits & Stretch Comfort</div>
-                </div>
+                <Link
+                  href="/products?category=new-drops"
+                  className="text-xs font-mono font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 uppercase tracking-wider"
+                >
+                  VIEW <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
             </div>
           </div>

@@ -31,9 +31,9 @@ export default function ContactPage() {
   const submitContactMutation = useSubmitContactMessage();
   const { data: publicSettings } = usePublicSettings();
 
-  const supportEmail = publicSettings?.support_email || 'support@shopsmart.ai';
-  const supportPhone = publicSettings?.support_phone || '+92 300 1234567';
-  const storeName = publicSettings?.store_name || 'ShopSmart';
+  const supportEmail = publicSettings?.support_email || 'support@asora.pk';
+  const supportPhone = publicSettings?.support_phone || '+92 311 0297772';
+  const storeName = publicSettings?.store_name || 'ASORA';
 
   const {
     register,
