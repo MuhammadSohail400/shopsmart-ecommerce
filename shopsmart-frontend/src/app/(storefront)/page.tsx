@@ -260,7 +260,7 @@ export default function HomePage() {
 
               <div className="pt-4">
                 <Link
-                  href="/products?category=custom-t-shirts"
+                  href="/customizer"
                   className={buttonVariants({
                     size: "lg",
                     className: "h-12 sm:h-14 px-8 text-xs sm:text-sm font-black uppercase tracking-widest bg-rose-600 hover:bg-rose-700 text-white shadow-xl rounded flex items-center justify-center gap-2 transition-all w-full sm:w-auto",

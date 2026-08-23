@@ -132,9 +132,8 @@ function ProductsPageContent() {
     { label: 'OVERSIZED', href: '/products?category=oversized-t-shirts', active: currentCategory === 'oversized-t-shirts' },
     { label: 'GRAPHIC PRINTS', href: '/products?category=graphic-prints', active: currentCategory === 'graphic-prints' },
     { label: 'MINIMAL', href: '/products?category=minimal-collection', active: currentCategory === 'minimal-collection' },
-    { label: 'CUSTOM', href: '/products?category=custom-t-shirts', active: currentCategory === 'custom-t-shirts' },
+    { label: 'CUSTOM STUDIO ✂', href: '/customizer', active: false },
     { label: 'NEW DROPS 🔥', href: '/products?category=new-drops', active: currentCategory === 'new-drops' },
-    { label: 'BEST SELLERS', href: '/products?category=best-sellers', active: currentCategory === 'best-sellers' },
   ];
 
   return (
@@ -254,6 +253,32 @@ function ProductsPageContent() {
           {/* Product Grid Area (Right) */}
           <main className="flex-1 min-w-0 w-full space-y-6">
             
+            {/* Customizer Callout Banner */}
+            {currentCategory === 'custom-t-shirts' && (
+              <div className="p-6 rounded-md bg-gradient-to-r from-zinc-900 via-zinc-900 to-rose-950/40 border border-rose-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1 text-left">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-rose-600/10 border border-rose-500/20 text-rose-400 text-[10px] font-mono font-bold uppercase tracking-widest">
+                    <Scissors className="h-3 w-3" /> ASORA CUSTOM STUDIO
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black uppercase text-zinc-100">
+                    Design Your Own Custom Heavyweight T-Shirt
+                  </h3>
+                  <p className="text-xs font-mono text-zinc-400">
+                    Upload your artwork, select placement (Front, Back, Front+Back), pick oversized 240+ GSM fit, and preview live.
+                  </p>
+                </div>
+                <Link
+                  href="/customizer"
+                  className={buttonVariants({
+                    className: "bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold text-xs uppercase px-5 h-10 rounded shadow-xl shrink-0 gap-2",
+                  })}
+                >
+                  <Scissors className="h-4 w-4" />
+                  <span>START CUSTOMIZING NOW</span>
+                </Link>
+              </div>
+            )}
+
             {/* Controls Bar */}
             <div className="flex items-center justify-between gap-3 p-3 rounded-md bg-zinc-900/60 border border-zinc-800">
               

@@ -178,8 +178,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=custom-t-shirts" className="text-zinc-400 hover:text-white transition-colors">
-                  Custom T-Shirts
+                <Link href="/customizer" className="text-zinc-400 hover:text-white transition-colors">
+                  Custom T-Shirt Studio
                 </Link>
               </li>
               <li>

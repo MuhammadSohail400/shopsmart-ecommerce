@@ -69,7 +69,7 @@ export function Header() {
     { label: 'HOME', href: '/' },
     { label: 'SHOP', href: '/products' },
     { label: 'ANIME', href: '/products?category=anime-collection' },
-    { label: 'CUSTOM', href: '/products?category=custom-t-shirts' },
+    { label: 'CUSTOM', href: '/customizer' },
     { label: 'NEW DROPS', href: '/products?category=new-drops', isHighlight: true },
     { label: 'ABOUT', href: '/contact' },
   ];
@@ -180,13 +180,13 @@ export function Header() {
                       </Link>
 
                       <Link 
-                        href="/products?category=custom-t-shirts" 
+                        href="/customizer" 
                         onClick={() => setIsMobileMenuOpen(false)} 
                         className="flex items-center justify-between py-2.5 px-3 rounded-md text-sm font-bold text-zinc-200 hover:bg-zinc-900 transition-colors"
                       >
                         <div className="flex items-center gap-2">
                           <Scissors className="h-4 w-4 text-amber-500" />
-                          <span>CUSTOM T-SHIRTS</span>
+                          <span>CUSTOM T-SHIRT STUDIO</span>
                         </div>
                         <ChevronRight className="h-4 w-4 text-zinc-600" />
                       </Link>

@@ -47,7 +47,7 @@ export function HeroSection() {
               </Link>
 
               <Link
-                href="/products?category=custom-t-shirts"
+                href="/customizer"
                 className={buttonVariants({
                   variant: "outline",
                   size: "lg",
