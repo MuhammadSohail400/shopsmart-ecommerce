@@ -49,6 +49,8 @@ export interface OrderItem {
   productVariantId: string;
   quantity: number;
   priceAtPurchase: string | number;
+  customConfig?: any;
+  productVariant?: any;
 }
 
 export interface ShippingAddress {
@@ -73,6 +75,7 @@ export interface Order {
   totalAmount: string | number;
   shippingAddress: ShippingAddress;
   items: OrderItem[];
+  payments?: Payment[];
   createdAt: string;
   statusHistory?: { status: OrderStatus; changedAt: string }[];
   shipment?: {

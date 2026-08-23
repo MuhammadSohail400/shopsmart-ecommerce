@@ -3,33 +3,30 @@
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle2, Package, Clock, AlertCircle, ArrowRight, ShoppingBag, MapPin, Truck, Loader2 } from 'lucide-react';
+import { 
+  CheckCircle2, Package, Clock, AlertCircle, ArrowRight, 
+  ShoppingBag, MapPin, Truck, Loader2, Scissors, MessageCircle, ShieldCheck
+} from 'lucide-react';
 import { useOrder } from '@/features/orders/hooks/use-orders';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OrderStatus } from '@/types/checkout.types';
+import { formatCurrency } from '@/lib/utils';
 
-// ─── Status helpers ────────────────────────────────────────────────────────────
 function getOrderStatusConfig(status: OrderStatus) {
   const map: Record<OrderStatus, { label: string; color: string; icon: React.ElementType }> = {
-    pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
-    confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle2 },
-    processing: { label: 'Processing', color: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: Package },
-    shipped: { label: 'Shipped', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: Truck },
-    delivered: { label: 'Delivered', color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle2 },
-    cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800 border-red-200', icon: AlertCircle },
-    disputed: { label: 'Disputed', color: 'bg-orange-100 text-orange-800 border-orange-200', icon: AlertCircle },
-    refunded: { label: 'Refunded', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: ArrowRight },
+    pending: { label: 'PENDING CONFIRMATION', color: 'bg-amber-950/40 text-amber-400 border-amber-800/80', icon: Clock },
+    confirmed: { label: 'ORDER CONFIRMED', color: 'bg-emerald-950/40 text-emerald-400 border-emerald-800/80', icon: CheckCircle2 },
+    processing: { label: 'IN PRODUCTION / PACKING', color: 'bg-rose-950/40 text-rose-400 border-rose-800/80', icon: Package },
+    shipped: { label: 'DISPATCHED & ON WAY', color: 'bg-purple-950/40 text-purple-400 border-purple-800/80', icon: Truck },
+    delivered: { label: 'DELIVERED', color: 'bg-emerald-950/40 text-emerald-400 border-emerald-800/80', icon: CheckCircle2 },
+    cancelled: { label: 'CANCELLED', color: 'bg-rose-950/40 text-rose-500 border-rose-800/80', icon: AlertCircle },
+    disputed: { label: 'DISPUTED', color: 'bg-amber-950/40 text-amber-400 border-amber-800/80', icon: AlertCircle },
+    refunded: { label: 'REFUNDED', color: 'bg-zinc-900 text-zinc-400 border-zinc-800', icon: ArrowRight },
   };
-  return map[status] ?? { label: status, color: 'bg-muted text-muted-foreground', icon: Package };
+  return map[status] ?? { label: status?.toUpperCase() || 'CONFIRMED', color: 'bg-zinc-900 text-zinc-300 border-zinc-800', icon: Package };
 }
 
-
-
-// ─── Main success content ──────────────────────────────────────────────────────
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -38,194 +35,251 @@ function CheckoutSuccessContent() {
 
   const { data: order, isLoading, isError } = useOrder(orderId);
 
-  // ── Loading ────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="container max-w-2xl mx-auto py-12 px-4">
-        <div className="text-center mb-8">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading your order details…</p>
-        </div>
-        <div className="space-y-4">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-48 w-full rounded-xl" />
-        </div>
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 container max-w-2xl mx-auto py-16 px-4 text-center space-y-4">
+        <Loader2 className="h-10 w-10 animate-spin text-rose-500 mx-auto mb-4" />
+        <p className="text-sm font-mono text-zinc-400">Loading your ASORA order details...</p>
+        <Skeleton className="h-48 w-full bg-zinc-900 rounded" />
       </div>
     );
   }
 
-  // ── Error / not found ──────────────────────────────────────────────────────
-  // If we can't fetch the full order (e.g. guest without auth), still show
-  // a basic confirmation so the user isn't left hanging.
+  // Fallback confirmation view if guest is not authenticated for detail query
   if (isError || !order) {
+    const displayNum = orderNumber || orderId || `ASORA-${Date.now().toString().slice(-6)}`;
     return (
-      <div className="container max-w-2xl mx-auto py-12 px-4 text-center">
-        <div className="p-5 rounded-full bg-green-50 inline-flex mb-6">
-          <CheckCircle2 className="h-14 w-14 text-green-500" />
-        </div>
-        <h1 className="text-3xl font-bold mb-3">Order Placed!</h1>
-        <p className="text-muted-foreground mb-2 text-lg">Your order is being processed.</p>
-        {(orderNumber || orderId) && (
-          <p className="text-sm font-medium bg-muted inline-block px-4 py-2 rounded-lg mb-8 font-mono">
-            Order #{orderNumber ?? orderId}
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center py-16 px-4">
+        <div className="max-w-xl w-full text-center space-y-6">
+          <div className="h-20 w-20 rounded-full bg-zinc-900 border border-zinc-800 text-rose-500 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-emerald-400 font-mono text-[10px] font-bold uppercase tracking-widest">
+              ORDER PLACED
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black font-sans tracking-tight text-zinc-100 uppercase">
+              ORDER CONFIRMED.
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">
+              Your order is on its way to becoming part of your story.
+            </p>
+          </div>
+
+          <div className="p-4 rounded bg-zinc-900 border border-zinc-800 max-w-sm mx-auto">
+            <span className="text-[10px] font-mono text-zinc-500 uppercase block">ORDER NUMBER</span>
+            <span className="text-sm font-mono font-bold text-rose-400 block mt-0.5">{displayNum}</span>
+          </div>
+
+          <p className="text-[11px] font-mono text-zinc-400 max-w-sm mx-auto">
+            You will receive SMS and WhatsApp tracking updates as soon as your package is dispatched.
           </p>
-        )}
-        <p className="text-xs text-muted-foreground mb-8">
-          You&apos;ll receive a confirmation email shortly. To view your full order details, please
-          sign in to your account.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/products" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
-            <ShoppingBag className="h-4 w-4 mr-2" />
-            Continue Shopping
-          </Link>
-          <Link href="/auth/login" className={buttonVariants({ size: 'lg' })}>
-            Sign In to View Orders
-          </Link>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <Link
+              href="/products"
+              className={buttonVariants({
+                className: "bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold text-xs uppercase tracking-wider h-11 px-6 rounded shadow-xl gap-2",
+              })}
+            >
+              <ShoppingBag className="h-4 w-4" />
+              <span>CONTINUE SHOPPING</span>
+            </Link>
+            <a
+              href={`https://wa.me/923110297772?text=${encodeURIComponent(`Hi ASORA! I just placed order #${displayNum}`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className={buttonVariants({
+                variant: "outline",
+                className: "border-zinc-800 bg-zinc-900 text-emerald-400 hover:bg-zinc-850 font-mono font-bold text-xs uppercase tracking-wider h-11 px-6 rounded gap-2",
+              })}
+            >
+              <MessageCircle className="h-4 w-4 text-emerald-400" />
+              <span>WHATSAPP SUPPORT</span>
+            </a>
+          </div>
         </div>
       </div>
     );
   }
 
-  // ── Full success view ──────────────────────────────────────────────────────
   const statusConfig = getOrderStatusConfig(order.status);
   const StatusIcon = statusConfig.icon;
   const shippingAddr = order.shippingAddress;
+  const items = order.items || [];
 
   return (
-    <div className="container max-w-2xl mx-auto py-10 px-4">
-      {/* Hero */}
-      <div className="text-center mb-8">
-        <div className="p-5 rounded-full bg-green-50 inline-flex mb-5">
-          <CheckCircle2 className="h-14 w-14 text-green-500" />
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
+      <div className="container max-w-3xl mx-auto py-8 sm:py-12 px-4 sm:px-6 space-y-6">
+        
+        {/* Header Hero */}
+        <div className="text-center space-y-3">
+          <div className="h-16 w-16 rounded-full bg-emerald-950/40 border border-emerald-800/60 text-emerald-400 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="h-8 w-8" />
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-zinc-900 border border-zinc-800 text-emerald-400 font-mono text-[10px] font-bold uppercase tracking-widest">
+            {statusConfig.label}
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-black font-sans tracking-tight text-zinc-100 uppercase">
+            ORDER CONFIRMED.
+          </h1>
+
+          <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">
+            Your order is on its way to becoming part of your story.
+          </p>
         </div>
-        <h1 className="text-3xl font-bold mb-2">Order Confirmed!</h1>
-        <p className="text-muted-foreground">
-          Thank you for your purchase. We&apos;ve received your order and it&apos;s being processed.
-        </p>
-      </div>
 
-      <div className="space-y-4">
-        {/* Order number + status */}
-        <Card>
-          <CardContent className="pt-5 pb-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Order Number</p>
-                <p className="text-xl font-bold font-mono">{order.orderNumber}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Placed on {new Date(order.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                  })}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border ${statusConfig.color}`}>
-                  <StatusIcon className="h-3.5 w-3.5" />
-                  {statusConfig.label}
-                </span>
-              </div>
+        {/* Order Meta Bar */}
+        <div className="p-4 rounded bg-zinc-900 border border-zinc-800 flex flex-wrap justify-between items-center gap-3 text-xs font-mono">
+          <div>
+            <span className="text-zinc-500 uppercase block text-[10px]">ORDER NUMBER</span>
+            <span className="text-zinc-100 font-bold">{order.orderNumber}</span>
+          </div>
+          <div>
+            <span className="text-zinc-500 uppercase block text-[10px]">ORDER DATE</span>
+            <span className="text-zinc-100 font-bold">
+              {new Date(order.createdAt || Date.now()).toLocaleDateString('en-PK', { dateStyle: 'medium' })}
+            </span>
+          </div>
+          <div>
+            <span className="text-zinc-500 uppercase block text-[10px]">PAYMENT</span>
+            <span className="text-rose-400 font-bold">
+              {order.payments?.[0]?.method?.toUpperCase() || 'CASH ON DELIVERY'}
+            </span>
+          </div>
+          <div>
+            <span className="text-zinc-500 uppercase block text-[10px]">TOTAL AMOUNT</span>
+            <span className="text-zinc-100 font-bold">{formatCurrency(order.totalAmount)}</span>
+          </div>
+        </div>
+
+        {/* ── ORDER ITEMS LIST ── */}
+        <div className="p-6 rounded bg-zinc-900 border border-zinc-800 space-y-4">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300 border-b border-zinc-850 pb-3">
+            ORDERED PIECES ({items.length})
+          </h2>
+
+          <div className="space-y-3">
+            {items.map((item: any) => {
+              const isCustom = Boolean(item.customConfig);
+              const custom = item.customConfig;
+              const imageUrl = custom?.previewUrl || custom?.designUrl || item.productVariant?.product?.images?.[0]?.url || '/images/asora-hero.jpg';
+
+              return (
+                <div
+                  key={item.id}
+                  className="p-3.5 rounded bg-zinc-950 border border-zinc-800 flex gap-3 text-left justify-between items-center"
+                >
+                  <div className="flex gap-3 items-center">
+                    <div className="w-16 h-20 bg-zinc-900 rounded border border-zinc-800 shrink-0 overflow-hidden flex items-center justify-center p-1">
+                      <img
+                        src={imageUrl}
+                        alt="Product piece"
+                        className="object-contain w-full h-full"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/images/asora-hero.jpg';
+                        }}
+                      />
+                    </div>
+
+                    <div className="space-y-1 text-left">
+                      {isCustom ? (
+                        <div>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-600/10 border border-rose-500/20 text-rose-400 font-mono text-[9px] font-bold uppercase tracking-wider mb-1">
+                            <Scissors className="h-2.5 w-2.5" /> CUSTOM ASORA TEE
+                          </span>
+                          <p className="text-xs font-bold font-mono text-zinc-100 uppercase">
+                            {custom?.color} • {custom?.size} • {custom?.printPosition?.replace('_', ' + ').toUpperCase()}
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-xs font-bold text-zinc-100 uppercase">
+                            {item.productVariant?.product?.title || 'ASORA STREETWEAR PIECE'}
+                          </p>
+                          {item.productVariant?.attributes && (
+                            <p className="text-[10px] font-mono text-zinc-400">
+                              {Object.values(item.productVariant.attributes).join(' / ')}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      <span className="text-[11px] font-mono text-zinc-400 block">
+                        Qty: {item.quantity} × {formatCurrency(item.priceAtPurchase)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="font-mono font-bold text-xs text-zinc-100">
+                    {formatCurrency(item.priceAtPurchase * item.quantity)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Pricing Totals */}
+          <div className="space-y-2 text-xs font-mono border-t border-zinc-850 pt-3">
+            <div className="flex justify-between text-zinc-400">
+              <span>Subtotal:</span>
+              <span className="text-zinc-200">{formatCurrency(order.subtotal)}</span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Order items */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              Items Ordered
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {order.items.map((item) => (
-              <div key={item.id} className="flex justify-between items-center py-2 border-b last:border-0">
-                <div>
-                  <p className="text-sm font-medium">Item</p>
-                  <p className="text-xs text-muted-foreground">
-                    Variant ID: <span className="font-mono">{item.productVariantId.slice(0, 8)}…</span>
-                    &nbsp;· Qty: {item.quantity}
-                  </p>
-                </div>
-                <p className="text-sm font-semibold">
-                  ${(Number(item.priceAtPurchase) * item.quantity).toFixed(2)}
-                </p>
-              </div>
-            ))}
-
-            <Separator />
-
-            {/* Pricing breakdown */}
-            <div className="space-y-1.5 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span>${Number(order.subtotal).toFixed(2)}</span>
-              </div>
-              {Number(order.shippingAmount) > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span>${Number(order.shippingAmount).toFixed(2)}</span>
-                </div>
-              )}
-              {Number(order.taxAmount) > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tax</span>
-                  <span>${Number(order.taxAmount).toFixed(2)}</span>
-                </div>
-              )}
-              {Number(order.discountAmount) > 0 && (
-                <div className="flex justify-between text-green-600">
-                  <span>Discount</span>
-                  <span>−${Number(order.discountAmount).toFixed(2)}</span>
-                </div>
-              )}
-              <Separator />
-              <div className="flex justify-between font-bold text-base">
-                <span>Total</span>
-                <span>${Number(order.totalAmount).toFixed(2)}</span>
-              </div>
+            <div className="flex justify-between text-zinc-400">
+              <span>Shipping Fee:</span>
+              <span className="text-zinc-200">
+                {Number(order.shippingAmount) === 0 ? 'FREE' : formatCurrency(order.shippingAmount)}
+              </span>
             </div>
-          </CardContent>
-        </Card>
+            {Number(order.discountAmount) > 0 && (
+              <div className="flex justify-between text-rose-400">
+                <span>Discount:</span>
+                <span>-{formatCurrency(order.discountAmount)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm font-black text-zinc-100 border-t border-zinc-800 pt-2 mt-2">
+              <span>GRAND TOTAL:</span>
+              <span className="text-rose-500 font-mono text-base">{formatCurrency(order.totalAmount)}</span>
+            </div>
+          </div>
+        </div>
 
-        {/* Shipping address */}
+        {/* Shipping Address Summary */}
         {shippingAddr && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Shipping Address
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <address className="not-italic text-sm leading-relaxed">
-                <p className="font-medium">{shippingAddr.fullName}</p>
-                <p className="text-muted-foreground">{shippingAddr.line1}</p>
-                <p className="text-muted-foreground">
-                  {shippingAddr.city}, {shippingAddr.region} {shippingAddr.postalCode}
-                </p>
-                <p className="text-muted-foreground">{shippingAddr.country}</p>
-                <p className="text-muted-foreground mt-1">{shippingAddr.phone}</p>
-              </address>
-            </CardContent>
-          </Card>
+          <div className="p-5 rounded bg-zinc-900 border border-zinc-800 text-left space-y-2 text-xs font-mono">
+            <span className="text-[10px] text-zinc-500 uppercase block font-bold">
+              DELIVERY DESTINATION:
+            </span>
+            <p className="text-zinc-200 font-bold">{shippingAddr.fullName} ({shippingAddr.phone})</p>
+            <p className="text-zinc-400">{shippingAddr.line1}, {shippingAddr.city}, {shippingAddr.region}, {shippingAddr.country}</p>
+          </div>
         )}
 
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-2">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={() => router.push(`/orders/${order.id}`)}
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+          <Link
+            href="/products"
+            className={buttonVariants({
+              className: "bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold text-xs uppercase tracking-wider h-11 px-6 rounded shadow-xl gap-2",
+            })}
           >
-            <Package className="h-4 w-4 mr-2" />
-            View Full Order
-          </Button>
-          <Link href="/products" className={`flex-1 ${buttonVariants({ size: 'default' })}`}>
-            <ShoppingBag className="h-4 w-4 mr-2" />
-            Continue Shopping
+            <ShoppingBag className="h-4 w-4" />
+            <span>CONTINUE SHOPPING</span>
+          </Link>
+          <Link
+            href="/orders"
+            className={buttonVariants({
+              variant: "outline",
+              className: "border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-850 font-mono font-bold text-xs uppercase tracking-wider h-11 px-6 rounded gap-2",
+            })}
+          >
+            <Package className="h-4 w-4 text-rose-500" />
+            <span>VIEW ALL ORDERS</span>
           </Link>
         </div>
+
       </div>
     </div>
   );
@@ -235,9 +289,8 @@ export default function CheckoutSuccessPage() {
   return (
     <Suspense
       fallback={
-        <div className="container max-w-2xl mx-auto py-12 text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading…</p>
+        <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
         </div>
       }
     >

@@ -2,38 +2,40 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Package, Clock, CheckCircle2, AlertCircle, Truck, ArrowRight, ShoppingBag } from 'lucide-react';
+import { 
+  Package, Clock, CheckCircle2, AlertCircle, Truck, 
+  ArrowRight, ShoppingBag, Scissors, ChevronRight, Loader2
+} from 'lucide-react';
 import { useOrders } from '@/features/orders/hooks/use-orders';
-import { buttonVariants } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OrderStatus } from '@/types/checkout.types';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { formatCurrency } from '@/lib/utils';
 
-// ─── Status helpers (mirroring backend OrderStatus enum) ─────────────────────
 function getStatusConfig(status: OrderStatus) {
   const map: Record<OrderStatus, { label: string; color: string; icon: React.ElementType }> = {
-    pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20', icon: Clock },
-    confirmed: { label: 'Confirmed', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: CheckCircle2 },
-    processing: { label: 'Processing', color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20', icon: Package },
-    shipped: { label: 'Shipped', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: Truck },
-    delivered: { label: 'Delivered', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', icon: CheckCircle2 },
-    cancelled: { label: 'Cancelled', color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: AlertCircle },
-    disputed: { label: 'Disputed', color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20', icon: AlertCircle },
-    refunded: { label: 'Refunded', color: 'bg-muted text-muted-foreground border-border', icon: ArrowRight },
+    pending: { label: 'PENDING', color: 'bg-amber-950/40 text-amber-400 border-amber-800/80', icon: Clock },
+    confirmed: { label: 'CONFIRMED', color: 'bg-emerald-950/40 text-emerald-400 border-emerald-800/80', icon: CheckCircle2 },
+    processing: { label: 'PROCESSING', color: 'bg-rose-950/40 text-rose-400 border-rose-800/80', icon: Package },
+    shipped: { label: 'SHIPPED', color: 'bg-purple-950/40 text-purple-400 border-purple-800/80', icon: Truck },
+    delivered: { label: 'DELIVERED', color: 'bg-emerald-950/40 text-emerald-400 border-emerald-800/80', icon: CheckCircle2 },
+    cancelled: { label: 'CANCELLED', color: 'bg-rose-950/40 text-rose-500 border-rose-800/80', icon: AlertCircle },
+    disputed: { label: 'DISPUTED', color: 'bg-amber-950/40 text-amber-400 border-amber-800/80', icon: AlertCircle },
+    refunded: { label: 'REFUNDED', color: 'bg-zinc-900 text-zinc-400 border-zinc-800', icon: ArrowRight },
   };
-  return map[status] ?? { label: status, color: 'bg-muted text-muted-foreground', icon: Package };
+  return map[status] ?? { label: status?.toUpperCase() || 'ORDER', color: 'bg-zinc-900 text-zinc-300 border-zinc-800', icon: Package };
 }
 
 const STATUS_FILTERS = [
-  { value: undefined, label: 'All Orders' },
-  { value: 'pending' as OrderStatus, label: 'Pending' },
-  { value: 'confirmed' as OrderStatus, label: 'Confirmed' },
-  { value: 'shipped' as OrderStatus, label: 'Shipped' },
-  { value: 'delivered' as OrderStatus, label: 'Delivered' },
-  { value: 'cancelled' as OrderStatus, label: 'Cancelled' },
+  { value: undefined, label: 'ALL ORDERS' },
+  { value: 'pending' as OrderStatus, label: 'PENDING' },
+  { value: 'confirmed' as OrderStatus, label: 'CONFIRMED' },
+  { value: 'processing' as OrderStatus, label: 'PROCESSING' },
+  { value: 'shipped' as OrderStatus, label: 'SHIPPED' },
+  { value: 'delivered' as OrderStatus, label: 'DELIVERED' },
+  { value: 'cancelled' as OrderStatus, label: 'CANCELLED' },
 ];
 
 function OrdersContent() {
@@ -47,138 +49,186 @@ function OrdersContent() {
   const orders = data?.data ?? [];
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4">
-      {/* Breadcrumbs */}
-      <Breadcrumbs items={[{ label: 'My Orders' }]} className="mb-6" />
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
+      <div className="container max-w-4xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-6">
+        
+        {/* Breadcrumbs */}
+        <Breadcrumbs items={[
+          { label: 'HOME', href: '/' },
+          { label: 'MY ORDERS', href: '/orders' },
+        ]} className="text-zinc-500 font-mono text-[11px]" />
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold tracking-tight">Order History</h1>
-        <p className="text-muted-foreground text-sm mt-1">Track, review, and manage all your past orders.</p>
-      </div>
+        {/* Header */}
+        <div className="border-b border-zinc-850 pb-4">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-rose-400 text-[10px] font-mono font-bold uppercase tracking-widest mb-1">
+            ACCOUNT ARCHIVE
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-100 uppercase">
+            ORDER HISTORY
+          </h1>
+          <p className="text-xs font-mono text-zinc-400 mt-0.5">
+            Track, review, and manage all your past ASORA drops and custom pieces.
+          </p>
+        </div>
 
-      {/* Status filter tabs */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        {STATUS_FILTERS.map(({ value, label }) => (
-          <button
-            key={label}
-            onClick={() => setActiveFilter(value)}
-            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all border ${
-              activeFilter === value
-                ? 'bg-primary text-primary-foreground border-primary shadow-xs'
-                : 'bg-background text-muted-foreground border-border/80 hover:border-primary/50 hover:text-foreground'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Loading state */}
-      {isLoading && (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-2xl" />
+        {/* Status Filter Tabs */}
+        <div className="flex flex-wrap gap-2">
+          {STATUS_FILTERS.map(({ value, label }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setActiveFilter(value)}
+              className={`px-3 py-1.5 rounded text-[10px] sm:text-xs font-mono font-bold uppercase transition-all ${
+                activeFilter === value
+                  ? 'bg-rose-600 text-white shadow-md'
+                  : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
+              }`}
+            >
+              {label}
+            </button>
           ))}
         </div>
-      )}
 
-      {/* Error state */}
-      {isError && !isLoading && (
-        <Card className="rounded-2xl border-border/60">
-          <CardContent className="py-12 text-center">
-            <div className="p-4 rounded-full bg-destructive/10 text-destructive mx-auto w-fit mb-4">
-              <AlertCircle className="h-8 w-8" />
-            </div>
-            <h3 className="font-bold text-lg mb-1">Could not load orders</h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              {error instanceof Error ? error.message : 'Please try again.'}
-            </p>
-            <Link href="/login" className={buttonVariants({ size: 'sm', className: 'rounded-full px-6' })}>
-              Sign In
-            </Link>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Empty state */}
-      {!isLoading && !isError && orders.length === 0 && (
-        <div className="text-center py-16 px-4 rounded-3xl border border-dashed border-border/80 bg-card/40">
-          <div className="p-6 rounded-full bg-secondary/40 text-muted-foreground/40 mx-auto w-fit mb-4">
-            <ShoppingBag className="h-12 w-12" />
+        {/* Loading State */}
+        {isLoading && (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-32 w-full bg-zinc-900 rounded border border-zinc-800" />
+            ))}
           </div>
-          <h3 className="font-extrabold text-xl mb-2">No orders found</h3>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
-            {activeFilter
-              ? `You don't have any orders with "${activeFilter}" status.`
-              : "You haven't placed any orders yet. Discover our curated catalog today!"}
-          </p>
-          <Link
-            href="/products"
-            className={buttonVariants({ className: 'rounded-full px-8 font-semibold shadow-md' })}
-          >
-            Start Shopping
-          </Link>
-        </div>
-      )}
+        )}
 
-      {/* Orders list */}
-      {!isLoading && !isError && orders.length > 0 && (
-        <div className="space-y-4">
-          {orders.map((order) => {
-            const statusConfig = getStatusConfig(order.status as OrderStatus);
-            const StatusIcon = statusConfig.icon;
-            const formattedDate = new Date(order.createdAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            });
-            const formattedTotal = formatCurrency(order.totalAmount);
+        {/* Error State */}
+        {isError && !isLoading && (
+          <div className="p-8 rounded bg-zinc-900 border border-zinc-800 text-center space-y-3">
+            <AlertCircle className="h-8 w-8 text-rose-500 mx-auto" />
+            <h3 className="text-sm font-mono font-bold uppercase text-zinc-100">COULD NOT LOAD ORDERS</h3>
+            <p className="text-xs font-mono text-zinc-400">
+              {error instanceof Error ? error.message : 'Please sign in to view your orders.'}
+            </p>
+            <Link
+              href="/auth/login"
+              className={buttonVariants({
+                className: "bg-rose-600 hover:bg-rose-700 text-white font-mono text-xs uppercase font-bold px-6 h-10 rounded",
+              })}
+            >
+              SIGN IN
+            </Link>
+          </div>
+        )}
 
-            return (
-              <Link
-                key={order.id}
-                href={`/orders/${order.id}`}
-                className="block group"
-              >
-                <Card className="rounded-2xl border-border/60 hover:border-primary/50 hover:shadow-md transition-all duration-200">
-                  <CardContent className="p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      {/* Left: order info */}
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                          <span className="font-bold text-base group-hover:text-primary transition-colors">
-                            Order #{order.id.slice(-8).toUpperCase()}
+        {/* Empty Orders State */}
+        {!isLoading && !isError && orders.length === 0 && (
+          <div className="p-12 rounded bg-zinc-900 border border-zinc-800 text-center space-y-4">
+            <div className="h-16 w-16 rounded-full bg-zinc-950 border border-zinc-800 text-zinc-500 flex items-center justify-center mx-auto">
+              <Package className="h-8 w-8 text-rose-500" />
+            </div>
+            <h3 className="text-base font-mono font-bold uppercase text-zinc-100">
+              NO ORDERS FOUND
+            </h3>
+            <p className="text-xs font-mono text-zinc-400 max-w-sm mx-auto">
+              {activeFilter ? 'No orders match this status filter.' : 'You haven’t placed any orders yet. Discover our latest streetwear drops!'}
+            </p>
+            <Link
+              href="/products"
+              className={buttonVariants({
+                className: "bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold text-xs uppercase px-6 h-11 rounded shadow-xl gap-2",
+              })}
+            >
+              <ShoppingBag className="h-4 w-4" />
+              <span>SHOP ASORA COLLECTION</span>
+            </Link>
+          </div>
+        )}
+
+        {/* Orders List */}
+        {!isLoading && orders.length > 0 && (
+          <div className="space-y-4">
+            {orders.map((order) => {
+              const statusCfg = getStatusConfig(order.status);
+              const items = order.items || [];
+              const hasCustom = items.some((i: any) => Boolean(i.customConfig));
+
+              return (
+                <div
+                  key={order.id}
+                  className="p-5 rounded bg-zinc-900 border border-zinc-800 space-y-4 hover:border-zinc-700 transition-colors text-left"
+                >
+                  {/* Order Header */}
+                  <div className="flex flex-wrap justify-between items-start gap-2 border-b border-zinc-850 pb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-sm text-zinc-100">
+                          {order.orderNumber}
+                        </span>
+                        {hasCustom && (
+                          <span className="px-2 py-0.5 rounded bg-rose-600/10 border border-rose-500/20 text-rose-400 font-mono text-[9px] font-bold uppercase">
+                            CUSTOM PIECE
                           </span>
-                          <span
-                            className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border ${statusConfig.color}`}
-                          >
-                            <StatusIcon className="h-3 w-3" />
-                            {statusConfig.label}
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Placed on {formattedDate} • {order.items?.length ?? 0}{' '}
-                          {(order.items?.length ?? 0) === 1 ? 'item' : 'items'}
-                        </p>
+                        )}
                       </div>
-
-                      {/* Right: price & arrow */}
-                      <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
-                        <span className="font-extrabold text-lg">{formattedTotal}</span>
-                        <div className="flex items-center text-xs font-semibold text-primary gap-1 group-hover:translate-x-0.5 transition-transform">
-                          Details
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </div>
-                      </div>
+                      <span className="text-[11px] font-mono text-zinc-500 block">
+                        Placed on {new Date(order.createdAt).toLocaleDateString('en-PK', { dateStyle: 'medium' })}
+                      </span>
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase border ${statusCfg.color}`}>
+                        {statusCfg.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Items Preview */}
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 overflow-x-auto">
+                      {items.slice(0, 4).map((item: any, idx: number) => {
+                        const img = item.customConfig?.previewUrl || item.customConfig?.designUrl || item.productVariant?.product?.images?.[0]?.url || '/images/asora-hero.jpg';
+                        return (
+                          <div
+                            key={item.id || idx}
+                            className="w-12 h-14 bg-zinc-950 rounded border border-zinc-800 shrink-0 overflow-hidden flex items-center justify-center p-0.5"
+                          >
+                            <img src={img} alt="" className="object-contain w-full h-full" />
+                          </div>
+                        );
+                      })}
+                      {items.length > 4 && (
+                        <span className="text-xs font-mono text-zinc-500 px-2">
+                          +{items.length - 4} more
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-4 text-right">
+                      <div>
+                        <span className="text-[10px] font-mono text-zinc-500 uppercase block">TOTAL</span>
+                        <span className="font-mono font-bold text-sm text-zinc-100">
+                          {formatCurrency(order.totalAmount)}
+                        </span>
+                      </div>
+
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className={buttonVariants({
+                          variant: "outline",
+                          size: "sm",
+                          className: "border-zinc-800 bg-zinc-950 text-zinc-200 hover:bg-zinc-850 font-mono text-xs uppercase h-9 px-3 gap-1",
+                        })}
+                      >
+                        <span>VIEW DETAILS</span>
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
