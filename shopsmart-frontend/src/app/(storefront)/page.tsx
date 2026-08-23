@@ -469,12 +469,9 @@ export default function HomePage() {
             href="https://instagram.com"
             target="_blank"
             rel="noreferrer"
-            className={buttonVariants({
-              variant: "outline",
-              className: "border-zinc-800 bg-zinc-900/80 hover:bg-zinc-850 text-zinc-200 font-mono font-bold text-xs uppercase tracking-widest px-6 h-11 rounded gap-2",
-            })}
+            className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:opacity-95 text-white font-mono font-bold text-xs uppercase tracking-widest px-8 h-12 rounded-xl shadow-lg shadow-rose-950/40 hover:shadow-[0_0_25px_rgba(220,39,67,0.6)] transition-all duration-300 hover:scale-105"
           >
-            <Camera className="h-4 w-4 text-rose-500" />
+            <Camera className="h-4 w-4 text-white" />
             <span>FOLLOW @ASORA.PK</span>
           </a>
         </div>
