@@ -347,7 +347,53 @@ async function main() {
     }
   }
 
-  console.log('✅ Seeding complete: 24 authentic ASORA streetwear products seeded with variants and real inventory.');
+  // --- 5. Seed Admin User & Platform Settings ---
+  console.log('Seeding ASORA Admin User and Platform Settings...');
+  // Password hash for Admin@123456
+  const adminPasswordHash = '$2b$10$wEeV0q433sPZ3eH7i43Fm.s5WzN3q9eWvMfxvRz6Nvx/d1l1d9xSm'; // bcrypt hash of Admin@123456
+
+  await prisma.user.upsert({
+    where: { email: 'admin@shopsmart.com' },
+    update: { role: 'admin', emailVerified: true },
+    create: {
+      email: 'admin@shopsmart.com',
+      passwordHash: adminPasswordHash,
+      role: 'admin',
+      emailVerified: true,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'admin@asora.pk' },
+    update: { role: 'admin', emailVerified: true },
+    create: {
+      email: 'admin@asora.pk',
+      passwordHash: adminPasswordHash,
+      role: 'admin',
+      emailVerified: true,
+    },
+  });
+
+  // Seed Platform Settings
+  const initialSettings = [
+    { key: 'store_name', value: 'ASORA' },
+    { key: 'tagline', value: 'WEAR YOUR STORY.' },
+    { key: 'whatsapp_number', value: '03110297772' },
+    { key: 'support_phone', value: '03110297772' },
+    { key: 'support_email', value: 'support@asora.pk' },
+    { key: 'free_shipping_threshold', value: '2500' },
+    { key: 'currency', value: 'PKR' },
+  ];
+
+  for (const s of initialSettings) {
+    await prisma.platformSetting.upsert({
+      where: { key: s.key },
+      update: { value: s.value },
+      create: s,
+    });
+  }
+
+  console.log('✅ Seeding complete: 24 authentic ASORA products, Admin users, and Settings seeded successfully.');
 }
 
 main()

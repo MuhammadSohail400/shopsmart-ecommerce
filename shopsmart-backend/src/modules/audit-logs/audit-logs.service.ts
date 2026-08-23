@@ -1,11 +1,19 @@
 import { auditLogsRepository } from './audit-logs.repository';
 
 function sanitizeAuditData(data: any): any {
-  if (!data || typeof data !== 'object') return data;
-  if (Array.isArray(data)) return data.map(sanitizeAuditData);
+  if (!data) return data;
+  let normalized = data;
+  try {
+    normalized = JSON.parse(JSON.stringify(data));
+  } catch {
+    // fallback
+  }
+
+  if (typeof normalized !== 'object' || normalized === null) return normalized;
+  if (Array.isArray(normalized)) return normalized.map(sanitizeAuditData);
 
   const sanitized: Record<string, any> = {};
-  for (const [k, v] of Object.entries(data)) {
+  for (const [k, v] of Object.entries(normalized)) {
     if (/password|token|secret|key|credit|cvv|hash/i.test(k)) {
       sanitized[k] = '[REDACTED]';
     } else if (typeof v === 'object' && v !== null) {
