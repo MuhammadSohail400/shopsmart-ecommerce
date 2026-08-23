@@ -90,24 +90,24 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <div className="group flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/40 border border-border/60 bg-card relative rounded-2xl h-full shadow-2xs p-0 m-0">
+      <div className="group flex flex-col overflow-hidden transition-all duration-300 hover:border-zinc-700 border border-zinc-850 bg-zinc-900/60 relative rounded-md h-full p-0 m-0">
         {/* Image Area - 4:5 Fashion Aspect Ratio (Flush to Top) */}
-        <div className="relative aspect-[4/5] w-full bg-secondary/30 flex items-center justify-center overflow-hidden rounded-t-2xl">
+        <div className="relative aspect-[4/5] w-full bg-zinc-950 flex items-center justify-center overflow-hidden rounded-t-md">
           <Link href={`/products/${product.slug}`} className="absolute inset-0 z-0 flex items-center justify-center">
             {product.images?.[0] ? (
               <img
                 src={product.images[0].url}
-                alt={`${product.title} - ${product.brand?.name || 'ShopSmart'} Men's Clothing`}
+                alt={`${product.title} - ${product.brand?.name || 'ASORA'} Streetwear`}
                 loading="lazy"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=800&q=80';
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80';
                 }}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
-              <div className="text-muted-foreground/30 flex flex-col items-center gap-2">
+              <div className="text-zinc-700 flex flex-col items-center gap-2">
                 <Package className="h-12 w-12" strokeWidth={1} />
-                <span className="text-xs font-bold uppercase tracking-wider">{product.brand?.name || 'ShopSmart'}</span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider">{product.brand?.name || 'ASORA'}</span>
               </div>
             )}
           </Link>
@@ -118,7 +118,7 @@ export function ProductCard({ product }: ProductCardProps) {
               variant="secondary"
               size="sm"
               onClick={handleQuickViewClick}
-              className="w-full shadow-md backdrop-blur-md bg-background/90 hover:bg-primary hover:text-primary-foreground text-xs font-bold h-8 rounded-xl gap-1.5 transition-colors"
+              className="w-full shadow-md backdrop-blur-md bg-zinc-950/90 hover:bg-rose-600 hover:text-white text-xs font-bold h-8 rounded gap-1.5 transition-colors border border-zinc-800"
             >
               <Eye className="h-3.5 w-3.5" />
               Quick View
@@ -128,12 +128,12 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Badges: Sale & Out of Stock */}
           <div className="absolute top-2.5 left-2.5 z-20 flex flex-col gap-1.5 pointer-events-none">
             {isOutOfStock ? (
-              <Badge variant="destructive" className="shadow-xs font-bold text-[10px] px-2 py-0.5 rounded-md">
-                Out of Stock
+              <Badge variant="destructive" className="font-bold text-[9px] font-mono px-2 py-0.5 rounded uppercase">
+                Sold Out
               </Badge>
             ) : discount.isSale ? (
-              <Badge className="bg-rose-600 text-white shadow-xs font-black text-[10px] px-2 py-0.5 rounded-md border-none">
-                -{discount.discountPercent}%
+              <Badge className="bg-rose-600 text-white font-black text-[9px] font-mono px-2 py-0.5 rounded border-none uppercase">
+                -{discount.discountPercent}% OFF
               </Badge>
             ) : null}
           </div>
@@ -142,36 +142,36 @@ export function ProductCard({ product }: ProductCardProps) {
           <button 
             type="button"
             aria-label={isInWishlist ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
-            className={`absolute top-2.5 right-2.5 z-20 h-8 w-8 rounded-full bg-background/90 shadow-2xs backdrop-blur-md transition-all hover:scale-110 hover:bg-background flex items-center justify-center cursor-pointer ${
-              isInWishlist ? 'text-primary opacity-100' : 'text-muted-foreground opacity-90 sm:opacity-0 sm:group-hover:opacity-100 hover:text-primary'
+            className={`absolute top-2.5 right-2.5 z-20 h-8 w-8 rounded bg-zinc-950/80 border border-zinc-800 shadow-2xs backdrop-blur-md transition-all hover:scale-110 flex items-center justify-center cursor-pointer ${
+              isInWishlist ? 'text-rose-500 opacity-100' : 'text-zinc-400 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 hover:text-rose-500'
             }`}
             onClick={handleToggleWishlist}
           >
-            <Heart className={`h-4 w-4 transition-colors ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
+            <Heart className={`h-4 w-4 transition-colors ${isInWishlist ? 'fill-rose-500 text-rose-500' : ''}`} />
           </button>
         </div>
 
         {/* Details Area */}
-        <div className="flex flex-col gap-0.5 p-2.5 sm:p-3 flex-1 bg-card">
-          <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest truncate">
-            {product.brand?.name || 'ShopSmart'}
+        <div className="flex flex-col gap-0.5 p-3 flex-1 bg-zinc-900/60">
+          <div className="text-[9px] text-zinc-400 font-mono font-bold uppercase tracking-widest truncate">
+            {product.brand?.name || 'ASORA'}
           </div>
 
-          <Link href={`/products/${product.slug}`} className="hover:text-primary transition-colors line-clamp-1 mt-0.5">
-            <h3 className="font-bold text-xs sm:text-sm leading-snug tracking-tight text-foreground group-hover:text-primary transition-colors truncate">
+          <Link href={`/products/${product.slug}`} className="hover:text-rose-400 transition-colors line-clamp-1 mt-0.5">
+            <h3 className="font-bold text-xs sm:text-sm leading-snug tracking-tight text-zinc-100 group-hover:text-rose-400 transition-colors truncate">
               {product.title}
             </h3>
           </Link>
         </div>
 
         {/* Footer Area with Price (Current + Strike-through Original) and Quick Add */}
-        <div className="p-2.5 sm:p-3 pt-0 flex items-center justify-between mt-auto border-t border-border/30 pt-2 pb-2.5 sm:pb-3 bg-card rounded-b-2xl">
+        <div className="p-3 pt-2 flex items-center justify-between mt-auto border-t border-zinc-800/80 bg-zinc-900/60 rounded-b-md">
           <div className="flex flex-col">
-            <span className="text-xs sm:text-sm font-black text-foreground tracking-tight">
+            <span className="text-xs sm:text-sm font-black text-zinc-100 tracking-tight font-mono">
               {discount.formattedCurrent}
             </span>
             {discount.isSale && (
-              <span className="text-[10px] text-muted-foreground line-through font-semibold">
+              <span className="text-[10px] text-zinc-500 line-through font-mono">
                 {discount.formattedOriginal}
               </span>
             )}
@@ -182,13 +182,13 @@ export function ProductCard({ product }: ProductCardProps) {
             variant={isOutOfStock ? 'outline' : 'secondary'} 
             disabled={isOutOfStock || addToCart.isPending} 
             aria-label={`Add ${product.title} to cart`}
-            className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-full transition-transform hover:scale-108 hover:bg-primary hover:text-primary-foreground shadow-2xs bg-secondary/80 shrink-0"
+            className="h-8 w-8 rounded bg-zinc-800 hover:bg-rose-600 hover:text-white text-zinc-200 border border-zinc-700 transition-colors shrink-0"
             onClick={handleAddToCart}
           >
             {addToCart.isPending ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <ShoppingBag className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <ShoppingBag className="h-3.5 w-3.5" />
             )}
           </Button>
         </div>

@@ -8,7 +8,7 @@ import { Toaster } from '@/components/ui/sonner';
 const outfit = Outfit({ subsets: ['latin'], display: 'swap' });
 
 export const viewport: Viewport = {
-  themeColor: '#4f46e5',
+  themeColor: '#e11d48',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} — Premium Fashion & Shirts Collection`,
+        alt: `${siteConfig.name} — WEAR YOUR STORY | Premium Anime Streetwear`,
       },
     ],
   },
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     title: siteConfig.title,
     description: siteConfig.description,
     images: [siteConfig.ogImage],
-    creator: '@shopsmart',
+    creator: '@asora_official',
   },
   robots: {
     index: true,
@@ -72,7 +72,7 @@ export default function RootLayout({
   const structuredData = getStructuredData();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -90,7 +90,7 @@ export default function RootLayout({
       <body className={outfit.className}>
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:shadow-lg focus:outline-none font-bold text-xs"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-rose-600 focus:text-white focus:rounded focus:outline-none font-bold text-xs"
         >
           Skip to main content
         </a>

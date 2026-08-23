@@ -1,27 +1,28 @@
 export const siteConfig = {
-  name: 'ShopSmart',
-  title: 'ShopSmart | Premium Men\'s Fashion & Shirts in Pakistan',
-  description: 'Shop premium men\'s shirts, casual wear and everyday fashion essentials online in Pakistan. Discover new arrivals, best sellers and exclusive deals at ShopSmart.',
-  url: 'https://shopsmart-ecommerce-store.netlify.app',
-  ogImage: 'https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?q=80&w=1200&auto=format&fit=crop',
+  name: 'ASORA',
+  tagline: 'WEAR YOUR STORY.',
+  title: 'ASORA | Premium Anime Streetwear & Custom T-Shirts',
+  description: 'Wear your story. Discover exclusive premium anime streetwear, oversized graphic tees, and custom designed apparel engineered for everyday rebellion.',
+  url: 'https://asora-streetwear.netlify.app',
+  ogImage: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1200&auto=format&fit=crop',
   links: {
-    twitter: 'https://twitter.com/shopsmart',
-    instagram: 'https://instagram.com/shopsmart',
-    facebook: 'https://facebook.com/shopsmart',
+    twitter: 'https://twitter.com/asora_official',
+    instagram: 'https://instagram.com/asora_streetwear',
+    facebook: 'https://facebook.com/asoraclothing',
   },
   keywords: [
-    'men fashion Pakistan',
-    'formal shirts',
-    'casual shirts',
-    'linen shirts',
-    'oxford shirts',
-    'polo shirts',
-    'trousers',
-    'chinos',
-    'mens clothing online',
-    'ShopSmart Pakistan'
+    'ASORA',
+    'anime streetwear',
+    'oversized anime t-shirts',
+    'custom t-shirts Pakistan',
+    'graphic tees',
+    'anime clothing',
+    'streetwear Pakistan',
+    'wear your story',
+    'premium graphic tees',
+    'cyberpunk clothing'
   ],
-  author: 'ShopSmart Fashion',
+  author: 'ASORA Streetwear Studio',
 };
 
 export function getStructuredData() {

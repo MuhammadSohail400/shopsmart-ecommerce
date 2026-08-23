@@ -18,7 +18,7 @@ interface SearchDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const POPULAR_SEARCHES = ['Oxford Shirt', 'Linen Shirt', 'Formal Shirt', 'Polo Shirt', 'Heavyweight T-Shirt', 'Chinos', 'Blazer'];
+const POPULAR_SEARCHES = ['Anime T-Shirt', 'Oversized Tee', 'Cyberpunk Drop', 'Custom Print', 'Heavyweight 240 GSM', 'Dark Minimal', 'Gothic Tee'];
 
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const router = useRouter();
@@ -38,7 +38,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('shopsmart_recent_searches');
+        const stored = localStorage.getItem('asora_recent_searches');
         if (stored) {
           setRecentSearches(JSON.parse(stored));
         }
@@ -63,7 +63,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     try {
       const updated = [trimmed, ...recentSearches.filter((s) => s.toLowerCase() !== trimmed.toLowerCase())].slice(0, 6);
       setRecentSearches(updated);
-      localStorage.setItem('shopsmart_recent_searches', JSON.stringify(updated));
+      localStorage.setItem('asora_recent_searches', JSON.stringify(updated));
     } catch {
       // Ignore
     }
@@ -80,7 +80,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const clearRecentSearches = () => {
     setRecentSearches([]);
     try {
-      localStorage.removeItem('shopsmart_recent_searches');
+      localStorage.removeItem('asora_recent_searches');
     } catch {
       // Ignore
     }
@@ -90,11 +90,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-3xl border-border/60 shadow-2xl top-[25%] sm:top-[30%] translate-y-[-25%] sm:translate-y-[-30%]">
-        <DialogHeader className="p-0 border-b border-border/50">
-          <DialogTitle className="sr-only">Search ShopSmart Catalog</DialogTitle>
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-zinc-950 border border-zinc-800 shadow-2xl top-[25%] sm:top-[30%] translate-y-[-25%] sm:translate-y-[-30%] text-zinc-100">
+        <DialogHeader className="p-0 border-b border-zinc-800">
+          <DialogTitle className="sr-only">Search ASORA Catalog</DialogTitle>
           <div className="relative flex items-center px-4">
-            <Search className="h-5 w-5 text-muted-foreground ml-2 shrink-0" />
+            <Search className="h-5 w-5 text-zinc-400 ml-2 shrink-0" />
             <Input
               ref={inputRef}
               value={query}
@@ -105,8 +105,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                   handleSearchSubmit(query);
                 }
               }}
-              placeholder="Search products, brands, categories..."
-              className="h-14 border-0 bg-transparent text-base focus-visible:ring-0 focus-visible:ring-offset-0 px-3 placeholder:text-muted-foreground/60"
+              placeholder="Search anime tees, custom streetwear, drops..."
+              className="h-14 border-0 shadow-none focus-visible:ring-0 text-sm sm:text-base font-medium px-3 bg-transparent text-zinc-100 placeholder:text-zinc-500"
             />
             {query && (
               <button

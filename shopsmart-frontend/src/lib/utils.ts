@@ -6,12 +6,24 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Formats price in Pakistani Rupees (e.g., "Rs. 2,499" or "Rs. 1,825")
+ * Safely parses any number, string with commas/symbols, null, or undefined into a valid number.
+ * Guaranteed to NEVER return NaN.
  */
-export function formatCurrency(amount: number | string): string {
-  const numeric = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(numeric)) return 'Rs. 0';
-  return `Rs. ${Math.round(numeric).toLocaleString('en-PK')}`;
+export function parseNumericAmount(amount: number | string | null | undefined, fallback = 0): number {
+  if (amount === null || amount === undefined) return fallback;
+  if (typeof amount === 'number') return isNaN(amount) ? fallback : amount;
+  const sanitized = String(amount).replace(/[^0-9.-]/g, '');
+  const parsed = parseFloat(sanitized);
+  return isNaN(parsed) ? fallback : parsed;
+}
+
+/**
+ * Formats price in Pakistani Rupees (e.g., "PKR 2,499" or "Rs. 1,825").
+ * Always safe from NaN.
+ */
+export function formatCurrency(amount: number | string | null | undefined, prefix = 'PKR'): string {
+  const numeric = parseNumericAmount(amount, 0);
+  return `${prefix} ${Math.round(numeric).toLocaleString('en-PK')}`;
 }
 
 /**
