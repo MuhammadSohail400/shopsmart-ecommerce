@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import NextImage from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -100,9 +101,15 @@ export function AdminSidebar({ isMobile = false, onItemClick }: { isMobile?: boo
     <aside className="w-64 shrink-0 flex flex-col h-full bg-card border-r border-border select-none">
       {/* Brand Header */}
       <div className="h-16 flex items-center justify-between px-5 border-b border-border">
-        <Link href="/admin" className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black shadow-xs">
-            <ShieldCheck className="h-5 w-5" />
+        <Link href="/admin" className="flex items-center gap-2.5 group">
+          <div className="h-9 w-9 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center p-1.5 shadow-xs group-hover:border-primary/50 transition-colors">
+            <NextImage
+              src="/asora-icon-transparent.png"
+              alt="ASORA"
+              width={28}
+              height={28}
+              className="h-6 w-6 object-contain"
+            />
           </div>
           <div>
             <span className="font-black text-sm tracking-tight uppercase block leading-tight text-foreground truncate max-w-[140px]">

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Search, Menu, ShoppingCart, User, Heart, Sparkles, 
   LogOut, ChevronDown, ChevronRight, X, Phone, 
@@ -108,14 +109,15 @@ export function Header() {
                     <Link
                       href="/"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-2.5"
+                      className="flex items-center gap-2"
                     >
-                      <div className="bg-rose-600 text-white font-black text-xs px-2 py-1 rounded tracking-tighter">
-                        ASORA
-                      </div>
-                      <span className="font-extrabold tracking-widest text-sm text-zinc-400 uppercase font-mono">
-                        STREETWEAR
-                      </span>
+                      <Image
+                        src="/asora-logo-transparent.png"
+                        alt="ASORA"
+                        width={110}
+                        height={32}
+                        className="h-7 w-auto object-contain"
+                      />
                     </Link>
                   </div>
 
@@ -264,15 +266,15 @@ export function Header() {
             </div>
 
             {/* ASORA Brand Logo */}
-            <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-              <div className="flex flex-col">
-                <span className="font-black text-xl sm:text-2xl tracking-tighter text-zinc-100 uppercase group-hover:text-rose-500 transition-colors">
-                  ASORA
-                </span>
-                <span className="text-[9px] font-mono tracking-widest text-zinc-400 -mt-1 uppercase hidden sm:block">
-                  WEAR YOUR STORY
-                </span>
-              </div>
+            <Link href="/" className="flex items-center gap-2 group shrink-0 py-1">
+              <Image
+                src="/asora-logo-transparent.png"
+                alt="ASORA"
+                width={140}
+                height={40}
+                className="h-8 sm:h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                priority
+              />
             </Link>
 
             {/* Desktop Navigation Links */}

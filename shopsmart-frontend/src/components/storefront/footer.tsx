@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { ShieldCheck, Truck, RefreshCw, Headphones, Mail, Flame, Sparkles, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -95,11 +96,15 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           {/* Brand Manifesto Col */}
           <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="font-black text-2xl tracking-tighter text-white uppercase">
-                ASORA
-              </span>
-              <span className="text-[10px] font-mono tracking-widest text-zinc-400 border border-zinc-800 px-2 py-0.5 rounded uppercase">
+            <Link href="/" className="flex items-center gap-3 group">
+              <Image
+                src="/asora-logo-transparent.png"
+                alt="ASORA Streetwear"
+                width={130}
+                height={38}
+                className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
+              />
+              <span className="text-[10px] font-mono tracking-widest text-zinc-400 border border-zinc-800 px-2 py-0.5 rounded uppercase hidden sm:inline-block">
                 WEAR YOUR STORY
               </span>
             </Link>
