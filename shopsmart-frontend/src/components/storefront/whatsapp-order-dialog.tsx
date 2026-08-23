@@ -57,12 +57,16 @@ export function WhatsAppOrderDialog({
   const handleSendOrder = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://asora.pk';
+
     let itemsBreakdown = '';
     items.forEach((item, idx) => {
+      const itemUrl = item.slugOrId ? `${origin}/products/${item.slugOrId}` : `${origin}/products`;
       itemsBreakdown += `\n${idx + 1}. *${item.title}*\n`;
       if (item.size) itemsBreakdown += `   • Size: ${item.size}\n`;
       if (item.color) itemsBreakdown += `   • Color: ${item.color}\n`;
       itemsBreakdown += `   • Qty: ${item.quantity} x ${formatCurrency(item.price)}\n`;
+      itemsBreakdown += `   • 🔗 Product Link: ${itemUrl}\n`;
     });
 
     const fullMessage = 
@@ -70,7 +74,7 @@ export function WhatsAppOrderDialog({
 ======================================
 📦 *ITEMS ORDERED:*
 ${itemsBreakdown}
-💵 *TOTAL AMOUNT:* ${formatCurrency(totalPrice)} (COD)
+💵 *TOTAL AMOUNT:* ${formatCurrency(totalPrice)} (Cash on Delivery)
 --------------------------------------
 📍 *CUSTOMER DELIVERY DETAILS:*
 • *Full Name:* ${name.trim() || 'Not specified'}
@@ -78,7 +82,7 @@ ${itemsBreakdown}
 • *City:* ${city.trim() || 'Not specified'}
 • *Delivery Address:* ${address.trim() || 'Not specified'}
 ${notes.trim() ? `• *Special Instructions:* ${notes.trim()}\n` : ''}======================================
-Please confirm my order and share dispatch details. Thank you!`;
+Please confirm my order and share tracking/dispatch details. Thank you!`;
 
     const url = formatWhatsAppUrl(targetWhatsApp, fullMessage);
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -86,8 +90,9 @@ Please confirm my order and share dispatch details. Thank you!`;
   };
 
   const handleDirectChat = () => {
-    let itemsText = items.map(i => `${i.title} (${i.size || 'M'}, Qty: ${i.quantity})`).join(', ');
-    const quickMsg = `Hi ASORA! I am interested in ordering: ${itemsText}. Total: ${formatCurrency(totalPrice)}. Please guide me with delivery details.`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://asora.pk';
+    let itemsText = items.map(i => `${i.title} (${origin}/products/${i.slugOrId || ''})`).join(', ');
+    const quickMsg = `Hi ASORA! I would like to order: ${itemsText}. Total: ${formatCurrency(totalPrice)}. Please confirm availability & delivery.`;
     const url = formatWhatsAppUrl(targetWhatsApp, quickMsg);
     window.open(url, '_blank', 'noopener,noreferrer');
     setOpen(false);

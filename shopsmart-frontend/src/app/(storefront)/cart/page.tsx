@@ -363,6 +363,7 @@ export default function CartPage() {
                     color: it.attributes?.color || it.attributes?.Color,
                     quantity: it.quantity,
                     price: it.price,
+                    slugOrId: it.productSlug,
                   }))}
                   totalPrice={subtotal + (amountNeeded === 0 ? 0 : 200) - (appliedCoupon?.discountAmount || 0)}
                   triggerText="ORDER CART ON WHATSAPP"
