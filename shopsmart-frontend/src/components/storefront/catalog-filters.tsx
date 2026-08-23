@@ -22,6 +22,11 @@ export function CatalogFilters({ onFilterApplied }: CatalogFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const { data: categories, isLoading: isCategoriesLoading } = useCategories();
   const { data: brands, isLoading: isBrandsLoading } = useBrands();
@@ -137,7 +142,7 @@ export function CatalogFilters({ onFilterApplied }: CatalogFiltersProps) {
         <h4 className="font-mono font-bold text-[11px] uppercase tracking-wider text-zinc-400">
           COLLECTION / CATEGORY
         </h4>
-        {isCategoriesLoading ? (
+        {!mounted || isCategoriesLoading ? (
           <div className="space-y-2">
             <Skeleton className="h-4 w-full bg-zinc-800/60" />
             <Skeleton className="h-4 w-3/4 bg-zinc-800/60" />
