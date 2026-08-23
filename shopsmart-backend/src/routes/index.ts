@@ -21,6 +21,7 @@ import { analyticsRoutes } from '@modules/analytics';
 import { cmsRoutes } from '@modules/cms';
 import { newsletterRoutes } from '@modules/marketing';
 import { contactRoutes } from '@modules/contact';
+import { uploadsRouter } from '@modules/uploads';
 
 /**
  * Single place every module's router is mounted under the versioned
@@ -52,5 +53,6 @@ router.use('/admin', adminRoutes); // exposes /admin/dashboard/summary, /admin/o
 router.use('/cms', cmsRoutes);
 router.use('/newsletter', newsletterRoutes); // exposes /newsletter/subscribe
 router.use('/contact', contactRoutes); // exposes /contact
+router.use('/uploads', uploadsRouter); // exposes /uploads/custom-design
 
 export { router as apiRouter };

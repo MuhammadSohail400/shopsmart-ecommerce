@@ -1,4 +1,17 @@
+export interface CustomConfig {
+  shirtType: string;
+  color: string;
+  size: string;
+  printPosition: 'front' | 'back' | 'front_back';
+  designUrl: string;
+  previewUrl?: string;
+  basePrice: number;
+  customizationPrice: number;
+  finalPrice: number;
+}
+
 export interface CartLineItem {
+  id?: string;
   productVariantId: string;
   title: string;
   attributes: Record<string, string>;
@@ -8,6 +21,7 @@ export interface CartLineItem {
   inStock: boolean;
   productSlug?: string;
   imageUrl?: string | null;
+  customConfig?: CustomConfig | null;
 }
 
 export interface CartView {

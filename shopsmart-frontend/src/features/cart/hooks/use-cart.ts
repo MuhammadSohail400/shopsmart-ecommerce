@@ -29,9 +29,9 @@ export function useAddToCart() {
   const { initializeGuestCart } = useCartStore();
 
   return useMutation({
-    mutationFn: async ({ productVariantId, quantity }: { productVariantId: string; quantity: number }) => {
+    mutationFn: async ({ productVariantId, quantity, customConfig }: { productVariantId: string; quantity: number; customConfig?: any }) => {
       initializeGuestCart();
-      return cartService.addItem(productVariantId, quantity);
+      return cartService.addItem(productVariantId, quantity, customConfig);
     },
     onSuccess: (data) => {
       queryClient.setQueryData(cartKeys.all, data);

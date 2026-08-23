@@ -85,6 +85,9 @@ export function createApp(): Express {
     // won't be available; never let this block the app from starting.
   }
 
+  // --- Static Uploads (ASORA Custom Designs & Previews) ---
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+
   // --- API routes (versioned per API Design Specification Section 4) ---
   app.use(env.API_BASE_PATH, apiRouter);
 

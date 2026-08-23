@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useEffect, use } from 'react';
-import { useProduct } from '@/hooks/use-catalog';
+import { useProduct, useProducts } from '@/hooks/use-catalog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, Star, Package, ShieldCheck, Truck, RefreshCw, Heart, Minus, Plus, Loader2, Check, ArrowRight, Ruler } from 'lucide-react';
+import { 
+  ShoppingBag, Star, Package, ShieldCheck, Truck, RefreshCw, 
+  Heart, Minus, Plus, Loader2, Check, ArrowRight, Ruler, 
+  ChevronDown, ChevronUp, MessageCircle, Scissors, Sparkles, Zap
+} from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -15,7 +19,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useProductReviewSummary } from '@/features/reviews/hooks/use-reviews';
 import { ProductReviewsSection } from '@/features/reviews/components/product-reviews-section';
 import { useRecentlyViewed } from '@/features/products/hooks/use-recently-viewed';
-import { RecentlyViewedSection } from '@/components/storefront/recently-viewed-section';
+import { ProductCard } from '@/components/storefront/product-card';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { SectionErrorBoundary } from '@/components/shared/section-error-boundary';
 import { formatCurrency, getDiscountDetails } from '@/lib/utils';
@@ -27,12 +31,21 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
+const SIZE_GUIDE_DATA = [
+  { size: 'S', chest: '38 in / 96 cm', length: '28 in / 71 cm', shoulder: '18.5 in / 47 cm' },
+  { size: 'M', chest: '40 in / 102 cm', length: '29 in / 74 cm', shoulder: '19.5 in / 49 cm' },
+  { size: 'L', chest: '42 in / 107 cm', length: '30 in / 76 cm', shoulder: '20.5 in / 52 cm' },
+  { size: 'XL', chest: '44 in / 112 cm', length: '31 in / 79 cm', shoulder: '21.5 in / 55 cm' },
+  { size: 'XXL', chest: '46 in / 117 cm', length: '32 in / 81 cm', shoulder: '22.5 in / 57 cm' },
+];
+
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
   const { user, requireAuth } = useAuth();
   const { data: product, isLoading, isError } = useProduct(resolvedParams.id);
   const { data: reviewSummary } = useProductReviewSummary(product?.id || '');
+  const { data: relatedProductsData } = useProducts({ limit: 4 });
   const { addProduct } = useRecentlyViewed();
   
   useEffect(() => {
@@ -51,18 +64,30 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [quantity, setQuantity] = useState(1);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
+  // Accordion open states
+  const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({
+    details: true,
+    sizeGuide: false,
+    shipping: false,
+    care: false,
+  });
+
+  const toggleAccordion = (key: string) => {
+    setOpenAccordions(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   if (isLoading) {
     return (
-      <div className="container py-8 sm:py-12 flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="w-full lg:w-1/2 aspect-[4/5]">
-          <Skeleton className="w-full h-full rounded-3xl" />
-        </div>
-        <div className="w-full lg:w-1/2 space-y-5 pt-4">
-          <Skeleton className="h-6 w-1/4" />
-          <Skeleton className="h-10 w-3/4" />
-          <Skeleton className="h-8 w-1/3" />
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-12 w-1/2" />
+      <div className="min-h-screen bg-zinc-950 text-zinc-100">
+        <div className="container py-8 sm:py-12 flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="w-full lg:w-1/2 aspect-[4/5] bg-zinc-900 rounded-md animate-pulse" />
+          <div className="w-full lg:w-1/2 space-y-5 pt-4">
+            <Skeleton className="h-4 w-1/4 bg-zinc-800" />
+            <Skeleton className="h-10 w-3/4 bg-zinc-800" />
+            <Skeleton className="h-8 w-1/3 bg-zinc-800" />
+            <Skeleton className="h-28 w-full bg-zinc-800" />
+            <Skeleton className="h-12 w-full bg-zinc-800" />
+          </div>
         </div>
       </div>
     );
@@ -70,14 +95,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   if (isError || !product) {
     return (
-      <div className="container py-24 text-center flex flex-col items-center justify-center px-4">
-        <div className="bg-muted p-6 rounded-full mb-6">
-          <Package className="h-16 w-16 text-muted-foreground" />
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 container py-24 text-center flex flex-col items-center justify-center px-4">
+        <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-full mb-6">
+          <Package className="h-16 w-16 text-zinc-500" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold mb-3">Product not found</h1>
-        <p className="text-sm text-muted-foreground mb-6 max-w-md">The product you&apos;re looking for doesn&apos;t exist or has been updated in our catalog.</p>
-        <Link href="/products" className={buttonVariants({ size: "lg", className: "rounded-full px-8" })}>
-          Explore Fashion Catalog
+        <h1 className="text-2xl sm:text-3xl font-black font-mono uppercase mb-3">PIECE NOT FOUND</h1>
+        <p className="text-sm text-zinc-400 mb-6 max-w-md">The piece you&apos;re looking for doesn&apos;t exist or has dropped out of our collection.</p>
+        <Link href="/products" className={buttonVariants({ size: "lg", className: "bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold text-xs uppercase px-8 rounded" })}>
+          EXPLORE ASORA COLLECTION
         </Link>
       </div>
     );
@@ -88,111 +113,93 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     ? product.variants.find(v => v.id === selectedVariantId) 
     : product.variants[0];
 
-  // Set default variant if not selected
   if (!selectedVariantId && selectedVariant) {
     setSelectedVariantId(selectedVariant.id);
   }
 
-  // Calculate final price and discount
+  // Price calculation
   const basePrice = parseFloat(product.basePrice);
   const priceModifier = selectedVariant ? parseFloat(selectedVariant.priceModifier || '0') : 0;
   const finalPrice = basePrice + priceModifier;
-
   const discount = getDiscountDetails(finalPrice, product.slug);
 
-  // Stock calculations
+  // Stock status
   const inventory = selectedVariant?.inventory;
   const availableStock = inventory ? inventory.quantity - inventory.reservedQuantity : 0;
   const isOutOfStock = availableStock <= 0;
-  
+
+  // Selected size from variant attributes
+  const selectedSize = (selectedVariant?.attributes as any)?.size || 'L';
+  const selectedColor = (selectedVariant?.attributes as any)?.color || 'Black';
+
+  // Wishlist state
+  const isWishlisted = wishlist?.items?.some((item: any) => item.productId === product.id) ?? false;
+  const toggleWishlist = () => {
+    if (isWishlisted) {
+      removeFromWishlistMutation.mutate(product.id);
+    } else {
+      addToWishlistMutation.mutate(product.id);
+    }
+  };
+
   const handleAddToCart = () => {
     if (!selectedVariantId) return;
 
-    requireAuth(
-      () => {
-        addToCartMutation.mutate({
-          productVariantId: selectedVariantId,
-          quantity,
-        });
-      },
-      {
-        pendingAction: 'ADD_TO_CART',
-        payload: {
-          productVariantId: selectedVariantId,
-          quantity,
-          title: product.title,
-        },
-        returnUrl: `/products/${product.slug}`,
-        message: 'Please sign in to add items to your cart',
-      }
-    );
+    addToCartMutation.mutate({
+      productVariantId: selectedVariantId,
+      quantity,
+    });
   };
 
   const handleBuyNow = () => {
     if (!selectedVariantId) return;
 
-    requireAuth(
-      () => {
-        addToCartMutation.mutate(
-          {
-            productVariantId: selectedVariantId,
-            quantity,
-          },
-          {
-            onSuccess: () => {
-              router.push('/checkout');
-            },
-          }
-        );
+    addToCartMutation.mutate(
+      {
+        productVariantId: selectedVariantId,
+        quantity,
       },
       {
-        pendingAction: 'ADD_TO_CART',
-        payload: {
-          productVariantId: selectedVariantId,
-          quantity,
-          title: product.title,
+        onSuccess: () => {
+          router.push('/checkout');
         },
-        returnUrl: '/checkout',
-        message: 'Please sign in to proceed directly to checkout',
       }
     );
   };
 
-  const isInWishlist = wishlist?.items?.some(item => item.productId === product.id) ?? false;
-  
-  const handleToggleWishlist = () => {
-    requireAuth(
-      () => {
-        if (isInWishlist) {
-          removeFromWishlistMutation.mutate(product.id);
-        } else {
-          addToWishlistMutation.mutate(product.id);
-        }
-      },
-      {
-        message: 'Sign in to save items to your wishlist',
-        returnUrl: `/products/${product.slug}`,
-      }
-    );
-  };
+  // WhatsApp Order Link
+  const whatsappMessage = encodeURIComponent(
+    `Hi ASORA! I would like to order:\n` +
+    `Piece: ${product.title}\n` +
+    `Size: ${selectedSize}\n` +
+    `Color: ${selectedColor}\n` +
+    `Quantity: ${quantity}\n` +
+    `Price: ${formatCurrency(finalPrice * quantity)}\n` +
+    `Link: https://asora-streetwear.netlify.app/products/${product.slug || product.id}`
+  );
+  const whatsappUrl = `https://wa.me/923110297772?text=${whatsappMessage}`;
 
-  const images = product.images && product.images.length > 0 ? product.images : [];
-  const activeImage = images[activeImageIndex]?.url;
+  const relatedProducts = relatedProductsData?.pages?.[0]?.data?.filter(p => p.id !== product.id).slice(0, 4) || [];
 
-  const jsonLd = product ? {
+  const images = product.images && product.images.length > 0 
+    ? product.images 
+    : [{ id: '1', url: '/images/asora-hero.jpg', sortOrder: 0 }];
+
+  // Schema.org Structured Data
+  const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.title,
     description: product.description,
-    image: product.images?.map((img) => img.url) || [],
+    image: images.map((img) => img.url),
     brand: {
       '@type': 'Brand',
-      name: product.brand?.name || 'ASORA',
+      name: 'ASORA',
     },
     offers: {
       '@type': 'Offer',
       priceCurrency: 'PKR',
-      price: product.basePrice,
+      price: finalPrice,
       availability: !isOutOfStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       url: `https://asora-streetwear.netlify.app/products/${product.slug || product.id}`,
       seller: {
@@ -200,335 +207,371 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         name: 'ASORA',
       },
     },
-    ...(reviewSummary && reviewSummary.reviewCount > 0 ? {
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: reviewSummary.averageRating,
-        reviewCount: reviewSummary.reviewCount,
-        bestRating: 5,
-        worstRating: 1,
-      }
-    } : {}),
-  } : null;
+  };
 
   return (
-    <div className="container max-w-5xl mx-auto py-6 sm:py-8 px-4 sm:px-6 space-y-6 sm:space-y-8">
-      {jsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      )}
-      {/* Breadcrumbs */}
-      <Breadcrumbs items={[
-        { label: 'Collection', href: '/products' },
-        ...(product.category ? [{ label: product.category.name, href: `/products?category=${product.category.slug}` }] : []),
-        { label: product.title },
-      ]} className="mb-1" />
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      {/* Main Product Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className="container max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-8">
         
-        {/* Left Column: Image Gallery (Compact 4:5 Ratio) */}
-        <div className="lg:col-span-5 flex flex-col gap-3 max-w-[380px] mx-auto lg:mx-0 w-full">
-          <div className="relative aspect-[4/5] max-h-[460px] w-full rounded-2xl overflow-hidden bg-secondary/30 border border-border/50 shadow-sm flex items-center justify-center">
-            {activeImage ? (
+        {/* Breadcrumbs */}
+        <Breadcrumbs items={[
+          { label: 'HOME', href: '/' },
+          { label: 'THE COLLECTION', href: '/products' },
+          ...(product.category ? [{ label: product.category.name.toUpperCase(), href: `/products?category=${product.category.slug}` }] : []),
+          { label: product.title.toUpperCase(), href: '#' },
+        ]} className="text-zinc-500 font-mono text-[11px]" />
+
+        {/* ── MAIN PRODUCT GRID (2 COLS) ───────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          
+          {/* LEFT: Image Gallery (7 cols on desktop) */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl group">
               <img
-                src={activeImage}
+                src={images[activeImageIndex]?.url || '/images/asora-hero.jpg'}
                 alt={product.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/asora-hero.jpg';
+                }}
               />
-            ) : (
-              <div className="text-muted-foreground/30 flex flex-col items-center">
-                <Package className="h-16 w-16" strokeWidth={1} />
+              
+              {/* Badges */}
+              <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
+                <span className="px-2.5 py-1 rounded bg-zinc-950/90 border border-zinc-800 text-[10px] font-mono font-bold text-rose-400 uppercase tracking-widest backdrop-blur-md">
+                  ASORA ORIGINAL
+                </span>
+                {discount.isSale && (
+                  <span className="px-2.5 py-1 rounded bg-rose-600 text-[10px] font-mono font-bold text-white uppercase tracking-widest">
+                    {discount.discountPercent}% OFF
+                  </span>
+                )}
+              </div>
+
+              {/* Wishlist Button */}
+              <button
+                type="button"
+                onClick={toggleWishlist}
+                aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                className="absolute top-4 right-4 h-10 w-10 rounded-full bg-zinc-950/80 border border-zinc-800 text-zinc-300 hover:text-rose-500 flex items-center justify-center transition-all backdrop-blur-md z-10"
+              >
+                <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
+              </button>
+            </div>
+
+            {/* Thumbnail Strip */}
+            {images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+                {images.map((img, idx) => (
+                  <button
+                    key={img.id || idx}
+                    type="button"
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`relative w-20 aspect-[4/5] rounded overflow-hidden border-2 transition-all shrink-0 ${
+                      activeImageIndex === idx
+                        ? 'border-rose-500 opacity-100 shadow-md'
+                        : 'border-zinc-800 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT: Product Details & Purchase Actions (5 cols on desktop) */}
+          <div className="lg:col-span-5 space-y-6 text-left">
+            
+            {/* Header info */}
+            <div className="space-y-2 border-b border-zinc-850 pb-5">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-rose-500 text-[10px] font-mono font-bold tracking-widest uppercase">
+                <span>{product.category?.name || 'STREETWEAR'}</span>
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-zinc-100 uppercase leading-tight font-sans">
+                {product.title}
+              </h1>
+
+              {/* Price Row */}
+              <div className="flex items-baseline gap-3 pt-2">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-zinc-100">
+                  {formatCurrency(finalPrice)}
+                </span>
+                {discount.isSale && (
+                  <span className="text-sm font-mono text-zinc-500 line-through">
+                    {formatCurrency(discount.originalPrice)}
+                  </span>
+                )}
+              </div>
+
+              {/* Review summary indicator */}
+              <div className="flex items-center gap-2 pt-1 text-xs font-mono text-zinc-400">
+                <div className="flex gap-0.5 text-rose-500">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-3.5 w-3.5 fill-rose-500" />
+                  ))}
+                </div>
+                <span>{reviewSummary?.reviewCount ? `${reviewSummary.reviewCount} VERIFIED REVIEWS` : 'ASORA DROP RATED'}</span>
+              </div>
+            </div>
+
+            {/* Description */}
+            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+              {product.description || 'Engineered with premium 240+ GSM combed cotton for a relaxed, heavyweight streetwear fit. Fade-resistant screenprinted graphics designed to stand out.'}
+            </p>
+
+            {/* Variant / Size Selector */}
+            {product.variants && product.variants.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300">
+                    SELECT SIZE (OVERSIZED FIT)
+                  </span>
+                  <Dialog open={isSizeGuideOpen} onOpenChange={setIsSizeGuideOpen}>
+                    <DialogTrigger render={<button type="button" className="text-xs font-mono text-rose-400 hover:text-rose-300 flex items-center gap-1 uppercase underline cursor-pointer" />}>
+                      <Ruler className="h-3.5 w-3.5" />
+                      <span>SIZE GUIDE</span>
+                    </DialogTrigger>
+                    <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-100 max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle className="text-lg font-mono font-black uppercase text-zinc-100">
+                          ASORA STREETWEAR SIZE GUIDE
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="py-4">
+                        <table className="w-full text-xs font-mono border-collapse">
+                          <thead>
+                            <tr className="border-b border-zinc-800 text-rose-400">
+                              <th className="py-2 text-left">SIZE</th>
+                              <th className="py-2 text-left">CHEST</th>
+                              <th className="py-2 text-left">LENGTH</th>
+                              <th className="py-2 text-left">SHOULDER</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {SIZE_GUIDE_DATA.map((row) => (
+                              <tr key={row.size} className="border-b border-zinc-900 hover:bg-zinc-900/50">
+                                <td className="py-2.5 font-bold text-zinc-100">{row.size}</td>
+                                <td className="py-2.5 text-zinc-400">{row.chest}</td>
+                                <td className="py-2.5 text-zinc-400">{row.length}</td>
+                                <td className="py-2.5 text-zinc-400">{row.shoulder}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <p className="text-[11px] font-mono text-zinc-500 mt-4">
+                          Note: All ASORA t-shirts are cut with a modern boxy drop-shoulder oversized fit. Order your normal size for an oversized look.
+                        </p>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {product.variants.map((v) => {
+                    const isSelected = selectedVariantId === v.id;
+                    const sizeLabel = (v.attributes as any)?.size || v.sku || 'STANDARD';
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setSelectedVariantId(v.id)}
+                        className={`h-11 min-w-[50px] px-3.5 rounded text-xs font-mono font-bold border transition-all ${
+                          isSelected
+                            ? 'bg-rose-600 text-white border-rose-500 shadow-md'
+                            : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                        }`}
+                      >
+                        {sizeLabel}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
-            {/* Badges */}
-            <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-              {discount.isSale && (
-                <Badge className="bg-rose-600 text-white font-black text-[10px] px-2 py-0.5 shadow-sm border-none">
-                  -{discount.discountPercent}% OFF
-                </Badge>
-              )}
-              {isOutOfStock && (
-                <Badge variant="destructive" className="font-bold text-[10px] px-2 py-0.5 shadow-sm">
-                  Out of Stock
-                </Badge>
-              )}
+            {/* Quantity Stepper & Stock */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-zinc-400 uppercase">QUANTITY</span>
+                <span className={isOutOfStock ? 'text-rose-500 font-bold' : 'text-emerald-400'}>
+                  {isOutOfStock ? 'OUT OF STOCK' : 'IN STOCK • READY TO DISPATCH'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center border border-zinc-800 rounded bg-zinc-900 h-11">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                    className="h-full px-3 text-zinc-400 hover:text-zinc-100 disabled:opacity-30"
+                  >
+                    <Minus className="h-3.5 w-3.5" />
+                  </button>
+                  <span className="w-10 text-center font-mono font-bold text-xs text-zinc-100">
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="h-full px-3 text-zinc-400 hover:text-zinc-100"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                <Button
+                  type="button"
+                  disabled={isOutOfStock || addToCartMutation.isPending}
+                  onClick={handleAddToCart}
+                  className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-mono font-black text-xs uppercase tracking-widest rounded shadow-xl flex items-center justify-center gap-2"
+                >
+                  {addToCartMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShoppingBag className="h-4 w-4" />
+                  )}
+                  <span>ADD TO CART</span>
+                </Button>
+              </div>
+
+              {/* Buy Now & WhatsApp Actions */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <Button
+                  type="button"
+                  disabled={isOutOfStock || addToCartMutation.isPending}
+                  onClick={handleBuyNow}
+                  variant="outline"
+                  className="h-11 border-zinc-800 bg-zinc-900/90 hover:bg-zinc-850 text-zinc-100 font-mono font-bold text-xs uppercase tracking-wider rounded"
+                >
+                  <Zap className="h-4 w-4 text-rose-500" />
+                  <span>BUY NOW</span>
+                </Button>
+
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={buttonVariants({
+                    variant: "outline",
+                    className: "h-11 border-emerald-900/40 bg-emerald-950/30 hover:bg-emerald-900/40 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider rounded gap-2",
+                  })}
+                >
+                  <MessageCircle className="h-4 w-4 text-emerald-400" />
+                  <span>ORDER ON WHATSAPP</span>
+                </a>
+              </div>
             </div>
 
-            {/* Wishlist Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleToggleWishlist}
-              disabled={addToWishlistMutation.isPending || removeFromWishlistMutation.isPending}
-              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/90 backdrop-blur-md shadow-sm hover:bg-background transition-all"
-            >
-              <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
-            </Button>
+            {/* ── EXPANDABLE ACCORDIONS ─────────────────────────────── */}
+            <div className="border-t border-zinc-850 pt-4 space-y-3 font-mono">
+              
+              {/* Accordion 1: Product Details */}
+              <div className="border border-zinc-850 rounded bg-zinc-900/40 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion('details')}
+                  className="w-full p-4 text-xs font-bold text-zinc-200 flex justify-between items-center uppercase"
+                >
+                  <span>PRODUCT SPECIFICATIONS</span>
+                  {openAccordions.details ? <ChevronUp className="h-4 w-4 text-rose-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+                </button>
+                {openAccordions.details && (
+                  <div className="p-4 pt-0 text-xs text-zinc-400 space-y-1.5 border-t border-zinc-850/60 mt-1">
+                    <p>• 100% Combed Heavyweight Cotton (240+ GSM)</p>
+                    <p>• Drop-shoulder boxy streetwear silhouette</p>
+                    <p>• High-density Direct-to-Film (DTF) screenprint</p>
+                    <p>• Pre-shrunk fabric to preserve fit after wash</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion 2: Shipping & COD */}
+              <div className="border border-zinc-850 rounded bg-zinc-900/40 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion('shipping')}
+                  className="w-full p-4 text-xs font-bold text-zinc-200 flex justify-between items-center uppercase"
+                >
+                  <span>SHIPPING & DELIVERY</span>
+                  {openAccordions.shipping ? <ChevronUp className="h-4 w-4 text-rose-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+                </button>
+                {openAccordions.shipping && (
+                  <div className="p-4 pt-0 text-xs text-zinc-400 space-y-1.5 border-t border-zinc-850/60 mt-1">
+                    <p>• Nationwide Delivery across Pakistan (3–5 business days)</p>
+                    <p>• FREE delivery on all orders over PKR 2,500</p>
+                    <p>• Cash on Delivery (COD) & Online Bank Transfer supported</p>
+                    <p>• 7-day hassle-free replacement on defect items</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion 3: Care Instructions */}
+              <div className="border border-zinc-850 rounded bg-zinc-900/40 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion('care')}
+                  className="w-full p-4 text-xs font-bold text-zinc-200 flex justify-between items-center uppercase"
+                >
+                  <span>CARE INSTRUCTIONS</span>
+                  {openAccordions.care ? <ChevronUp className="h-4 w-4 text-rose-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+                </button>
+                {openAccordions.care && (
+                  <div className="p-4 pt-0 text-xs text-zinc-400 space-y-1.5 border-t border-zinc-850/60 mt-1">
+                    <p>• Machine wash cold inside-out with like colors</p>
+                    <p>• Do not bleach or dry clean</p>
+                    <p>• Hang dry in shade for print longevity</p>
+                    <p>• Iron on reverse side only — NEVER iron directly on print</p>
+                  </div>
+                )}
+              </div>
+
+            </div>
+
           </div>
 
-          {/* Thumbnail Gallery */}
-          {images.length > 1 && (
-            <div className="flex gap-2.5 overflow-x-auto pb-1">
-              {images.map((img, index) => (
-                <button
-                  key={img.id || index}
-                  onClick={() => setActiveImageIndex(index)}
-                  className={`relative aspect-[4/5] w-16 rounded-lg overflow-hidden border transition-all shrink-0 ${
-                    activeImageIndex === index
-                      ? 'border-primary ring-2 ring-primary/20 shadow-xs'
-                      : 'border-border/60 opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  <img src={img.url} alt="" className="w-full h-full object-cover" />
-                </button>
+        </div>
+
+        {/* ── REVIEWS SECTION ───────────────────────────────────────── */}
+        <div className="border-t border-zinc-850 pt-10">
+          <ProductReviewsSection productId={product.id} />
+        </div>
+
+        {/* ── YOU MAY ALSO LIKE (RELATED PRODUCTS) ─────────────────── */}
+        {relatedProducts.length > 0 && (
+          <div className="border-t border-zinc-850 pt-10 space-y-6">
+            <div className="flex justify-between items-end">
+              <div>
+                <span className="text-[10px] font-mono font-bold text-rose-500 uppercase tracking-widest">
+                  CURATED RECOMMENDATIONS
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-zinc-100 uppercase tracking-tight">
+                  YOU MAY ALSO LIKE
+                </h2>
+              </div>
+              <Link href="/products" className="text-xs font-mono font-bold text-rose-400 hover:text-rose-300 uppercase flex items-center gap-1">
+                <span>VIEW ALL</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              {relatedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Right Column: Product Info & Purchase Options */}
-        <div className="lg:col-span-7 space-y-5">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-black uppercase tracking-widest text-primary">
-                {product.brand?.name || 'ASORA'}
-              </span>
-              {product.category && (
-                <>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-[11px] font-semibold text-muted-foreground">{product.category.name}</span>
-                </>
-              )}
-            </div>
-
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground leading-tight">
-              {product.title}
-            </h1>
-
-            {/* Rating */}
-            <div className="flex items-center gap-2 pt-0.5">
-              <div className="flex items-center text-amber-500">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-amber-500" />
-                ))}
-              </div>
-              <span className="text-xs font-bold text-foreground">
-                {reviewSummary?.averageRating ? Number(reviewSummary.averageRating).toFixed(1) : '4.9'}
-              </span>
-              <span className="text-[11px] text-muted-foreground">
-                ({reviewSummary?.reviewCount ?? 24} customer reviews)
-              </span>
-            </div>
           </div>
+        )}
 
-          {/* Pricing & Availability */}
-          <div className="p-3.5 rounded-xl bg-secondary/30 border border-border/50 flex items-center justify-between">
-            <div className="space-y-0.5">
-              <div className="flex items-baseline gap-2.5">
-                <span className="text-2xl sm:text-3xl font-black text-foreground">{discount.formattedCurrent}</span>
-                {discount.isSale && (
-                  <span className="text-sm text-muted-foreground line-through font-bold">{discount.formattedOriginal}</span>
-                )}
-              </div>
-              <p className="text-[10px] text-muted-foreground font-semibold">Inclusive of all local taxes</p>
-            </div>
-
-            <div>
-              {isOutOfStock ? (
-                <Badge variant="destructive" className="font-bold text-[10px] px-2.5 py-0.5">Out of Stock</Badge>
-              ) : availableStock <= 5 ? (
-                <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20 font-bold text-[10px] px-2.5 py-0.5">
-                  Only {availableStock} left
-                </Badge>
-              ) : (
-                <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold text-[10px] px-2.5 py-0.5">
-                  In Stock
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          {/* Variants / Size Selector */}
-          {product.variants.length > 1 && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-foreground">
-                  Select Size / Option
-                </span>
-                
-                {/* Size Guide Trigger */}
-                <Dialog open={isSizeGuideOpen} onOpenChange={setIsSizeGuideOpen}>
-                  <DialogTrigger className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
-                    <Ruler className="h-3.5 w-3.5" /> Size Guide
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md rounded-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="text-lg font-black">Standard Size Chart (Inches)</DialogTitle>
-                    </DialogHeader>
-                    <div className="mt-2 text-xs space-y-2">
-                      <div className="grid grid-cols-4 p-2 bg-secondary/50 rounded-lg font-bold">
-                        <span>Size</span>
-                        <span>Chest</span>
-                        <span>Length</span>
-                        <span>Sleeve</span>
-                      </div>
-                      <div className="grid grid-cols-4 p-2 border-b">
-                        <span>S (38)</span>
-                        <span>38-40&quot;</span>
-                        <span>28.5&quot;</span>
-                        <span>24.5&quot;</span>
-                      </div>
-                      <div className="grid grid-cols-4 p-2 border-b">
-                        <span>M (40)</span>
-                        <span>40-42&quot;</span>
-                        <span>29.5&quot;</span>
-                        <span>25.0&quot;</span>
-                      </div>
-                      <div className="grid grid-cols-4 p-2 border-b">
-                        <span>L (42)</span>
-                        <span>42-44&quot;</span>
-                        <span>30.5&quot;</span>
-                        <span>25.5&quot;</span>
-                      </div>
-                      <div className="grid grid-cols-4 p-2">
-                        <span>XL (44)</span>
-                        <span>44-46&quot;</span>
-                        <span>31.5&quot;</span>
-                        <span>26.0&quot;</span>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {product.variants.map((v) => {
-                  const label = v.attributes && Object.keys(v.attributes).length > 0
-                    ? Object.values(v.attributes).join(' • ')
-                    : v.sku;
-                  const isSelected = selectedVariantId === v.id;
-                  const vStock = (v.inventory?.quantity ?? 0) - (v.inventory?.reservedQuantity ?? 0);
-                  const isVOutOfStock = vStock <= 0;
-
-                  return (
-                    <button
-                      key={v.id}
-                      type="button"
-                      onClick={() => setSelectedVariantId(v.id)}
-                      disabled={isVOutOfStock}
-                      className={`h-10 px-4 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
-                        isSelected
-                          ? 'bg-primary text-primary-foreground border-primary shadow-xs'
-                          : isVOutOfStock
-                          ? 'opacity-40 line-through border-dashed cursor-not-allowed bg-secondary/30'
-                          : 'bg-background text-foreground border-border hover:border-primary/50'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Quantity and Actions */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center border border-border/80 rounded-full bg-background h-11 shadow-xs overflow-hidden">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-full rounded-none w-10 text-muted-foreground hover:text-foreground"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  disabled={quantity <= 1}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-10 text-center text-xs font-black">{quantity}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-full rounded-none w-10 text-muted-foreground hover:text-foreground"
-                  onClick={() => setQuantity((q) => q + 1)}
-                  disabled={isOutOfStock || quantity >= availableStock}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <Button
-                size="lg"
-                className="flex-1 h-11 rounded-full font-extrabold shadow-md gap-2 text-xs sm:text-sm"
-                disabled={isOutOfStock || addToCartMutation.isPending}
-                onClick={handleAddToCart}
-              >
-                {addToCartMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ShoppingBag className="h-4 w-4" />
-                )}
-                Add to Cart
-              </Button>
-            </div>
-
-            <Button
-              variant="secondary"
-              size="lg"
-              className="w-full h-11 rounded-full font-extrabold text-xs sm:text-sm border border-border/80 hover:bg-primary/10 hover:text-primary transition-colors"
-              disabled={isOutOfStock || addToCartMutation.isPending}
-              onClick={handleBuyNow}
-            >
-              Buy It Now
-            </Button>
-          </div>
-
-          {/* Value Props & Assurance Strip */}
-          <div className="grid grid-cols-3 gap-2.5 pt-4 border-t border-border/40 text-center">
-            <div className="p-3 rounded-xl bg-secondary/30 border border-border/30">
-              <Truck className="h-4 w-4 text-primary mx-auto mb-1" />
-              <span className="text-[10px] font-bold text-foreground block">Free Delivery</span>
-              <span className="text-[9px] text-muted-foreground">Orders over Rs. 2,500</span>
-            </div>
-            <div className="p-3 rounded-xl bg-secondary/30 border border-border/30">
-              <RefreshCw className="h-4 w-4 text-primary mx-auto mb-1" />
-              <span className="text-[10px] font-bold text-foreground block">30-Day Returns</span>
-              <span className="text-[9px] text-muted-foreground">Hassle-free exchange</span>
-            </div>
-            <div className="p-3 rounded-xl bg-secondary/30 border border-border/30">
-              <ShieldCheck className="h-4 w-4 text-primary mx-auto mb-1" />
-              <span className="text-[10px] font-bold text-foreground block">100% Authentic</span>
-              <span className="text-[9px] text-muted-foreground">Direct from brand</span>
-            </div>
-          </div>
-
-          {/* Product Description */}
-          {product.description && (
-            <div className="pt-4 border-t border-border/40 space-y-2">
-              <h3 className="text-xs font-black uppercase tracking-wider text-foreground">
-                Product Description & Fabric Care
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-          )}
-        </div>
       </div>
-
-      {/* Reviews Section */}
-      <SectionErrorBoundary fallbackTitle="Customer reviews unavailable">
-        <ProductReviewsSection productId={product.id} />
-      </SectionErrorBoundary>
-
-      {/* Recently Viewed */}
-      <SectionErrorBoundary fallbackTitle="Recently viewed items unavailable">
-        <RecentlyViewedSection />
-      </SectionErrorBoundary>
     </div>
   );
 }

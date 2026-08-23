@@ -20,7 +20,12 @@ export const cartController = {
   },
 
   async addItem(req: Request, res: Response) {
-    const view = await cartService.addItem(getContext(req), req.body.productVariantId, req.body.quantity);
+    const view = await cartService.addItem(
+      getContext(req), 
+      req.body.productVariantId, 
+      req.body.quantity,
+      req.body.customConfig
+    );
     sendSuccess(res, view, 201);
   },
 

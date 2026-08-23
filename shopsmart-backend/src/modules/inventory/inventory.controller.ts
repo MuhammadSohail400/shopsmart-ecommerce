@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { inventoryService } from './inventory.service';
 import { sendSuccess } from '@shared/utils/response.util';
-import { ValidationError } from '@shared/errors';
 
 export const inventoryController = {
   async getByVariantId(req: Request, res: Response) {

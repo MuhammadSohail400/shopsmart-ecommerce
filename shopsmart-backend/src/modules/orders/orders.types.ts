@@ -2,6 +2,7 @@ export interface OrderItemInput {
   productVariantId: string;
   quantity: number;
   priceAtPurchase: number;
+  customConfig?: any;
 }
 
 export interface ShippingAddressSnapshot {

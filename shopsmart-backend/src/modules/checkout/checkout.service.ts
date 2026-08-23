@@ -154,6 +154,7 @@ export const checkoutService = {
         productVariantId: i.productVariantId,
         quantity: i.quantity,
         priceAtPurchase: i.unitPrice,
+        customConfig: i.customConfig || undefined,
       })),
       subtotal: Number(session.subtotal),
       taxAmount: Number(session.taxAmount),

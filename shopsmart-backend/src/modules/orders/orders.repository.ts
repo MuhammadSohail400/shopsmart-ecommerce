@@ -5,10 +5,6 @@ import type { CreateOrderInput } from './orders.types';
 export const ordersRepository = {
   /**
    * Creates the Order + OrderItems + initial "pending" status history row.
-   * No stock is decremented here (DDD Section 14.3 reservation window) —
-   * stock decrements only happen once payment is confirmed, in
-   * confirmToConfirmed() below, so a card payment that never completes
-   * never touches inventory.
    */
   async createPending(orderNumber: string, input: CreateOrderInput) {
     return prisma.order.create({
@@ -28,6 +24,7 @@ export const ordersRepository = {
             productVariantId: i.productVariantId,
             quantity: i.quantity,
             priceAtPurchase: i.priceAtPurchase,
+            customConfig: i.customConfig ? (i.customConfig as Prisma.InputJsonValue) : undefined,
           })),
         },
         statusHistory: { create: { status: OrderStatus.pending } },
@@ -48,14 +45,42 @@ export const ordersRepository = {
   findById(id: string) {
     return prisma.order.findUnique({
       where: { id },
-      include: { items: true, statusHistory: { orderBy: { changedAt: 'asc' } }, shipment: true },
+      include: { 
+        items: { 
+          include: { 
+            productVariant: { 
+              include: { 
+                product: { 
+                  include: { images: true } 
+                } 
+              } 
+            } 
+          } 
+        }, 
+        statusHistory: { orderBy: { changedAt: 'asc' } }, 
+        shipment: true 
+      },
     });
   },
 
   findByIdForUser(id: string, userId: string) {
     return prisma.order.findFirst({
       where: { id, userId },
-      include: { items: true, statusHistory: { orderBy: { changedAt: 'asc' } }, shipment: true },
+      include: { 
+        items: { 
+          include: { 
+            productVariant: { 
+              include: { 
+                product: { 
+                  include: { images: true } 
+                } 
+              } 
+            } 
+          } 
+        }, 
+        statusHistory: { orderBy: { changedAt: 'asc' } }, 
+        shipment: true 
+      },
     });
   },
 
@@ -71,7 +96,19 @@ export const ordersRepository = {
       take: limit + 1,
       ...(filters.cursor ? { cursor: { id: filters.cursor }, skip: 1 } : {}),
       orderBy: { createdAt: 'desc' },
-      include: { items: { include: { productVariant: true } } },
+      include: { 
+        items: { 
+          include: { 
+            productVariant: { 
+              include: { 
+                product: { 
+                  include: { images: true } 
+                } 
+              } 
+            } 
+          } 
+        } 
+      },
     });
     const hasMore = items.length > limit;
     return { items: items.slice(0, limit), hasMore };

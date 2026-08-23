@@ -1,4 +1,17 @@
+export interface CustomConfig {
+  shirtType: string;
+  color: string;
+  size: string;
+  printPosition: 'front' | 'back' | 'front_back';
+  designUrl: string;
+  previewUrl?: string;
+  basePrice: number;
+  customizationPrice: number;
+  finalPrice: number;
+}
+
 export interface CartLineItem {
+  id?: string;
   productVariantId: string;
   title: string;
   productSlug: string;
@@ -8,6 +21,7 @@ export interface CartLineItem {
   quantity: number;
   subtotal: number;
   inStock: boolean;
+  customConfig?: CustomConfig | null;
 }
 
 export interface CartView {
@@ -20,6 +34,11 @@ export interface CartView {
 
 /** Internal storage shape for a guest cart, persisted in Redis (SDD Section 6). */
 export interface GuestCartData {
-  items: Array<{ productVariantId: string; quantity: number }>;
+  items: Array<{ 
+    id?: string;
+    productVariantId: string; 
+    quantity: number;
+    customConfig?: CustomConfig;
+  }>;
   couponCode?: string;
 }

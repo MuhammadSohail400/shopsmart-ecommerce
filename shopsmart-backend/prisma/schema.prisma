@@ -249,15 +249,17 @@ model Cart {
 }
 
 model CartItem {
-  id               String @id @default(uuid())
-  cartId           String @map("cart_id")
-  productVariantId String @map("product_variant_id")
+  id               String  @id @default(uuid())
+  cartId           String  @map("cart_id")
+  productVariantId String  @map("product_variant_id")
   quantity         Int
+  customConfig     Json?   @map("custom_config")
 
   cart           Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
 
-  @@unique([cartId, productVariantId])
+  @@index([cartId])
+  @@index([productVariantId])
   @@map("cart_items")
 }
 
@@ -387,6 +389,7 @@ model OrderItem {
   productVariantId String  @map("product_variant_id")
   quantity         Int
   priceAtPurchase  Decimal @map("price_at_purchase") @db.Decimal(12, 2)
+  customConfig     Json?   @map("custom_config")
 
   order          Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
   productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Restrict)

@@ -1,15 +1,15 @@
 import { apiClient } from '@/lib/api-client';
-import { CartView } from '@/types/cart.types';
+import { CartView, CustomConfig } from '@/types/cart.types';
 
 export const cartService = {
   getCart: async (): Promise<CartView> => {
     return apiClient<CartView>('/cart');
   },
   
-  addItem: async (productVariantId: string, quantity: number): Promise<CartView> => {
+  addItem: async (productVariantId: string, quantity: number, customConfig?: Partial<CustomConfig>): Promise<CartView> => {
     return apiClient<CartView>('/cart/items', {
       method: 'POST',
-      body: JSON.stringify({ productVariantId, quantity }),
+      body: JSON.stringify({ productVariantId, quantity, customConfig }),
     });
   },
   

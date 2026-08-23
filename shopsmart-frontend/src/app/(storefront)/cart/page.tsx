@@ -4,7 +4,7 @@ import { useCart, useUpdateCartItem, useRemoveCartItem, useClearCart } from '@/f
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart, Trash2, Plus, Minus, PackageX, Loader2, ArrowRight, Truck, ShieldCheck, Lock } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, PackageX, Loader2, ArrowRight, Truck, ShieldCheck, Lock, Scissors } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/auth/protected-route';
@@ -143,7 +143,16 @@ function CartContent() {
                       </span>
                     </div>
 
-                    {item.attributes && Object.keys(item.attributes).length > 0 && (
+                    {item.customConfig ? (
+                      <div className="mt-1.5 space-y-1">
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-600/10 border border-rose-500/20 text-rose-400 font-mono text-[10px] font-bold uppercase tracking-wider">
+                          <Scissors className="h-3 w-3" /> CUSTOM ASORA TEE
+                        </div>
+                        <div className="text-[11px] font-mono text-zinc-400">
+                          {item.customConfig.color} • {item.customConfig.size} • {item.customConfig.printPosition.replace('_', ' + ').toUpperCase()}
+                        </div>
+                      </div>
+                    ) : item.attributes && Object.keys(item.attributes).length > 0 ? (
                       <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
                         {Object.entries(item.attributes).map(([k, v]) => (
                           <span key={k} className="bg-secondary/60 px-2 py-0.5 rounded-md capitalize font-medium">
@@ -151,7 +160,7 @@ function CartContent() {
                           </span>
                         ))}
                       </div>
-                    )}
+                    ) : null}
 
                     {!item.inStock && (
                       <div className="mt-1.5 text-xs text-destructive font-bold">Out of stock</div>

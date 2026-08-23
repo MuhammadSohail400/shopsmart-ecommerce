@@ -5,18 +5,43 @@ import { NotFoundError, ConflictError } from '@shared/errors';
 import { checkAvailability } from '@modules/inventory';
 import { validateCoupon } from '@modules/coupons';
 import { getVariantById } from '@modules/products';
-import type { CartView, CartLineItem } from './cart.types';
+import type { CartView, CartLineItem, CustomConfig } from './cart.types';
 
 interface CartContext {
   userId?: string;
   guestCartId?: string;
 }
 
+function calculateCustomPrice(basePrice: number, priceModifier: number, customConfig?: any): { unitPrice: number; validatedConfig: CustomConfig | null } {
+  if (!customConfig) {
+    return {
+      unitPrice: basePrice + priceModifier,
+      validatedConfig: null,
+    };
+  }
+
+  const printPosition = customConfig.printPosition || 'front';
+  const customizationPrice = printPosition === 'front_back' ? 400 : 0;
+  const unitPrice = basePrice + priceModifier + customizationPrice;
+
+  const validatedConfig: CustomConfig = {
+    shirtType: customConfig.shirtType || 'oversized',
+    color: customConfig.color || 'Black',
+    size: customConfig.size || 'L',
+    printPosition,
+    designUrl: customConfig.designUrl || '',
+    previewUrl: customConfig.previewUrl || customConfig.designUrl || '',
+    basePrice: basePrice + priceModifier,
+    customizationPrice,
+    finalPrice: unitPrice,
+  };
+
+  return { unitPrice, validatedConfig };
+}
+
 /**
  * Resolves line-item details (title, price, stock) for a guest cart's raw
- * {productVariantId, quantity} list by calling the Products module's
- * public interface — cart never queries Product tables directly
- * (Backend Standards Section 4).
+ * {productVariantId, quantity, customConfig} list.
  */
 async function buildGuestCartView(guestCartId: string): Promise<CartView> {
   const data = await guestCartStore.get(guestCartId);
@@ -24,23 +49,30 @@ async function buildGuestCartView(guestCartId: string): Promise<CartView> {
 
   for (const item of data.items) {
     const variant = await getVariantById(item.productVariantId);
-    if (!variant) continue; // silently drop items whose product/variant was removed since adding
+    if (!variant) continue;
 
-    const unitPrice = Number(variant.product.basePrice) + Number(variant.priceModifier);
+    const basePrice = Number(variant.product.basePrice);
+    const priceModifier = Number(variant.priceModifier);
+    const { unitPrice, validatedConfig } = calculateCustomPrice(basePrice, priceModifier, item.customConfig);
+
     const available = variant.inventory
       ? variant.inventory.quantity - variant.inventory.reservedQuantity
       : 0;
 
+    const resolvedImage = item.customConfig?.previewUrl || item.customConfig?.designUrl || variant.product.images?.[0]?.url || null;
+
     lineItems.push({
+      id: item.id,
       productVariantId: item.productVariantId,
       title: variant.product.title,
       productSlug: variant.product.slug,
-      imageUrl: variant.product.images?.[0]?.url ?? null,
+      imageUrl: resolvedImage,
       attributes: variant.attributes as Record<string, string>,
       unitPrice,
       quantity: item.quantity,
       subtotal: Math.round(unitPrice * item.quantity * 100) / 100,
       inStock: available >= item.quantity,
+      customConfig: validatedConfig,
     });
   }
 
@@ -51,7 +83,7 @@ async function buildGuestCartView(guestCartId: string): Promise<CartView> {
       const { coupon, discountAmount } = await validateCoupon(data.couponCode, subtotal);
       appliedCoupon = { code: coupon!.code, discountAmount };
     } catch {
-      appliedCoupon = null; // coupon no longer valid; silently drop rather than error on a read
+      appliedCoupon = null;
     }
   }
 
@@ -67,20 +99,29 @@ async function buildRegisteredCartView(userId: string): Promise<CartView> {
 
   const lineItems: CartLineItem[] = cart.items.map(
     (item: RegisteredCartItem) => {
-      const unitPrice = Number(item.productVariant.product.basePrice) + Number(item.productVariant.priceModifier);
+      const basePrice = Number(item.productVariant.product.basePrice);
+      const priceModifier = Number(item.productVariant.priceModifier);
+      const { unitPrice, validatedConfig } = calculateCustomPrice(basePrice, priceModifier, item.customConfig);
+
       const available = item.productVariant.inventory
         ? item.productVariant.inventory.quantity - item.productVariant.inventory.reservedQuantity
         : 0;
+
+      const customImg = (item.customConfig as any)?.previewUrl || (item.customConfig as any)?.designUrl;
+      const resolvedImage = customImg || item.productVariant.product.images?.[0]?.url || null;
+
       return {
+        id: item.id,
         productVariantId: item.productVariantId,
         title: item.productVariant.product.title,
         productSlug: item.productVariant.product.slug,
-        imageUrl: item.productVariant.product.images?.[0]?.url ?? null,
+        imageUrl: resolvedImage,
         attributes: item.productVariant.attributes as Record<string, string>,
         unitPrice,
         quantity: item.quantity,
         subtotal: Math.round(unitPrice * item.quantity * 100) / 100,
         inStock: available >= item.quantity,
+        customConfig: validatedConfig,
       };
     },
   );
@@ -96,23 +137,31 @@ export const cartService = {
     throw new NotFoundError('Cart');
   },
 
-  async addItem(ctx: CartContext, productVariantId: string, quantity: number): Promise<CartView> {
+  async addItem(ctx: CartContext, productVariantId: string, quantity: number, customConfig?: any): Promise<CartView> {
     const available = await checkAvailability(productVariantId, quantity);
     if (!available) throw new ConflictError('OUT_OF_STOCK', 'This item does not have enough stock available');
 
+    const variant = await getVariantById(productVariantId);
+    if (!variant) throw new NotFoundError('Product variant');
+
+    const basePrice = Number(variant.product.basePrice);
+    const priceModifier = Number(variant.priceModifier);
+    const { validatedConfig } = calculateCustomPrice(basePrice, priceModifier, customConfig);
+
     if (ctx.userId) {
       const cart = await cartRepository.findOrCreateForUser(ctx.userId);
-      const existing = await cartRepository.findItem(cart.id, productVariantId);
-      const newQuantity = (existing?.quantity ?? 0) + quantity;
-      await cartRepository.upsertItem(cart.id, productVariantId, newQuantity);
+      await cartRepository.upsertItem(cart.id, productVariantId, quantity, validatedConfig);
       return buildRegisteredCartView(ctx.userId);
     }
 
-    const guestCartId = ctx.guestCartId ?? guestCartStore.generateId();
+    const guestCartId = ctx.guestCartId || guestCartStore.generateId();
     const data = await guestCartStore.get(guestCartId);
-    const existing = data.items.find((i) => i.productVariantId === productVariantId);
-    if (existing) existing.quantity += quantity;
-    else data.items.push({ productVariantId, quantity });
+    data.items.push({ 
+      id: `guest-item-${Date.now()}`,
+      productVariantId, 
+      quantity,
+      customConfig: validatedConfig || undefined,
+    });
     await guestCartStore.save(guestCartId, data);
     return buildGuestCartView(guestCartId);
   },
@@ -150,51 +199,58 @@ export const cartService = {
     return buildGuestCartView(guestCartId);
   },
 
-  async applyCoupon(ctx: CartContext, code: string): Promise<CartView> {
-    const view = await this.getCart(ctx);
-    await validateCoupon(code, view.subtotal, ctx.userId); // throws if invalid (BR-003)
-
-    if (ctx.guestCartId && !ctx.userId) {
-      const data = await guestCartStore.get(ctx.guestCartId);
-      data.couponCode = code;
-      await guestCartStore.save(ctx.guestCartId, data);
-      return buildGuestCartView(ctx.guestCartId);
-    }
-    // Registered-user coupon application is finalized at Checkout (Phase 5),
-    // where it's tied to the CheckoutSession rather than the Cart itself.
-    return this.getCart(ctx);
-  },
-
-  async removeCoupon(ctx: CartContext): Promise<CartView> {
-    if (ctx.guestCartId && !ctx.userId) {
-      const data = await guestCartStore.get(ctx.guestCartId);
-      delete data.couponCode;
-      await guestCartStore.save(ctx.guestCartId, data);
-      return buildGuestCartView(ctx.guestCartId);
-    }
-    return this.getCart(ctx);
-  },
-
-  async mergeGuestCart(userId: string, guestCartId: string): Promise<CartView> {
-    const guestData = await guestCartStore.get(guestCartId);
-    if (guestData && guestData.items.length > 0) {
-      const userCart = await cartRepository.findOrCreateForUser(userId);
-      for (const item of guestData.items) {
-        const existing = await cartRepository.findItem(userCart.id, item.productVariantId);
-        const newQuantity = (existing?.quantity ?? 0) + item.quantity;
-        await cartRepository.upsertItem(userCart.id, item.productVariantId, newQuantity);
-      }
-      await guestCartStore.clear(guestCartId).catch(() => undefined);
-    }
-    return buildRegisteredCartView(userId);
-  },
-
-  async clear(ctx: CartContext): Promise<void> {
+  async clearCart(ctx: CartContext): Promise<void> {
     if (ctx.userId) {
       const cart = await cartRepository.findOrCreateForUser(ctx.userId);
       await cartRepository.clearItems(cart.id);
       return;
     }
-    if (ctx.guestCartId) await guestCartStore.clear(ctx.guestCartId);
+    if (ctx.guestCartId) {
+      await guestCartStore.clear(ctx.guestCartId);
+    }
+  },
+
+  async clear(ctx: CartContext): Promise<void> {
+    return this.clearCart(ctx);
+  },
+
+  async mergeGuestCart(userId: string, guestCartId: string): Promise<CartView> {
+    const guestData = await guestCartStore.get(guestCartId);
+    if (guestData.items.length > 0) {
+      const cart = await cartRepository.findOrCreateForUser(userId);
+      for (const item of guestData.items) {
+        await cartRepository.upsertItem(cart.id, item.productVariantId, item.quantity, item.customConfig);
+      }
+      await guestCartStore.clear(guestCartId);
+    }
+    return buildRegisteredCartView(userId);
+  },
+
+  async applyCoupon(ctx: CartContext, code: string): Promise<CartView> {
+    const cart = await this.getCart(ctx);
+    const { coupon, discountAmount } = await validateCoupon(code, cart.subtotal);
+
+    if (ctx.guestCartId) {
+      const data = await guestCartStore.get(ctx.guestCartId);
+      data.couponCode = coupon!.code;
+      await guestCartStore.save(ctx.guestCartId, data);
+      return buildGuestCartView(ctx.guestCartId);
+    }
+
+    return {
+      ...cart,
+      appliedCoupon: { code: coupon!.code, discountAmount },
+    };
+  },
+
+  async removeCoupon(ctx: CartContext): Promise<CartView> {
+    if (ctx.guestCartId) {
+      const data = await guestCartStore.get(ctx.guestCartId);
+      delete data.couponCode;
+      await guestCartStore.save(ctx.guestCartId, data);
+      return buildGuestCartView(ctx.guestCartId);
+    }
+    const cart = await this.getCart(ctx);
+    return { ...cart, appliedCoupon: null };
   },
 };
