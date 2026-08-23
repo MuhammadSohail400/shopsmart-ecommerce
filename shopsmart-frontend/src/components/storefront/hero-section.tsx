@@ -76,18 +76,22 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Right Column: High-Impact Streetwear Tee Visual (5 cols on desktop) */}
+          {/* Right Column: High-Impact Streetwear Video Showcase (5 cols on desktop) */}
           <div className="lg:col-span-5 relative w-full flex justify-center lg:justify-end">
             <div className="relative w-full max-w-sm sm:max-w-md aspect-[4/5] max-h-[440px] lg:max-h-[480px] rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl group">
-              <img
-                src="/images/asora-hero.jpg"
-                alt="ASORA Premium Anime Streetwear Graphic T-Shirt"
-                loading="eager"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1000&q=80';
-                }}
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                poster="/images/asora-hero.jpg"
                 className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-              />
+              >
+                <source src="/videos/hero-video.mp4" type="video/mp4" />
+                <source src="/hero-video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
               
               {/* Dark Gradient Overlay for Cinematic Depth */}
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent pointer-events-none" />
