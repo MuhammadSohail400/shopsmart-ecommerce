@@ -217,7 +217,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="container max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-8">
+      <div className="container max-w-6xl mx-auto py-4 sm:py-6 px-4 sm:px-6 space-y-6">
         
         {/* Breadcrumbs */}
         <Breadcrumbs items={[
@@ -228,27 +228,27 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         ]} className="text-zinc-500 font-mono text-[11px]" />
 
         {/* ── MAIN PRODUCT GRID (2 COLS) ───────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           
-          {/* LEFT: Image Gallery (7 cols on desktop) */}
-          <div className="lg:col-span-7 space-y-4">
-            <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl group">
+          {/* LEFT: Image Gallery (6 cols on desktop, pinned sticky) */}
+          <div className="lg:col-span-6 space-y-3 lg:sticky lg:top-20">
+            <div className="relative w-full aspect-square max-h-[420px] sm:max-h-[460px] lg:max-h-[480px] rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 shadow-xl group mx-auto flex items-center justify-center">
               <img
                 src={images[activeImageIndex]?.url || '/images/asora-hero.jpg'}
                 alt={product.title}
-                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/images/asora-hero.jpg';
                 }}
               />
               
               {/* Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
-                <span className="px-2.5 py-1 rounded bg-zinc-950/90 border border-zinc-800 text-[10px] font-mono font-bold text-rose-400 uppercase tracking-widest backdrop-blur-md">
+              <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+                <span className="px-2 py-0.5 rounded bg-zinc-950/90 border border-zinc-800 text-[10px] font-mono font-bold text-rose-400 uppercase tracking-widest backdrop-blur-md">
                   ASORA ORIGINAL
                 </span>
                 {discount.isSale && (
-                  <span className="px-2.5 py-1 rounded bg-rose-600 text-[10px] font-mono font-bold text-white uppercase tracking-widest">
+                  <span className="px-2 py-0.5 rounded bg-rose-600 text-[10px] font-mono font-bold text-white uppercase tracking-widest">
                     {discount.discountPercent}% OFF
                   </span>
                 )}
@@ -259,21 +259,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 type="button"
                 onClick={toggleWishlist}
                 aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                className="absolute top-4 right-4 h-10 w-10 rounded-full bg-zinc-950/80 border border-zinc-800 text-zinc-300 hover:text-rose-500 flex items-center justify-center transition-all backdrop-blur-md z-10"
+                className="absolute top-3 right-3 h-8 w-8 rounded-full bg-zinc-950/80 border border-zinc-800 text-zinc-300 hover:text-rose-500 flex items-center justify-center transition-all backdrop-blur-md z-10"
               >
-                <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
+                <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
               </button>
             </div>
 
             {/* Thumbnail Strip */}
             {images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none justify-center lg:justify-start">
                 {images.map((img, idx) => (
                   <button
                     key={img.id || idx}
                     type="button"
                     onClick={() => setActiveImageIndex(idx)}
-                    className={`relative w-20 aspect-[4/5] rounded overflow-hidden border-2 transition-all shrink-0 ${
+                    className={`relative w-14 sm:w-16 aspect-square rounded-md overflow-hidden border-2 transition-all shrink-0 ${
                       activeImageIndex === idx
                         ? 'border-rose-500 opacity-100 shadow-md'
                         : 'border-zinc-800 opacity-60 hover:opacity-100'
@@ -286,36 +286,36 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          {/* RIGHT: Product Details & Purchase Actions (5 cols on desktop) */}
-          <div className="lg:col-span-5 space-y-6 text-left">
+          {/* RIGHT: Product Details & Purchase Actions (6 cols on desktop) */}
+          <div className="lg:col-span-6 space-y-4 text-left">
             
             {/* Header info */}
-            <div className="space-y-2 border-b border-zinc-850 pb-5">
-              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-rose-500 text-[10px] font-mono font-bold tracking-widest uppercase">
+            <div className="space-y-1.5 border-b border-zinc-850 pb-3.5">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-rose-500 text-[10px] font-mono font-bold tracking-widest uppercase">
                 <span>{product.category?.name || 'STREETWEAR'}</span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-zinc-100 uppercase leading-tight font-sans">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-zinc-100 uppercase leading-snug font-sans">
                 {product.title}
               </h1>
 
               {/* Price Row */}
-              <div className="flex items-baseline gap-3 pt-2">
-                <span className="text-2xl sm:text-3xl font-black font-mono text-zinc-100">
+              <div className="flex items-baseline gap-2.5 pt-1">
+                <span className="text-xl sm:text-2xl font-black font-mono text-zinc-100">
                   {formatCurrency(finalPrice)}
                 </span>
                 {discount.isSale && (
-                  <span className="text-sm font-mono text-zinc-500 line-through">
+                  <span className="text-xs font-mono text-zinc-500 line-through">
                     {formatCurrency(discount.originalPrice)}
                   </span>
                 )}
               </div>
 
               {/* Review summary indicator */}
-              <div className="flex items-center gap-2 pt-1 text-xs font-mono text-zinc-400">
+              <div className="flex items-center gap-1.5 pt-0.5 text-[11px] font-mono text-zinc-400">
                 <div className="flex gap-0.5 text-rose-500">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-rose-500" />
+                    <Star key={i} className="h-3 w-3 fill-rose-500" />
                   ))}
                 </div>
                 <span>{reviewSummary?.reviewCount ? `${reviewSummary.reviewCount} VERIFIED REVIEWS` : 'ASORA DROP RATED'}</span>
@@ -329,19 +329,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
             {/* Variant / Size Selector */}
             {product.variants && product.variants.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300">
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-300">
                     SELECT SIZE (OVERSIZED FIT)
                   </span>
                   <Dialog open={isSizeGuideOpen} onOpenChange={setIsSizeGuideOpen}>
-                    <DialogTrigger render={<button type="button" className="text-xs font-mono text-rose-400 hover:text-rose-300 flex items-center gap-1 uppercase underline cursor-pointer" />}>
-                      <Ruler className="h-3.5 w-3.5" />
+                    <DialogTrigger render={<button type="button" className="text-[11px] font-mono text-rose-400 hover:text-rose-300 flex items-center gap-1 uppercase underline cursor-pointer" />}>
+                      <Ruler className="h-3 w-3" />
                       <span>SIZE GUIDE</span>
                     </DialogTrigger>
                     <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-100 max-w-lg">
                       <DialogHeader>
-                        <DialogTitle className="text-lg font-mono font-black uppercase text-zinc-100">
+                        <DialogTitle className="text-base font-mono font-black uppercase text-zinc-100">
                           ASORA STREETWEAR SIZE GUIDE
                         </DialogTitle>
                       </DialogHeader>
@@ -383,7 +383,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         key={v.id}
                         type="button"
                         onClick={() => setSelectedVariantId(v.id)}
-                        className={`h-11 min-w-[50px] px-3.5 rounded text-xs font-mono font-bold border transition-all ${
+                        className={`h-9 min-w-[44px] px-3 rounded text-xs font-mono font-bold border transition-all ${
                           isSelected
                             ? 'bg-rose-600 text-white border-rose-500 shadow-md'
                             : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700'
@@ -398,33 +398,33 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             )}
 
             {/* Quantity Stepper & Stock */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs font-mono">
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between text-[11px] font-mono">
                 <span className="text-zinc-400 uppercase">QUANTITY</span>
                 <span className={isOutOfStock ? 'text-rose-500 font-bold' : 'text-emerald-400'}>
                   {isOutOfStock ? 'OUT OF STOCK' : 'IN STOCK • READY TO DISPATCH'}
                 </span>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="flex items-center border border-zinc-800 rounded bg-zinc-900 h-11">
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center border border-zinc-800 rounded bg-zinc-900 h-10">
                   <button
                     type="button"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
-                    className="h-full px-3 text-zinc-400 hover:text-zinc-100 disabled:opacity-30"
+                    className="h-full px-2.5 text-zinc-400 hover:text-zinc-100 disabled:opacity-30"
                   >
-                    <Minus className="h-3.5 w-3.5" />
+                    <Minus className="h-3 w-3" />
                   </button>
-                  <span className="w-10 text-center font-mono font-bold text-xs text-zinc-100">
+                  <span className="w-8 text-center font-mono font-bold text-xs text-zinc-100">
                     {quantity}
                   </span>
                   <button
                     type="button"
                     onClick={() => setQuantity(quantity + 1)}
-                    className="h-full px-3 text-zinc-400 hover:text-zinc-100"
+                    className="h-full px-2.5 text-zinc-400 hover:text-zinc-100"
                   >
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="h-3 w-3" />
                   </button>
                 </div>
 
@@ -432,7 +432,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   type="button"
                   disabled={isOutOfStock || addToCartMutation.isPending}
                   onClick={handleAddToCart}
-                  className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-mono font-black text-xs uppercase tracking-widest rounded shadow-xl flex items-center justify-center gap-2"
+                  className="flex-1 h-10 bg-rose-600 hover:bg-rose-700 text-white font-mono font-black text-xs uppercase tracking-widest rounded shadow-xl flex items-center justify-center gap-2"
                 >
                   {addToCartMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -444,15 +444,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
 
               {/* Buy Now & WhatsApp Actions */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
                 <Button
                   type="button"
                   disabled={isOutOfStock || addToCartMutation.isPending}
                   onClick={handleBuyNow}
                   variant="outline"
-                  className="h-11 border-zinc-800 bg-zinc-900/90 hover:bg-zinc-850 text-zinc-100 font-mono font-bold text-xs uppercase tracking-wider rounded"
+                  className="h-10 border-zinc-800 bg-zinc-900/90 hover:bg-zinc-850 text-zinc-100 font-mono font-bold text-xs uppercase tracking-wider rounded"
                 >
-                  <Zap className="h-4 w-4 text-rose-500" />
+                  <Zap className="h-3.5 w-3.5 text-rose-500" />
                   <span>BUY NOW</span>
                 </Button>
 
@@ -462,30 +462,30 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   rel="noreferrer"
                   className={buttonVariants({
                     variant: "outline",
-                    className: "h-11 border-emerald-900/40 bg-emerald-950/30 hover:bg-emerald-900/40 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider rounded gap-2",
+                    className: "h-10 border-emerald-900/40 bg-emerald-950/30 hover:bg-emerald-900/40 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider rounded gap-2",
                   })}
                 >
-                  <MessageCircle className="h-4 w-4 text-emerald-400" />
+                  <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
                   <span>ORDER ON WHATSAPP</span>
                 </a>
               </div>
             </div>
 
             {/* ── EXPANDABLE ACCORDIONS ─────────────────────────────── */}
-            <div className="border-t border-zinc-850 pt-4 space-y-3 font-mono">
+            <div className="border-t border-zinc-850 pt-3 space-y-2 font-mono">
               
               {/* Accordion 1: Product Details */}
               <div className="border border-zinc-850 rounded bg-zinc-900/40 overflow-hidden">
                 <button
                   type="button"
                   onClick={() => toggleAccordion('details')}
-                  className="w-full p-4 text-xs font-bold text-zinc-200 flex justify-between items-center uppercase"
+                  className="w-full p-3 text-[11px] font-bold text-zinc-200 flex justify-between items-center uppercase"
                 >
                   <span>PRODUCT SPECIFICATIONS</span>
-                  {openAccordions.details ? <ChevronUp className="h-4 w-4 text-rose-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+                  {openAccordions.details ? <ChevronUp className="h-3.5 w-3.5 text-rose-500" /> : <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />}
                 </button>
                 {openAccordions.details && (
-                  <div className="p-4 pt-0 text-xs text-zinc-400 space-y-1.5 border-t border-zinc-850/60 mt-1">
+                  <div className="p-3 pt-0 text-[11px] text-zinc-400 space-y-1 border-t border-zinc-850/60 mt-1">
                     <p>• 100% Combed Heavyweight Cotton (240+ GSM)</p>
                     <p>• Drop-shoulder boxy streetwear silhouette</p>
                     <p>• High-density Direct-to-Film (DTF) screenprint</p>
@@ -499,13 +499,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <button
                   type="button"
                   onClick={() => toggleAccordion('shipping')}
-                  className="w-full p-4 text-xs font-bold text-zinc-200 flex justify-between items-center uppercase"
+                  className="w-full p-3 text-[11px] font-bold text-zinc-200 flex justify-between items-center uppercase"
                 >
                   <span>SHIPPING & DELIVERY</span>
-                  {openAccordions.shipping ? <ChevronUp className="h-4 w-4 text-rose-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+                  {openAccordions.shipping ? <ChevronUp className="h-3.5 w-3.5 text-rose-500" /> : <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />}
                 </button>
                 {openAccordions.shipping && (
-                  <div className="p-4 pt-0 text-xs text-zinc-400 space-y-1.5 border-t border-zinc-850/60 mt-1">
+                  <div className="p-3 pt-0 text-[11px] text-zinc-400 space-y-1 border-t border-zinc-850/60 mt-1">
                     <p>• Nationwide Delivery across Pakistan (3–5 business days)</p>
                     <p>• FREE delivery on all orders over PKR 2,500</p>
                     <p>• Cash on Delivery (COD) & Online Bank Transfer supported</p>
@@ -519,13 +519,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <button
                   type="button"
                   onClick={() => toggleAccordion('care')}
-                  className="w-full p-4 text-xs font-bold text-zinc-200 flex justify-between items-center uppercase"
+                  className="w-full p-3 text-[11px] font-bold text-zinc-200 flex justify-between items-center uppercase"
                 >
                   <span>CARE INSTRUCTIONS</span>
-                  {openAccordions.care ? <ChevronUp className="h-4 w-4 text-rose-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+                  {openAccordions.care ? <ChevronUp className="h-3.5 w-3.5 text-rose-500" /> : <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />}
                 </button>
                 {openAccordions.care && (
-                  <div className="p-4 pt-0 text-xs text-zinc-400 space-y-1.5 border-t border-zinc-850/60 mt-1">
+                  <div className="p-3 pt-0 text-[11px] text-zinc-400 space-y-1 border-t border-zinc-850/60 mt-1">
                     <p>• Machine wash cold inside-out with like colors</p>
                     <p>• Do not bleach or dry clean</p>
                     <p>• Hang dry in shade for print longevity</p>
