@@ -429,13 +429,13 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Visual Community Grid using product photography / closeups */}
+        {/* Visual Community Grid using authentic streetwear photography */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          {products.slice(0, 4).map((p, idx) => (
-            <div key={p.id || idx} className="relative aspect-square rounded-md overflow-hidden bg-zinc-900 border border-zinc-800 group">
+          {['/images/asora-hero.jpg', '/images/asora-streetwear-1.jpg', '/images/asora-streetwear-2.jpg', 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80'].map((imgUrl, idx) => (
+            <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-zinc-900 border border-zinc-800 group">
               <img
-                src={p.images?.[0]?.url || '/products/shirts/shirt-1.jpeg'}
-                alt="ASORA Community Drop"
+                src={imgUrl}
+                alt="ASORA Streetwear Fit"
                 loading="lazy"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80';
