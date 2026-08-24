@@ -537,8 +537,6 @@ export default function AdminOrdersPage() {
             </div>
           </div>
 
-          </div>
-
           <div className="p-4 border-t border-border bg-card flex flex-row items-center justify-between gap-2 shrink-0">
             <ThermalShippingLabel
               order={selectedOrder}
