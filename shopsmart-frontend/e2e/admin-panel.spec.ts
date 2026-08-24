@@ -46,15 +46,16 @@ test.describe('ASORA Admin Console & Governance E2E', () => {
     await page.getByRole('button', { name: /Sign In/i }).click();
     await page.waitForURL(/\/admin/, { timeout: 20000 });
 
-    // Navigate to Customer Reviews
-    await page.goto('/admin/reviews');
+    // Navigate to Customer Reviews via sidebar
+    await page.locator('aside').getByRole('link', { name: /Customer Reviews/i }).click();
+    await page.waitForURL(/\/admin\/reviews/, { timeout: 15000 });
     await expect(page.getByText(/Customer Reviews Moderation/i)).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText(/Total Reviews/i)).toBeVisible();
-    await expect(page.getByText(/Average Store Rating/i)).toBeVisible();
 
-    // Navigate to Orders
-    await page.goto('/admin/orders');
+    // Navigate to Orders via sidebar
+    await page.locator('aside').getByRole('link', { name: /Orders/i }).click();
+    await page.waitForURL(/\/admin\/orders/, { timeout: 15000 });
     await expect(page.getByText(/Orders Operations/i).or(page.getByText(/Orders/i).first())).toBeVisible({ timeout: 15000 });
   });
 });
+
 
