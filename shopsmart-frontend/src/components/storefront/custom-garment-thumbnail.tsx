@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { resolveMediaUrl } from '@/lib/utils';
 import { Scissors, ShoppingBag } from 'lucide-react';
 
@@ -40,6 +40,10 @@ export function CustomGarmentThumbnail({
   const resolvedArtwork = resolveMediaUrl(rawArtwork);
   const shirtColorHex = customConfig?.color ? (COLOR_MAP[customConfig.color] || '#18181b') : '#18181b';
   const isWhiteShirt = customConfig?.color?.toLowerCase().includes('white');
+
+  useEffect(() => {
+    setImgError(false);
+  }, [imageUrl, rawArtwork]);
 
   if (isCustom) {
     return (

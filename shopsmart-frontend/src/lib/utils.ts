@@ -111,17 +111,23 @@ export function formatWhatsAppUrl(rawPhone?: string, message?: string): string {
 }
 
 /**
- * Resolves any image URL, safely prefixing backend host if it's a relative path like /uploads
+ * Resolves any image URL, keeping valid relative paths (/products/..., /uploads/..., /images/...) intact
  */
 export function resolveMediaUrl(url?: string | null, fallback = '/images/asora-hero.jpg'): string {
-  if (!url) return fallback;
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-    return url;
+  if (!url || typeof url !== 'string' || url.trim() === '') return fallback;
+  const trimmed = url.trim();
+  
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+    return trimmed;
   }
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-  const origin = apiBase.replace(/\/api\/v1\/?$/, '');
-  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`;
+  
+  if (trimmed.startsWith('/')) {
+    return trimmed;
+  }
+  
+  return `/${trimmed}`;
 }
+
 
 
 
