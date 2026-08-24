@@ -18,7 +18,11 @@ export function createApp(): Express {
   const app = express();
 
   // --- Security & infra middleware (Backend Standards Section 16) ---
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
   const configuredOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
   app.use(
     cors({

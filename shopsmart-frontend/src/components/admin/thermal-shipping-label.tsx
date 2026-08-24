@@ -46,18 +46,18 @@ export function ThermalShippingLabel({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant={triggerVariant}
-            size={triggerSize}
-            className={triggerClassName}
-          >
-            <Printer className="h-3.5 w-3.5" />
-            <span>{triggerText}</span>
-          </Button>
-        </DialogTrigger>
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        onClick={() => setOpen(true)}
+        className={triggerClassName}
+      >
+        <Printer className="h-3.5 w-3.5" />
+        <span>{triggerText}</span>
+      </Button>
 
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-zinc-950 border-zinc-800 text-zinc-100 p-6">
           <DialogHeader className="flex flex-row items-center justify-between border-b border-zinc-800 pb-3">
             <div>
