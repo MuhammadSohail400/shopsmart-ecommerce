@@ -264,7 +264,14 @@ export default function AdminOrdersPage() {
                         </div>
                       </td>
                       <td className="p-3.5 font-bold font-mono text-foreground">
-                        {formatCurrency(total)}
+                        <div className="flex flex-col">
+                          <span>{formatCurrency(total)}</span>
+                          <span className={`text-[9px] font-bold tracking-wider ${
+                            ord.payments?.[0]?.method === 'card' ? 'text-emerald-400' : 'text-amber-400'
+                          }`}>
+                            {ord.payments?.[0]?.method === 'card' ? 'CARD (PAID)' : 'COD (DUE)'}
+                          </span>
+                        </div>
                       </td>
                       <td className="p-3.5">
                         {getStatusBadge(ord.status)}
@@ -356,6 +363,46 @@ export default function AdminOrdersPage() {
                 </span>
                 <span className="text-muted-foreground block text-[11px]">
                   {selectedOrder?.shippingAddress?.city}, {selectedOrder?.shippingAddress?.region} ({selectedOrder?.shippingAddress?.country || 'PK'})
+                </span>
+              </div>
+            </div>
+
+            {/* Payment & Cash Collection Card */}
+            <div className="p-3.5 rounded-xl border border-border bg-secondary/30 font-mono space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground block">Payment Method</span>
+                  <span className="font-bold text-foreground text-xs uppercase flex items-center gap-1.5">
+                    {selectedOrder?.payments?.[0]?.method === 'card' ? (
+                      <span className="text-emerald-400">💳 Prepaid (Card / Stripe)</span>
+                    ) : (
+                      <span className="text-amber-400">💵 Cash On Delivery (COD)</span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground block">Collection Status</span>
+                  {selectedOrder?.payments?.[0]?.method === 'card' ? (
+                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[9px] font-bold uppercase">
+                      PAID ONLINE
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] font-bold uppercase">
+                      COLLECT CASH UPON DELIVERY
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 text-[11px]">
+                <span className="text-muted-foreground">
+                  {selectedOrder?.payments?.[0]?.method === 'card'
+                    ? 'Payment already verified & credited.'
+                    : 'Customer will pay cash to courier rider upon doorstep delivery.'}
+                </span>
+                <span className="font-black text-rose-400 text-xs">
+                  COD Due: {formatCurrency(selectedOrder?.totalAmount || selectedOrder?.total || 0)}
                 </span>
               </div>
             </div>

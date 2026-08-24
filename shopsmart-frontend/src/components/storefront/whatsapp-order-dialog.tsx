@@ -12,10 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, MapPin, Truck, CheckCircle2, Phone, User, Send, Sparkles } from 'lucide-react';
+import { MessageCircle, MapPin, Truck, CheckCircle2, Phone, User, Send, Sparkles, Loader2 } from 'lucide-react';
 import { formatCurrency, formatWhatsAppUrl, getUserDisplayName } from '@/lib/utils';
 import { usePublicSettings } from '@/hooks/use-admin';
 import { useAuth } from '@/hooks/use-auth';
+import { useCreateCheckoutSession, useConfirmCheckoutSession } from '@/features/checkout/hooks/use-checkout';
+import { useClearCart } from '@/features/cart/hooks/use-cart';
+import { toast } from 'sonner';
 
 export interface WhatsAppOrderItem {
   title: string;
@@ -53,6 +56,11 @@ export function WhatsAppOrderDialog({
   const { user } = useAuth();
   const { data: publicSettings } = usePublicSettings();
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const createSession = useCreateCheckoutSession();
+  const confirmSession = useConfirmCheckoutSession();
+  const clearCart = useClearCart();
 
   // Form State
   const [name, setName] = useState(getUserDisplayName(user) || '');
@@ -63,8 +71,44 @@ export function WhatsAppOrderDialog({
 
   const targetWhatsApp = publicSettings?.whatsapp_number || publicSettings?.support_phone || '03110297772';
 
-  const handleSendOrder = (e: React.FormEvent) => {
+  const handleSendOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
+    let registeredOrderNumber = '';
+    try {
+      const guestAddress = {
+        fullName: name.trim() || 'WhatsApp Customer',
+        phone: phone.trim() || '03000000000',
+        line1: address.trim() || 'Address shared via WhatsApp',
+        city: city.trim() || 'Karachi',
+        region: 'Sindh',
+        country: 'PK',
+      };
+
+      const session = await createSession.mutateAsync({
+        guestAddress,
+        shippingMethod: 'standard',
+      });
+
+      const result = await confirmSession.mutateAsync({
+        sessionId: session.sessionId,
+        data: { paymentMethod: 'cod' },
+        idempotencyKey: crypto.randomUUID(),
+      });
+
+      if (result?.order?.orderNumber) {
+        registeredOrderNumber = result.order.orderNumber;
+      }
+
+      // Clear the cart so ordered items are marked
+      clearCart.mutate();
+      toast.success('Order registered in ASORA database! Opening WhatsApp...');
+    } catch (err) {
+      console.warn('WhatsApp direct order creation warning:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
 
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://asora.pk';
 
@@ -98,7 +142,7 @@ export function WhatsAppOrderDialog({
     const fullMessage = 
 `🛍️ *NEW ASORA CASH ON DELIVERY ORDER* 🛍️
 ======================================
-📦 *ITEMS ORDERED:*
+${registeredOrderNumber ? `🆔 *ORDER ID:* ${registeredOrderNumber}\n--------------------------------------\n` : ''}📦 *ITEMS ORDERED:*
 ${itemsBreakdown}
 💵 *TOTAL AMOUNT:* ${formatCurrency(totalPrice)} (Cash on Delivery)
 --------------------------------------
@@ -251,10 +295,20 @@ Please confirm my order and share tracking/dispatch details. Thank you!`;
           <div className="pt-2 space-y-2">
             <Button
               type="submit"
+              disabled={isSubmitting}
               className="w-full h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-black text-xs uppercase tracking-widest rounded shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
             >
-              <Send className="h-3.5 w-3.5" />
-              <span>SEND ORDER TO WHATSAPP</span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>REGISTERING ORDER...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="h-3.5 w-3.5" />
+                  <span>SEND ORDER TO WHATSAPP</span>
+                </>
+              )}
             </Button>
 
             <button
