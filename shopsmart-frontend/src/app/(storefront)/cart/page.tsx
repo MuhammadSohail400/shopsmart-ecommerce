@@ -12,14 +12,34 @@ import { useRouter } from 'next/navigation';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { formatCurrency } from '@/lib/utils';
 import { WhatsAppOrderDialog } from '@/components/storefront/whatsapp-order-dialog';
-import { toast } from 'sonner';
-
 export default function CartPage() {
   const router = useRouter();
   const { data: cart, isLoading, isError, refetch } = useCart();
   const updateQuantity = useUpdateCartItem();
   const removeItem = useRemoveCartItem();
   const clearCart = useClearCart();
+
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+  const [removingItemId, setRemovingItemId] = useState<string | null>(null);
+
+  const handleUpdateQuantity = async (targetId: string, newQty: number) => {
+    if (newQty < 1) return;
+    setUpdatingItemId(targetId);
+    try {
+      await updateQuantity.mutateAsync({ itemId: targetId, quantity: newQty });
+    } finally {
+      setUpdatingItemId(null);
+    }
+  };
+
+  const handleRemoveItem = async (targetId: string) => {
+    setRemovingItemId(targetId);
+    try {
+      await removeItem.mutateAsync(targetId);
+    } finally {
+      setRemovingItemId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -244,49 +264,70 @@ export default function CartPage() {
                   </div>
 
                   {/* Quantity & Price Column */}
-                  <div className="flex sm:flex-col justify-between sm:items-end items-center gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-zinc-800/80">
-                    <span className="font-black font-mono text-base text-zinc-100">
-                      {formatCurrency(item.subtotal)}
-                    </span>
+                  {(() => {
+                    const itemKey = item.id || item.productVariantId;
+                    const isItemUpdating = updatingItemId === itemKey;
+                    const isItemRemoving = removingItemId === itemKey;
 
-                    {/* Stepper */}
-                    <div className="flex items-center border border-zinc-800 rounded bg-zinc-950 h-8">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Decrease quantity"
-                        className="h-full w-8 rounded-none text-zinc-400 hover:text-zinc-100 disabled:opacity-30"
-                        onClick={() => updateQuantity.mutate({ itemId: item.productVariantId, quantity: item.quantity - 1 })}
-                        disabled={item.quantity <= 1 || updateQuantity.isPending}
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="w-8 text-center font-mono font-bold text-xs text-zinc-100">
-                        {item.quantity}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Increase quantity"
-                        className="h-full w-8 rounded-none text-zinc-400 hover:text-zinc-100"
-                        onClick={() => updateQuantity.mutate({ itemId: item.productVariantId, quantity: item.quantity + 1 })}
-                        disabled={updateQuantity.isPending}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    return (
+                      <div className="flex sm:flex-col justify-between sm:items-end items-center gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-zinc-800/80">
+                        <span className="font-black font-mono text-base text-zinc-100">
+                          {formatCurrency(item.subtotal)}
+                        </span>
 
-                    {/* Remove button */}
-                    <button
-                      type="button"
-                      onClick={() => removeItem.mutate(item.productVariantId)}
-                      disabled={removeItem.isPending}
-                      className="text-zinc-500 hover:text-rose-400 transition-colors text-xs font-mono flex items-center gap-1"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      <span>REMOVE</span>
-                    </button>
-                  </div>
+                        {/* Stepper */}
+                        <div className="flex items-center border border-zinc-800 rounded bg-zinc-950 h-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Decrease quantity"
+                            className="h-full w-8 rounded-none text-zinc-400 hover:text-zinc-100 disabled:opacity-30"
+                            onClick={() => handleUpdateQuantity(itemKey, item.quantity - 1)}
+                            disabled={item.quantity <= 1 || isItemUpdating || isItemRemoving}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-8 text-center font-mono font-bold text-xs text-zinc-100 flex items-center justify-center">
+                            {isItemUpdating ? (
+                              <Loader2 className="h-3 w-3 animate-spin text-rose-500" />
+                            ) : (
+                              item.quantity
+                            )}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Increase quantity"
+                            className="h-full w-8 rounded-none text-zinc-400 hover:text-zinc-100 disabled:opacity-30"
+                            onClick={() => handleUpdateQuantity(itemKey, item.quantity + 1)}
+                            disabled={isItemUpdating || isItemRemoving}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+
+                        {/* Remove button */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(itemKey)}
+                          disabled={isItemRemoving || isItemUpdating}
+                          className="text-zinc-500 hover:text-rose-400 disabled:opacity-50 transition-colors text-xs font-mono flex items-center gap-1.5"
+                        >
+                          {isItemRemoving ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 animate-spin text-rose-500" />
+                              <span className="text-rose-400">REMOVING...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span>REMOVE</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })()}
 
                 </div>
               );

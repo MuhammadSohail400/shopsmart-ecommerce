@@ -166,35 +166,32 @@ export const cartService = {
     return buildGuestCartView(guestCartId);
   },
 
-  async updateItemQuantity(ctx: CartContext, productVariantId: string, quantity: number): Promise<CartView> {
-    const available = await checkAvailability(productVariantId, quantity);
-    if (!available) throw new ConflictError('OUT_OF_STOCK', 'This item does not have enough stock available');
-
+  async updateItemQuantity(ctx: CartContext, itemIdentifier: string, quantity: number): Promise<CartView> {
     if (ctx.userId) {
       const cart = await cartRepository.findOrCreateForUser(ctx.userId);
-      await cartRepository.upsertItem(cart.id, productVariantId, quantity);
+      await cartRepository.updateItemQuantity(cart.id, itemIdentifier, quantity);
       return buildRegisteredCartView(ctx.userId);
     }
 
     const guestCartId = ctx.guestCartId!;
     const data = await guestCartStore.get(guestCartId);
-    const item = data.items.find((i) => i.productVariantId === productVariantId);
+    const item = data.items.find((i) => i.id === itemIdentifier || i.productVariantId === itemIdentifier);
     if (!item) throw new NotFoundError('Cart item');
     item.quantity = quantity;
     await guestCartStore.save(guestCartId, data);
     return buildGuestCartView(guestCartId);
   },
 
-  async removeItem(ctx: CartContext, productVariantId: string): Promise<CartView> {
+  async removeItem(ctx: CartContext, itemIdentifier: string): Promise<CartView> {
     if (ctx.userId) {
       const cart = await cartRepository.findOrCreateForUser(ctx.userId);
-      await cartRepository.removeItem(cart.id, productVariantId).catch(() => undefined);
+      await cartRepository.removeItem(cart.id, itemIdentifier);
       return buildRegisteredCartView(ctx.userId);
     }
 
     const guestCartId = ctx.guestCartId!;
     const data = await guestCartStore.get(guestCartId);
-    data.items = data.items.filter((i) => i.productVariantId !== productVariantId);
+    data.items = data.items.filter((i) => i.id !== itemIdentifier && i.productVariantId !== itemIdentifier);
     await guestCartStore.save(guestCartId, data);
     return buildGuestCartView(guestCartId);
   },

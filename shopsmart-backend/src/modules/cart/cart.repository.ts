@@ -53,14 +53,48 @@ export const cartRepository = {
     });
   },
 
-  async removeItem(cartId: string, productVariantId: string) {
-    const items = await prisma.cartItem.findMany({
-      where: { cartId, productVariantId },
-      take: 1,
+  async updateItemQuantity(cartId: string, itemIdentifier: string, quantity: number) {
+    // 1. Try finding by cartItem.id
+    const byId = await prisma.cartItem.findFirst({
+      where: { id: itemIdentifier, cartId },
     });
-    if (items.length > 0) {
+    if (byId) {
+      return prisma.cartItem.update({
+        where: { id: byId.id },
+        data: { quantity },
+      });
+    }
+
+    // 2. Try finding by productVariantId
+    const byVariant = await prisma.cartItem.findFirst({
+      where: { productVariantId: itemIdentifier, cartId },
+    });
+    if (byVariant) {
+      return prisma.cartItem.update({
+        where: { id: byVariant.id },
+        data: { quantity },
+      });
+    }
+  },
+
+  async removeItem(cartId: string, itemIdentifier: string) {
+    // 1. Try finding by cartItem.id
+    const byId = await prisma.cartItem.findFirst({
+      where: { id: itemIdentifier, cartId },
+    });
+    if (byId) {
       return prisma.cartItem.delete({
-        where: { id: items[0].id },
+        where: { id: byId.id },
+      });
+    }
+
+    // 2. Try finding by productVariantId
+    const byVariant = await prisma.cartItem.findFirst({
+      where: { productVariantId: itemIdentifier, cartId },
+    });
+    if (byVariant) {
+      return prisma.cartItem.delete({
+        where: { id: byVariant.id },
       });
     }
   },
