@@ -359,42 +359,59 @@ export default function AdminOrdersPage() {
                   const custom = it.customConfig;
                   const itemPrice = Number(it.priceAtPurchase || it.unitPrice || 0);
 
+                  const rawImg = custom?.previewUrl || custom?.designUrl || it.productVariant?.product?.images?.[0]?.url;
+                  const finalImgUrl = rawImg
+                    ? (rawImg.startsWith('http') || rawImg.startsWith('data:') ? rawImg : `http://localhost:4000${rawImg.startsWith('/') ? '' : '/'}${rawImg}`)
+                    : '/images/asora-hero.jpg';
+                  const artworkDownloadUrl = (custom?.designUrl || custom?.previewUrl)
+                    ? ((custom.designUrl || custom.previewUrl).startsWith('http') || (custom.designUrl || custom.previewUrl).startsWith('data:')
+                        ? (custom.designUrl || custom.previewUrl)
+                        : `http://localhost:4000${(custom.designUrl || custom.previewUrl).startsWith('/') ? '' : '/'}${custom.designUrl || custom.previewUrl}`)
+                    : null;
+
                   return (
                     <div
                       key={it.id}
                       className="p-3 rounded-lg bg-secondary/20 border border-border flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center"
                     >
                       <div className="flex gap-3 items-center">
-                        <div className="w-14 h-16 bg-card rounded border border-border shrink-0 overflow-hidden flex items-center justify-center p-1">
+                        <div className="w-16 h-18 bg-card rounded-md border border-border shrink-0 overflow-hidden flex items-center justify-center p-1 relative shadow-inner">
                           <img
-                            src={custom?.previewUrl || custom?.designUrl || it.productVariant?.product?.images?.[0]?.url || '/images/asora-hero.jpg'}
+                            src={finalImgUrl}
                             alt=""
-                            className="object-contain w-full h-full"
+                            className="object-contain w-full h-full rounded"
                           />
                         </div>
 
                         <div className="space-y-0.5">
                           {isCustom ? (
                             <div>
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-rose-600/10 text-rose-400 border border-rose-500/20 text-[9px] font-mono font-bold uppercase">
-                                <Scissors className="h-2.5 w-2.5" /> CUSTOM TEE
-                              </span>
-                              <div className="font-bold text-xs text-foreground mt-0.5">
-                                {custom?.shirtType?.toUpperCase() || 'OVERSIZED'} T-SHIRT
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-rose-600/10 text-rose-400 border border-rose-500/20 text-[9px] font-mono font-bold uppercase">
+                                  <Scissors className="h-2.5 w-2.5" /> CUSTOM PIECE
+                                </span>
+                                <span className="text-[10px] font-mono font-bold text-foreground">
+                                  {custom?.shirtType?.toUpperCase() || 'OVERSIZED'} T-SHIRT
+                                </span>
                               </div>
+
                               <div className="text-[10px] font-mono text-muted-foreground">
                                 Color: <strong className="text-foreground">{custom?.color}</strong> • Size: <strong className="text-foreground">{custom?.size}</strong> • Print: <strong className="text-rose-400">{custom?.printPosition?.replace('_', ' + ').toUpperCase()}</strong>
                               </div>
-                              {custom?.designUrl && (
-                                <a
-                                  href={custom.designUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex items-center gap-1 text-rose-400 hover:underline text-[10px] font-mono pt-0.5"
-                                >
-                                  <span>Download Print Artwork</span>
-                                  <ExternalLink className="h-2.5 w-2.5" />
-                                </a>
+
+                              {artworkDownloadUrl && (
+                                <div className="pt-1">
+                                  <a
+                                    href={artworkDownloadUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    download
+                                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-[10px] font-mono font-bold uppercase transition-colors"
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                    <span>Download Print File (PNG)</span>
+                                  </a>
+                                </div>
                               )}
                             </div>
                           ) : (

@@ -17,13 +17,22 @@ import { formatCurrency, formatWhatsAppUrl, getUserDisplayName } from '@/lib/uti
 import { usePublicSettings } from '@/hooks/use-admin';
 import { useAuth } from '@/hooks/use-auth';
 
-interface WhatsAppOrderItem {
+export interface WhatsAppOrderItem {
   title: string;
   size?: string;
   color?: string;
   quantity: number;
   price: number;
   slugOrId?: string;
+  customConfig?: {
+    shirtType?: string;
+    color?: string;
+    size?: string;
+    printPosition?: string;
+    designUrl?: string;
+    previewUrl?: string;
+    [key: string]: any;
+  };
 }
 
 interface WhatsAppOrderDialogProps {
@@ -61,12 +70,29 @@ export function WhatsAppOrderDialog({
 
     let itemsBreakdown = '';
     items.forEach((item, idx) => {
+      const isCustom = Boolean(item.customConfig);
+      const custom = item.customConfig;
       const itemUrl = item.slugOrId ? `${origin}/products/${item.slugOrId}` : `${origin}/products`;
-      itemsBreakdown += `\n${idx + 1}. *${item.title}*\n`;
-      if (item.size) itemsBreakdown += `   • Size: ${item.size}\n`;
-      if (item.color) itemsBreakdown += `   • Color: ${item.color}\n`;
-      itemsBreakdown += `   • Qty: ${item.quantity} x ${formatCurrency(item.price)}\n`;
-      itemsBreakdown += `   • 🔗 Product Link: ${itemUrl}\n`;
+
+      itemsBreakdown += `\n${idx + 1}. *${item.title}*`;
+      if (isCustom && custom) {
+        itemsBreakdown += `\n   ✂️ *Custom T-Shirt Specs:*`;
+        itemsBreakdown += `\n   • Fit/Style: ${custom.shirtType?.toUpperCase() || 'OVERSIZED'}`;
+        itemsBreakdown += `\n   • Color: ${custom.color || item.color || 'Standard'}`;
+        itemsBreakdown += `\n   • Size: ${custom.size || item.size || 'L'}`;
+        itemsBreakdown += `\n   • Print Area: ${custom.printPosition?.replace('_', ' + ')?.toUpperCase() || 'FRONT'}`;
+        if (custom.designUrl || custom.previewUrl) {
+          const artworkLink = (custom.designUrl || custom.previewUrl)?.startsWith('http')
+            ? (custom.designUrl || custom.previewUrl)
+            : `${origin}${custom.designUrl || custom.previewUrl}`;
+          itemsBreakdown += `\n   • 🖼️ *Artwork Link:* ${artworkLink}`;
+        }
+      } else {
+        if (item.size) itemsBreakdown += `\n   • Size: ${item.size}`;
+        if (item.color) itemsBreakdown += `\n   • Color: ${item.color}`;
+        itemsBreakdown += `\n   • 🔗 Product Link: ${itemUrl}`;
+      }
+      itemsBreakdown += `\n   • Qty: ${item.quantity} x ${formatCurrency(item.price)}\n`;
     });
 
     const fullMessage = 
