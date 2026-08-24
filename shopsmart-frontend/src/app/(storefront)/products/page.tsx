@@ -246,7 +246,7 @@ function ProductsPageContent() {
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
           {/* Desktop Sidebar Filters (Left) */}
-          <aside className="hidden lg:block w-64 shrink-0 sticky top-24">
+          <aside className="hidden lg:block w-64 shrink-0 sticky top-20 self-start max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin rounded-md">
             <CatalogFilters />
           </aside>
 
