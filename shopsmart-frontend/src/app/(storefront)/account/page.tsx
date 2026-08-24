@@ -4,7 +4,7 @@ import { useAuth, useLogout } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { User, ShoppingBag, Heart, Shield, LogOut, Mail, Phone, ArrowRight } from 'lucide-react';
+import { User, ShoppingBag, Heart, LogOut, Mail, Phone, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { useOrders } from '@/features/orders/hooks/use-orders';
@@ -64,7 +64,7 @@ function AccountContent() {
       </div>
 
       {/* Quick Navigation Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
         {/* Orders Card */}
         <Link href="/orders" className="block group">
           <Card className="rounded-2xl border-border/60 hover:border-primary/50 hover:shadow-md transition-all h-full">
@@ -104,28 +104,6 @@ function AccountContent() {
             <CardContent className="pt-0">
               <span className="text-xs text-primary font-semibold flex items-center gap-1">
                 View wishlist <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </CardContent>
-          </Card>
-        </Link>
-
-        {/* Security / Sessions Card */}
-        <Link href="/sessions" className="block group">
-          <Card className="rounded-2xl border-border/60 hover:border-primary/50 hover:shadow-md transition-all h-full">
-            <CardHeader className="pb-3">
-              <div className="p-3 rounded-xl bg-primary/10 text-primary w-fit mb-2">
-                <Shield className="h-5 w-5" />
-              </div>
-              <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors">
-                Security & Sessions
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Manage active device logins
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <span className="text-xs text-primary font-semibold flex items-center gap-1">
-                View sessions <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
               </span>
             </CardContent>
           </Card>
