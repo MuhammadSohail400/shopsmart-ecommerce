@@ -10,9 +10,7 @@ export const cartKeys = {
 
 export function useCart() {
   const { initializeGuestCart } = useCartStore();
-  const accessToken = useAuthStore((state) => state.accessToken);
   const isServer = typeof window === 'undefined';
-  const hasSession = !isServer && localStorage.getItem('has_session') === 'true';
 
   return useQuery({
     queryKey: cartKeys.all,
@@ -20,7 +18,7 @@ export function useCart() {
       initializeGuestCart();
       return cartService.getCart();
     },
-    enabled: !!accessToken || hasSession,
+    enabled: !isServer,
   });
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart, useUpdateCartItem, useRemoveCartItem, useClearCart } from '@/features/cart/hooks/use-cart';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,12 +13,18 @@ import { useRouter } from 'next/navigation';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { formatCurrency } from '@/lib/utils';
 import { WhatsAppOrderDialog } from '@/components/storefront/whatsapp-order-dialog';
+
 export default function CartPage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const { data: cart, isLoading, isError, refetch } = useCart();
   const updateQuantity = useUpdateCartItem();
   const removeItem = useRemoveCartItem();
   const clearCart = useClearCart();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
   const [removingItemId, setRemovingItemId] = useState<string | null>(null);
@@ -42,7 +48,7 @@ export default function CartPage() {
     }
   };
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
       <div className="min-h-screen bg-zinc-950 text-zinc-100">
         <div className="container max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 space-y-6">
