@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { formatCurrency } from '@/lib/utils';
 import { WhatsAppOrderDialog } from '@/components/storefront/whatsapp-order-dialog';
+import { CustomGarmentThumbnail } from '@/components/storefront/custom-garment-thumbnail';
 
 export default function CartPage() {
   const router = useRouter();
@@ -212,20 +213,13 @@ export default function CartPage() {
                 >
                   {/* Thumbnail */}
                   <div className="flex gap-4">
-                    <div className="w-20 h-24 bg-zinc-950 rounded border border-zinc-800 shrink-0 relative overflow-hidden flex items-center justify-center p-1">
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.title}
-                          className="object-contain w-full h-full"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/images/asora-hero.jpg';
-                          }}
-                        />
-                      ) : (
-                        <ShoppingCart className="h-6 w-6 text-zinc-600" />
-                      )}
-                    </div>
+                    <CustomGarmentThumbnail
+                      imageUrl={item.imageUrl}
+                      title={item.title}
+                      isCustom={isCustom}
+                      customConfig={custom}
+                      className="w-20 h-24"
+                    />
 
                     {/* Details */}
                     <div className="space-y-1 text-left">

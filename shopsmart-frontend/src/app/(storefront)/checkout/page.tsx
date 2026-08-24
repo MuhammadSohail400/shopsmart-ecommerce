@@ -38,6 +38,7 @@ import { CheckoutSession, ConfirmCheckoutResult } from '@/types/checkout.types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/lib/api-client';
 import { formatCurrency } from '@/lib/utils';
+import { CustomGarmentThumbnail } from '@/components/storefront/custom-garment-thumbnail';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 
 // ─── Stripe setup ──────────────────────────────────────────────────────────────
@@ -744,19 +745,15 @@ export default function CheckoutPage() {
                   return (
                     <div
                       key={item.id || item.productVariantId}
-                      className="p-3 rounded bg-zinc-950 border border-zinc-800 flex gap-3 text-left"
+                      className="p-3 rounded bg-zinc-950 border border-zinc-800 flex gap-3 text-left items-center"
                     >
-                      <div className="w-16 h-18 bg-zinc-900 rounded border border-zinc-800 shrink-0 overflow-hidden flex items-center justify-center p-1">
-                        {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.title}
-                            className="object-contain w-full h-full"
-                          />
-                        ) : (
-                          <ShoppingBag className="h-5 w-5 text-zinc-600" />
-                        )}
-                      </div>
+                      <CustomGarmentThumbnail
+                        imageUrl={item.imageUrl}
+                        title={item.title}
+                        isCustom={isCustom}
+                        customConfig={custom}
+                        className="w-16 h-20"
+                      />
 
                       <div className="flex-1 min-w-0 space-y-0.5">
                         {isCustom ? (

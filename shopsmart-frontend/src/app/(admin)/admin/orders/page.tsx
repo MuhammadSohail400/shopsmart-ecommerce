@@ -36,7 +36,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, resolveMediaUrl } from '@/lib/utils';
+import { CustomGarmentThumbnail } from '@/components/storefront/custom-garment-thumbnail';
 
 const ORDER_STATUSES = [
   'all',
@@ -358,15 +359,8 @@ export default function AdminOrdersPage() {
                   const isCustom = Boolean(it.customConfig);
                   const custom = it.customConfig;
                   const itemPrice = Number(it.priceAtPurchase || it.unitPrice || 0);
-
-                  const rawImg = custom?.previewUrl || custom?.designUrl || it.productVariant?.product?.images?.[0]?.url;
-                  const finalImgUrl = rawImg
-                    ? (rawImg.startsWith('http') || rawImg.startsWith('data:') ? rawImg : `http://localhost:4000${rawImg.startsWith('/') ? '' : '/'}${rawImg}`)
-                    : '/images/asora-hero.jpg';
                   const artworkDownloadUrl = (custom?.designUrl || custom?.previewUrl)
-                    ? ((custom.designUrl || custom.previewUrl).startsWith('http') || (custom.designUrl || custom.previewUrl).startsWith('data:')
-                        ? (custom.designUrl || custom.previewUrl)
-                        : `http://localhost:4000${(custom.designUrl || custom.previewUrl).startsWith('/') ? '' : '/'}${custom.designUrl || custom.previewUrl}`)
+                    ? resolveMediaUrl(custom.designUrl || custom.previewUrl)
                     : null;
 
                   return (
@@ -375,13 +369,13 @@ export default function AdminOrdersPage() {
                       className="p-3 rounded-lg bg-secondary/20 border border-border flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center"
                     >
                       <div className="flex gap-3 items-center">
-                        <div className="w-16 h-18 bg-card rounded-md border border-border shrink-0 overflow-hidden flex items-center justify-center p-1 relative shadow-inner">
-                          <img
-                            src={finalImgUrl}
-                            alt=""
-                            className="object-contain w-full h-full rounded"
-                          />
-                        </div>
+                        <CustomGarmentThumbnail
+                          imageUrl={it.productVariant?.product?.images?.[0]?.url}
+                          title="Ordered piece"
+                          isCustom={isCustom}
+                          customConfig={custom}
+                          className="w-16 h-20"
+                        />
 
                         <div className="space-y-0.5">
                           {isCustom ? (

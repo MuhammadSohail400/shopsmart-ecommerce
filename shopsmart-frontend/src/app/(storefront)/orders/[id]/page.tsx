@@ -16,7 +16,8 @@ import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { toast } from 'sonner';
 import { OrderStatus } from '@/types/checkout.types';
 import { ApiError } from '@/lib/api-client';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, resolveMediaUrl } from '@/lib/utils';
+import { CustomGarmentThumbnail } from '@/components/storefront/custom-garment-thumbnail';
 import {
   Dialog,
   DialogContent,
@@ -243,16 +244,13 @@ function OrderDetailContent() {
                   className="p-4 rounded bg-zinc-950 border border-zinc-800 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center"
                 >
                   <div className="flex gap-4 items-center">
-                    <div className="w-20 h-24 bg-zinc-900 rounded border border-zinc-800 shrink-0 overflow-hidden flex items-center justify-center p-1">
-                      <img
-                        src={imageUrl}
-                        alt="Garment piece"
-                        className="object-contain w-full h-full"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/images/asora-hero.jpg';
-                        }}
-                      />
-                    </div>
+                    <CustomGarmentThumbnail
+                      imageUrl={item.productVariant?.product?.images?.[0]?.url}
+                      title="Garment piece"
+                      isCustom={isCustom}
+                      customConfig={custom}
+                      className="w-20 h-24"
+                    />
 
                     <div className="space-y-1 text-left">
                       {isCustom ? (
@@ -268,7 +266,7 @@ function OrderDetailContent() {
                             <p>Print Placement: <span className="text-rose-400">{custom?.printPosition?.replace('_', ' + ').toUpperCase()}</span></p>
                             {custom?.designUrl && (
                               <a
-                                href={custom.designUrl}
+                                href={resolveMediaUrl(custom.designUrl)}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-rose-400 hover:underline text-[10px] font-mono block pt-0.5"

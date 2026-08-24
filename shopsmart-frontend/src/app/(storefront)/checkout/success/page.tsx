@@ -12,6 +12,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OrderStatus } from '@/types/checkout.types';
 import { formatCurrency } from '@/lib/utils';
+import { CustomGarmentThumbnail } from '@/components/storefront/custom-garment-thumbnail';
 
 function getOrderStatusConfig(status: OrderStatus) {
   const map: Record<OrderStatus, { label: string; color: string; icon: React.ElementType }> = {
@@ -174,16 +175,13 @@ function CheckoutSuccessContent() {
                   className="p-3.5 rounded bg-zinc-950 border border-zinc-800 flex gap-3 text-left justify-between items-center"
                 >
                   <div className="flex gap-3 items-center">
-                    <div className="w-16 h-20 bg-zinc-900 rounded border border-zinc-800 shrink-0 overflow-hidden flex items-center justify-center p-1">
-                      <img
-                        src={imageUrl}
-                        alt="Product piece"
-                        className="object-contain w-full h-full"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/images/asora-hero.jpg';
-                        }}
-                      />
-                    </div>
+                    <CustomGarmentThumbnail
+                      imageUrl={item.productVariant?.product?.images?.[0]?.url}
+                      title="Product piece"
+                      isCustom={isCustom}
+                      customConfig={custom}
+                      className="w-16 h-20"
+                    />
 
                     <div className="space-y-1 text-left">
                       {isCustom ? (

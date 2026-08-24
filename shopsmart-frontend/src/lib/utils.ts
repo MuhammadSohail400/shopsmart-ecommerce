@@ -110,3 +110,18 @@ export function formatWhatsAppUrl(rawPhone?: string, message?: string): string {
     : `https://wa.me/${finalNumber}`;
 }
 
+/**
+ * Resolves any image URL, safely prefixing backend host if it's a relative path like /uploads
+ */
+export function resolveMediaUrl(url?: string | null, fallback = '/images/asora-hero.jpg'): string {
+  if (!url) return fallback;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  const origin = apiBase.replace(/\/api\/v1\/?$/, '');
+  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+
+
