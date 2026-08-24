@@ -18,7 +18,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { requireAuth } = useAuth();
   const { data: wishlist } = useWishlist();
   const addToWishlist = useAddToWishlist();
   const removeFromWishlist = useRemoveFromWishlist();
@@ -44,19 +43,11 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     
-    requireAuth(
-      () => {
-        if (isInWishlist) {
-          removeFromWishlist.mutate(product.id);
-        } else {
-          addToWishlist.mutate(product.id);
-        }
-      },
-      {
-        message: 'Sign in to save items to your wishlist',
-        returnUrl: `/products/${product.slug}`,
-      }
-    );
+    if (isInWishlist) {
+      removeFromWishlist.mutate(product.id);
+    } else {
+      addToWishlist.mutate(product.id);
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -65,21 +56,7 @@ export function ProductCard({ product }: ProductCardProps) {
     
     if (!defaultVariant) return;
 
-    requireAuth(
-      () => {
-        addToCart.mutate({ productVariantId: defaultVariant.id, quantity: 1 });
-      },
-      {
-        pendingAction: 'ADD_TO_CART',
-        payload: {
-          productVariantId: defaultVariant.id,
-          quantity: 1,
-          title: product.title,
-        },
-        returnUrl: `/products/${product.slug}`,
-        message: 'Please sign in to add items to your cart',
-      }
-    );
+    addToCart.mutate({ productVariantId: defaultVariant.id, quantity: 1 });
   };
 
   const handleQuickViewClick = (e: React.MouseEvent) => {

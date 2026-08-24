@@ -12,8 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { StarRating } from '@/features/reviews/components/star-rating';
-import { useAuth } from '@/hooks/use-auth';
 import { useAddToCart } from '@/features/cart/hooks/use-cart';
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/use-wishlist';
 import { ShoppingBag, Heart, Loader2, Plus, Minus, ArrowRight, ShieldCheck, Truck, Package } from 'lucide-react';
@@ -26,7 +24,6 @@ interface QuickViewDialogProps {
 }
 
 export function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialogProps) {
-  const { requireAuth } = useAuth();
   const addToCart = useAddToCart();
   const { data: wishlist } = useWishlist();
   const addToWishlist = useAddToWishlist();
@@ -54,41 +51,19 @@ export function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialog
 
   const handleAddToCart = () => {
     if (!selectedVariant) return;
-    requireAuth(
-      () => {
-        addToCart.mutate({
-          productVariantId: selectedVariant.id,
-          quantity,
-        });
-        onOpenChange(false);
-      },
-      {
-        pendingAction: 'ADD_TO_CART',
-        payload: {
-          productVariantId: selectedVariant.id,
-          quantity,
-          title: product.title,
-        },
-        returnUrl: `/products/${product.slug}`,
-        message: 'Please sign in to add items to your cart',
-      }
-    );
+    addToCart.mutate({
+      productVariantId: selectedVariant.id,
+      quantity,
+    });
+    onOpenChange(false);
   };
 
   const handleToggleWishlist = () => {
-    requireAuth(
-      () => {
-        if (isInWishlist) {
-          removeFromWishlist.mutate(product.id);
-        } else {
-          addToWishlist.mutate(product.id);
-        }
-      },
-      {
-        message: 'Sign in to save items to your wishlist',
-        returnUrl: `/products/${product.slug}`,
-      }
-    );
+    if (isInWishlist) {
+      removeFromWishlist.mutate(product.id);
+    } else {
+      addToWishlist.mutate(product.id);
+    }
   };
 
   return (

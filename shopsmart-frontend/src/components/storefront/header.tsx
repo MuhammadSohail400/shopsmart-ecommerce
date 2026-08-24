@@ -47,23 +47,12 @@ export function Header() {
   const displayName = getUserDisplayName(user);
   const userInitial = getUserInitial(user);
 
-  const cartItemCount = isAuthenticated
-    ? cart?.items.reduce((total, item) => total + item.quantity, 0) || 0
-    : 0;
-
-  const wishlistCount = isAuthenticated ? wishlist?.items?.length || 0 : 0;
+  const cartItemCount = cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
+  const wishlistCount = wishlist?.items?.length || 0;
 
   const handleCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    requireAuth(
-      () => {
-        router.push('/cart');
-      },
-      {
-        message: 'Please sign in to view your cart',
-        returnUrl: '/cart',
-      }
-    );
+    router.push('/cart');
   };
 
   const navLinks = [

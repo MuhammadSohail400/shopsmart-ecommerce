@@ -12,7 +12,7 @@ export function MobileBottomNav() {
   const { isAuthenticated } = useAuth();
   const { data: wishlist } = useWishlist();
 
-  const wishlistCount = isAuthenticated ? wishlist?.items?.length || 0 : 0;
+  const wishlistCount = wishlist?.items?.length || 0;
 
   const navItems = [
     {

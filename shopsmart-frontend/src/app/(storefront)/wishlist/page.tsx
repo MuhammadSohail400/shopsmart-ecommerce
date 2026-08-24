@@ -1,7 +1,6 @@
 "use client";
 
 import { useWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/use-wishlist';
-import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -163,9 +162,5 @@ function WishlistContent() {
 }
 
 export default function WishlistPage() {
-  return (
-    <ProtectedRoute>
-      <WishlistContent />
-    </ProtectedRoute>
-  );
+  return <WishlistContent />;
 }
