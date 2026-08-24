@@ -21,7 +21,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { useAuth, useLogout } from '@/hooks/use-auth';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useCart } from '@/features/cart/hooks/use-cart';
 import { useWishlist } from '@/features/wishlist/hooks/use-wishlist';
 import { usePublicSettings } from '@/hooks/use-admin';
@@ -30,6 +30,8 @@ import { getUserDisplayName, getUserInitial, formatCurrency, parseNumericAmount 
 
 export function Header() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('category');
   const { user, isAuthenticated, requireAuth } = useAuth();
   const logout = useLogout();
   const router = useRouter();
@@ -269,7 +271,19 @@ export function Header() {
             {/* Desktop Navigation Links */}
             <nav className="hidden lg:flex items-center gap-6 text-xs font-bold tracking-wider ml-4">
               {navLinks.map((link) => {
-                const isActive = pathname === link.href;
+                let isActive = false;
+                if (link.href === '/') {
+                  isActive = pathname === '/';
+                } else if (link.href === '/products') {
+                  isActive = pathname === '/products' && !categoryParam;
+                } else if (link.href.includes('category=anime-collection')) {
+                  isActive = pathname === '/products' && categoryParam === 'anime-collection';
+                } else if (link.href.includes('category=new-drops')) {
+                  isActive = pathname === '/products' && categoryParam === 'new-drops';
+                } else {
+                  isActive = pathname === link.href;
+                }
+
                 return (
                   <Link
                     key={link.label}

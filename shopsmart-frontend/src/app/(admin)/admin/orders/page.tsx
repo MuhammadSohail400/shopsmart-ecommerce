@@ -95,16 +95,18 @@ export default function AdminOrdersPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'delivered':
-        return <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] font-mono font-black uppercase">Delivered</Badge>;
-      case 'shipped':
-        return <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/30 text-[10px] font-mono font-black uppercase">Shipped</Badge>;
-      case 'processing':
-        return <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/30 text-[10px] font-mono font-black uppercase">Processing</Badge>;
       case 'confirmed':
-        return <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] font-mono font-black uppercase">Confirmed</Badge>;
+        return <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 text-[10px] font-mono font-black uppercase">Confirmed</Badge>;
+      case 'processing':
+        return <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 text-[10px] font-mono font-black uppercase">Processing</Badge>;
+      case 'shipped':
+        return <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/30 text-[10px] font-mono font-black uppercase">Shipped</Badge>;
+      case 'delivered':
+        return <Badge className="bg-emerald-600/20 text-emerald-300 border-emerald-500/40 text-[10px] font-mono font-black uppercase">Delivered</Badge>;
       case 'cancelled':
-        return <Badge className="bg-rose-950/40 text-rose-500 border-rose-800/80 text-[10px] font-mono font-black uppercase">Cancelled</Badge>;
+        return <Badge className="bg-rose-950/40 text-rose-400 border-rose-800/80 text-[10px] font-mono font-black uppercase">Cancelled</Badge>;
+      case 'pending':
+        return <Badge className="bg-zinc-800/60 text-zinc-400 border-zinc-700 text-[10px] font-mono font-black uppercase">Pending</Badge>;
       default:
         return <Badge variant="outline" className="text-[10px] font-mono font-black uppercase">{status}</Badge>;
     }
@@ -250,7 +252,16 @@ export default function AdminOrdersPage() {
                         </div>
                       </td>
                       <td className="p-3.5 text-muted-foreground font-mono">
-                        {ord.items?.length || 1} piece(s)
+                        <div className="flex flex-col">
+                          <span className="font-bold text-foreground text-xs">
+                            {(ord.items?.reduce((sum: number, it: any) => sum + Number(it.quantity || 1), 0) || 1)} piece(s)
+                          </span>
+                          {(ord.items?.length || 0) > 1 && (
+                            <span className="text-[10px] text-zinc-500 font-mono">
+                              ({ord.items.length} items in parcel)
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="p-3.5 font-bold font-mono text-foreground">
                         {formatCurrency(total)}
