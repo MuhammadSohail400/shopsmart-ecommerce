@@ -10,7 +10,8 @@ import {
   ArrowRight,
   TrendingUp,
   Boxes,
-  PlusCircle
+  PlusCircle,
+  Star,
 } from 'lucide-react';
 import { useAdminDashboardSummary, useLowStockInventory, useAdminOrders } from '@/hooks/use-admin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,7 +54,7 @@ export default function AdminDashboardPage() {
             Monitor real-time revenue, catalog health, pending shipments, and inventory levels.
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Link href="/admin/products">
             <Button size="sm" className="font-bold rounded-full text-xs gap-1.5 shadow-xs">
               <PlusCircle className="h-4 w-4" /> Add Product
@@ -62,6 +63,11 @@ export default function AdminDashboardPage() {
           <Link href="/admin/orders">
             <Button size="sm" variant="outline" className="font-bold rounded-full text-xs">
               View Orders
+            </Button>
+          </Link>
+          <Link href="/admin/reviews">
+            <Button size="sm" variant="outline" className="font-bold rounded-full text-xs gap-1">
+              <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" /> Reviews
             </Button>
           </Link>
         </div>

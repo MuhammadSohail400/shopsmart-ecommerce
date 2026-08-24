@@ -277,14 +277,22 @@ export default function AdminOrdersPage() {
                         {getStatusBadge(ord.status)}
                       </td>
                       <td className="p-3.5 text-right">
-                        <Button
-                          size="xs"
-                          variant="outline"
-                          onClick={() => handleOpenDetail(ord)}
-                          className="font-mono text-[11px] uppercase h-8 px-2.5"
-                        >
-                          Inspect & Fulfill
-                        </Button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <ThermalShippingLabel
+                            order={ord}
+                            triggerText="🖨️ Label"
+                            triggerVariant="outline"
+                            triggerClassName="font-mono text-[11px] uppercase h-8 px-2 border-border hover:bg-secondary/40"
+                          />
+                          <Button
+                            size="xs"
+                            variant="default"
+                            onClick={() => handleOpenDetail(ord)}
+                            className="font-mono text-[11px] uppercase h-8 px-2.5 bg-rose-600 hover:bg-rose-700 text-white"
+                          >
+                            Inspect
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -297,22 +305,32 @@ export default function AdminOrdersPage() {
 
       {/* Order Detail & Custom Artwork Inspection Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-        <DialogContent className="max-w-2xl bg-card border-border text-foreground">
-          <DialogHeader>
-            <DialogTitle className="text-base font-black font-mono uppercase tracking-tight text-foreground flex items-center gap-2">
-              <span>ORDER {selectedOrder?.orderNumber || `#${selectedOrder?.id?.slice(0, 8)}`}</span>
-              {selectedOrder?.items?.some((i: any) => Boolean(i.customConfig)) && (
-                <Badge className="bg-rose-600/20 text-rose-400 border-rose-500/30 font-mono text-[10px] uppercase">
-                  CUSTOM ORDER
-                </Badge>
-              )}
-            </DialogTitle>
-            <DialogDescription className="text-xs font-mono text-muted-foreground">
-              Placed on {selectedOrder && new Date(selectedOrder.createdAt).toLocaleString()}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] bg-card border-border text-foreground p-0 flex flex-col overflow-hidden shadow-2xl">
+          {/* Sticky Header with 1-Click Print Action */}
+          <div className="p-4 border-b border-border bg-card flex items-center justify-between gap-2 shrink-0">
+            <div>
+              <DialogTitle className="text-base font-black font-mono uppercase tracking-tight text-foreground flex items-center gap-2">
+                <span>ORDER {selectedOrder?.orderNumber || `#${selectedOrder?.id?.slice(0, 8)}`}</span>
+                {selectedOrder?.items?.some((i: any) => Boolean(i.customConfig)) && (
+                  <Badge className="bg-rose-600/20 text-rose-400 border-rose-500/30 font-mono text-[10px] uppercase">
+                    CUSTOM ORDER
+                  </Badge>
+                )}
+              </DialogTitle>
+              <DialogDescription className="text-xs font-mono text-muted-foreground mt-0.5">
+                Placed on {selectedOrder && new Date(selectedOrder.createdAt).toLocaleString()}
+              </DialogDescription>
+            </div>
 
-          <div className="space-y-4 py-2 text-xs">
+            <ThermalShippingLabel
+              order={selectedOrder}
+              triggerText="🖨️ Print 4×6 Label"
+              triggerVariant="default"
+              triggerClassName="bg-rose-600 hover:bg-rose-700 text-white font-mono text-xs uppercase h-8 px-3 gap-1.5 shrink-0"
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs scrollbar-thin">
             {/* Status Override Selector */}
             <div className="p-3.5 rounded-xl bg-secondary/40 border border-border space-y-2">
               <Label className="text-xs font-mono font-bold uppercase tracking-wider text-foreground">
@@ -519,10 +537,12 @@ export default function AdminOrdersPage() {
             </div>
           </div>
 
-          <DialogFooter className="flex flex-row items-center justify-between gap-2 border-t border-border pt-3">
+          </div>
+
+          <div className="p-4 border-t border-border bg-card flex flex-row items-center justify-between gap-2 shrink-0">
             <ThermalShippingLabel
               order={selectedOrder}
-              triggerText="Print 4×6 Label / Invoice"
+              triggerText="🖨️ Print 4×6 Label / Invoice"
               triggerVariant="default"
               triggerClassName="bg-rose-600 hover:bg-rose-700 text-white font-mono text-xs uppercase h-9 gap-1.5"
             />
@@ -535,7 +555,7 @@ export default function AdminOrdersPage() {
             >
               Close
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
