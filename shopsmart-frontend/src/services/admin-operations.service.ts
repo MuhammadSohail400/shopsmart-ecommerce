@@ -414,7 +414,68 @@ export const adminOperationsService = {
       method: 'DELETE',
     });
   },
+
+  // --- Reviews Moderation ---
+  async getReviews(params?: {
+    page?: number;
+    limit?: number;
+    status?: 'all' | 'published' | 'hidden';
+    rating?: number;
+    search?: string;
+  }): Promise<{ data: AdminReview[]; pagination: any }> {
+    const query = new URLSearchParams();
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+    if (params?.status && params.status !== 'all') query.append('status', params.status);
+    if (params?.rating) query.append('rating', String(params.rating));
+    if (params?.search) query.append('search', params.search);
+
+    const queryString = query.toString();
+    const res = await apiClient<AdminReview[]>(`/admin/reviews${queryString ? `?${queryString}` : ''}`);
+    return {
+      data: Array.isArray(res) ? res : ((res as any)?.data || []),
+      pagination: (res as any)?.meta?.pagination || (res as any)?.pagination,
+    };
+  },
+
+  async getReviewStats(): Promise<AdminReviewStats> {
+    return apiClient<AdminReviewStats>('/admin/reviews/stats');
+  },
+
+  async updateReviewStatus(reviewId: string, hidden: boolean): Promise<AdminReview> {
+    return apiClient<AdminReview>(`/admin/reviews/${reviewId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ hidden }),
+    });
+  },
+
+  async deleteReview(reviewId: string): Promise<void> {
+    return apiClient<void>(`/admin/reviews/${reviewId}`, {
+      method: 'DELETE',
+    });
+  },
 };
+
+export interface AdminReview {
+  id: string;
+  orderId: string;
+  productId: string;
+  userId: string;
+  rating: number;
+  comment?: string | null;
+  hidden: boolean;
+  createdAt: string;
+  user?: { id: string; email: string };
+  product?: { id: string; title: string; slug: string; images?: Array<{ url: string }> };
+  order?: { id: string; orderNumber: string };
+}
+
+export interface AdminReviewStats {
+  total: number;
+  published: number;
+  hidden: number;
+  averageRating: number;
+}
 
 export interface AdminContactMessage {
   id: string;
@@ -452,3 +513,4 @@ export interface AuditLogItem {
     role: string;
   };
 }
+

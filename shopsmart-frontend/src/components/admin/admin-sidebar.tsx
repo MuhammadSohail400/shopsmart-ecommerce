@@ -22,6 +22,7 @@ import {
   ScrollText,
   BarChart3,
   MessageSquare,
+  Star,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useLowStockInventory, useAdminOrders, useContactMessages, usePublicSettings } from '@/hooks/use-admin';
@@ -74,6 +75,11 @@ export function AdminSidebar({ isMobile = false, onItemClick }: { isMobile?: boo
       label: 'Store Operations',
       items: [
         { title: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+        {
+          title: 'Customer Reviews',
+          href: '/admin/reviews',
+          icon: Star,
+        },
         {
           title: 'Customer Inquiries',
           href: '/admin/messages',

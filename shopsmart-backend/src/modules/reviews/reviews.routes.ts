@@ -27,4 +27,31 @@ router.delete(
   asyncHandler(reviewsController.moderate),
 );
 
+// Admin Moderation Suite
+router.get(
+  '/admin/reviews',
+  authMiddleware,
+  requireRole(ROLES.ADMIN),
+  asyncHandler(reviewsController.adminList),
+);
+router.get(
+  '/admin/reviews/stats',
+  authMiddleware,
+  requireRole(ROLES.ADMIN),
+  asyncHandler(reviewsController.adminGetStats),
+);
+router.patch(
+  '/admin/reviews/:reviewId/status',
+  authMiddleware,
+  requireRole(ROLES.ADMIN),
+  asyncHandler(reviewsController.adminUpdateStatus),
+);
+router.delete(
+  '/admin/reviews/:reviewId',
+  authMiddleware,
+  requireRole(ROLES.ADMIN),
+  asyncHandler(reviewsController.adminDelete),
+);
+
 export { router as reviewsRoutes };
+

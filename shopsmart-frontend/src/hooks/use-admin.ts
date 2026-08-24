@@ -515,3 +515,54 @@ export function useDeleteContactMessage() {
   });
 }
 
+// --- Customer Reviews Moderation ---
+export function useAdminReviews(params?: {
+  page?: number;
+  limit?: number;
+  status?: 'all' | 'published' | 'hidden';
+  rating?: number;
+  search?: string;
+}) {
+  return useQuery({
+    queryKey: [...adminKeys.all, 'reviews', params],
+    queryFn: () => adminOperationsService.getReviews(params),
+  });
+}
+
+export function useAdminReviewStats() {
+  return useQuery({
+    queryKey: [...adminKeys.all, 'reviews', 'stats'],
+    queryFn: () => adminOperationsService.getReviewStats(),
+  });
+}
+
+export function useUpdateReviewStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, hidden }: { id: string; hidden: boolean }) =>
+      adminOperationsService.updateReviewStatus(id, hidden),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [...adminKeys.all, 'reviews'] });
+      toast.success(variables.hidden ? 'Review hidden from store' : 'Review published live');
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to update review status');
+    },
+  });
+}
+
+export function useDeleteReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminOperationsService.deleteReview(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...adminKeys.all, 'reviews'] });
+      toast.success('Review permanently deleted');
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to delete review');
+    },
+  });
+}
+
+

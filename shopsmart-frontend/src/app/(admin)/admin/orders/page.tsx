@@ -38,6 +38,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { formatCurrency, resolveMediaUrl } from '@/lib/utils';
 import { CustomGarmentThumbnail } from '@/components/storefront/custom-garment-thumbnail';
+import { ThermalShippingLabel } from '@/components/admin/thermal-shipping-label';
 
 const ORDER_STATUSES = [
   'all',
@@ -460,7 +461,14 @@ export default function AdminOrdersPage() {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-row items-center justify-between gap-2 border-t border-border pt-3">
+            <ThermalShippingLabel
+              order={selectedOrder}
+              triggerText="Print 4×6 Label / Invoice"
+              triggerVariant="default"
+              triggerClassName="bg-rose-600 hover:bg-rose-700 text-white font-mono text-xs uppercase h-9 gap-1.5"
+            />
+
             <Button
               variant="outline"
               size="sm"

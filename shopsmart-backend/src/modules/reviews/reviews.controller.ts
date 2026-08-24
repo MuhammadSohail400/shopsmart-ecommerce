@@ -29,4 +29,46 @@ export const reviewsController = {
     await reviewsService.moderate(String(req.params.reviewId));
     res.status(204).send();
   },
+
+  async adminList(req: Request, res: Response) {
+    const { page, limit, status, rating, search } = req.query as {
+      page?: string;
+      limit?: string;
+      status?: 'all' | 'published' | 'hidden';
+      rating?: string;
+      search?: string;
+    };
+
+    const result = await reviewsService.adminList({
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+      status: status || 'all',
+      rating: rating ? parseInt(rating, 10) : undefined,
+      search,
+    });
+
+    sendSuccess(res, result.items, 200, {
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+    });
+  },
+
+  async adminUpdateStatus(req: Request, res: Response) {
+    const { hidden } = req.body as { hidden: boolean };
+    const updated = await reviewsService.adminUpdateStatus(String(req.params.reviewId), Boolean(hidden));
+    sendSuccess(res, updated, 200);
+  },
+
+  async adminGetStats(_req: Request, res: Response) {
+    const stats = await reviewsService.adminGetStats();
+    sendSuccess(res, stats, 200);
+  },
+
+  async adminDelete(req: Request, res: Response) {
+    await reviewsService.adminDelete(String(req.params.reviewId));
+    res.status(204).send();
+  },
 };
+

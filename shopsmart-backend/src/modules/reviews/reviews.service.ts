@@ -49,4 +49,31 @@ export const reviewsService = {
     if (!review) throw new NotFoundError('Review');
     await reviewsRepository.hide(reviewId);
   },
+
+  async adminList(params: {
+    page?: number;
+    limit?: number;
+    status?: 'all' | 'published' | 'hidden';
+    rating?: number;
+    search?: string;
+  }) {
+    return reviewsRepository.listAllForAdmin(params);
+  },
+
+  async adminUpdateStatus(reviewId: string, hidden: boolean) {
+    const review = await reviewsRepository.findById(reviewId);
+    if (!review) throw new NotFoundError('Review');
+    return reviewsRepository.updateStatus(reviewId, hidden);
+  },
+
+  async adminGetStats() {
+    return reviewsRepository.getModerationStats();
+  },
+
+  async adminDelete(reviewId: string) {
+    const review = await reviewsRepository.findById(reviewId);
+    if (!review) throw new NotFoundError('Review');
+    return reviewsRepository.deleteReview(reviewId);
+  },
 };
+

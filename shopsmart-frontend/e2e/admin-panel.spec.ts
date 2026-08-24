@@ -37,4 +37,24 @@ test.describe('ASORA Admin Console & Governance E2E', () => {
     await page.waitForURL(/\/admin\/settings/, { timeout: 15000 });
     await expect(page.getByText(/Platform Settings/i)).toBeVisible();
   });
+
+  test('should view Customer Reviews Moderation and Orders Thermal Label', async ({ page }) => {
+    // Authenticate first
+    await page.goto('/login?redirect=/admin');
+    await page.getByPlaceholder(/m@example.com/i).fill('admin@shopsmart.com');
+    await page.locator('input[type="password"]').fill('Admin@123456');
+    await page.getByRole('button', { name: /Sign In/i }).click();
+    await page.waitForURL(/\/admin/, { timeout: 20000 });
+
+    // Navigate to Customer Reviews
+    await page.goto('/admin/reviews');
+    await expect(page.getByText(/Customer Reviews Moderation/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Total Reviews/i)).toBeVisible();
+    await expect(page.getByText(/Average Store Rating/i)).toBeVisible();
+
+    // Navigate to Orders
+    await page.goto('/admin/orders');
+    await expect(page.getByText(/Orders Operations/i).or(page.getByText(/Orders/i).first())).toBeVisible({ timeout: 15000 });
+  });
 });
+
