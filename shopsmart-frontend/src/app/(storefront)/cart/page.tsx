@@ -313,7 +313,7 @@ export default function CartPage() {
           </div>
 
           {/* Right: Sticky Order Summary (4 cols) */}
-          <div className="lg:col-span-4 sticky top-24 space-y-4">
+          <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
             <div className="p-6 rounded bg-zinc-900 border border-zinc-800 space-y-4">
               <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-zinc-200 border-b border-zinc-850 pb-3">
                 ORDER SUMMARY

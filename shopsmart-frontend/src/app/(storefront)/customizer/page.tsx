@@ -261,7 +261,7 @@ export default function CustomizerPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* LEFT: Live Interactive T-Shirt Preview Canvas (6 cols) */}
-          <div className="lg:col-span-6 sticky top-24 space-y-4">
+          <div className="lg:col-span-6 lg:sticky lg:top-24 space-y-4">
             <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-zinc-900/90 border border-zinc-800 shadow-2xl flex items-center justify-center p-6 sm:p-10">
               
               {/* Subtle Atmospheric Studio Glow */}

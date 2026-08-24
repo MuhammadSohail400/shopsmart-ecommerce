@@ -729,7 +729,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* RIGHT: Sticky Order Review & Items (5 cols) */}
-          <div className="lg:col-span-5 sticky top-24 space-y-4">
+          <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-4">
             <div className="p-6 rounded bg-zinc-900 border border-zinc-800 space-y-4">
               <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-zinc-200 border-b border-zinc-850 pb-3">
                 ORDER REVIEW ({items.length} {items.length === 1 ? 'ITEM' : 'ITEMS'})
