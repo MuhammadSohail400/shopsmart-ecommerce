@@ -47,11 +47,14 @@ export const reviewsController = {
       search,
     });
 
-    sendSuccess(res, result.items, 200, {
+    res.status(200).json({
+      success: true,
+      data: result.items,
       total: result.total,
       page: result.page,
       limit: result.limit,
       totalPages: result.totalPages,
+      meta: { requestId: res.locals.requestId, timestamp: new Date().toISOString() },
     });
   },
 
