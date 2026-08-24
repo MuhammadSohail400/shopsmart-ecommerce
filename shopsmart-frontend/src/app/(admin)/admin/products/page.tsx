@@ -18,10 +18,20 @@ import {
   Eye,
   AlertCircle,
   Tag,
-  FolderTree
+  FolderTree,
+  Edit3,
+  SlidersHorizontal,
+  X
 } from 'lucide-react';
 import { useProducts, useCategories, useBrands } from '@/hooks/use-catalog';
-import { useCreateProduct, useDeleteProduct, useAddImage, useAddVariant } from '@/hooks/use-admin';
+import {
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
+  useAddImage,
+  useAddVariant,
+  useDeleteVariant
+} from '@/hooks/use-admin';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -63,6 +73,19 @@ export default function AdminProductsPage() {
   const [extraImageUrl, setExtraImageUrl] = useState('/products/shirts/shirt-1.jpeg');
   const [extraImageCategoryTab, setExtraImageCategoryTab] = useState<'shirts' | 'pants'>('shirts');
 
+  // Edit Product Dialog State
+  const [selectedProductForEdit, setSelectedProductForEdit] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editCategoryId, setEditCategoryId] = useState('');
+  const [editBrandId, setEditBrandId] = useState('');
+  const [editStatus, setEditStatus] = useState('approved');
+
+  // Add Variant directly inside Edit Product Modal
+  const [newVariantSize, setNewVariantSize] = useState('XL');
+  const [newVariantStock, setNewVariantStock] = useState('50');
+
   // Queries
   const { data: productsData, isLoading } = useProducts({ limit: 100, q: searchQuery || undefined });
   const { data: categories } = useCategories();
@@ -70,11 +93,13 @@ export default function AdminProductsPage() {
 
   // Mutations
   const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
   const addImageMutation = useAddImage();
   const addVariantMutation = useAddVariant();
+  const deleteVariantMutation = useDeleteVariant();
 
-  // Form State
+  // Form State (New Product)
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newPrice, setNewPrice] = useState('');
@@ -173,6 +198,77 @@ export default function AdminProductsPage() {
       toast.success(`Product "${newTitle}" created & published successfully!`);
     } catch (err: any) {
       toast.error(err?.message || 'Failed to create product');
+    }
+  };
+
+  const handleOpenEdit = (p: any) => {
+    setSelectedProductForEdit(p);
+    setEditTitle(p.title || '');
+    setEditDescription(p.description || '');
+    setEditPrice(String(p.basePrice || ''));
+    setEditCategoryId(p.categoryId || categories?.[0]?.id || '');
+    setEditBrandId(p.brandId || brands?.[0]?.id || '');
+    setEditStatus(p.status || 'approved');
+  };
+
+  const handleSaveEditProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProductForEdit || !editTitle.trim() || !editPrice || !editCategoryId) {
+      toast.error('Please enter all required fields');
+      return;
+    }
+
+    try {
+      await updateProductMutation.mutateAsync({
+        id: selectedProductForEdit.id,
+        data: {
+          title: editTitle.trim(),
+          description: editDescription.trim(),
+          basePrice: Number(editPrice),
+          categoryId: editCategoryId,
+          brandId: editBrandId || undefined,
+          status: editStatus as any,
+        },
+      });
+
+      setSelectedProductForEdit(null);
+      toast.success('Product updated successfully!');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update product');
+    }
+  };
+
+  const handleAddVariantToProduct = async () => {
+    if (!selectedProductForEdit || !newVariantSize) return;
+
+    try {
+      await addVariantMutation.mutateAsync({
+        productId: selectedProductForEdit.id,
+        data: {
+          sku: `${selectedProductForEdit.slug || 'prod'}-${newVariantSize}-${Math.floor(100 + Math.random() * 900)}`.toUpperCase(),
+          attributes: { size: newVariantSize },
+          initialStock: Number(newVariantStock) || 50,
+        } as any,
+      });
+
+      toast.success(`Size ${newVariantSize} added with ${newVariantStock} units stock!`);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to add variant');
+    }
+  };
+
+  const handleDeleteVariant = async (variantId: string) => {
+    if (!selectedProductForEdit) return;
+    if (confirm('Are you sure you want to remove this size variant?')) {
+      try {
+        await deleteVariantMutation.mutateAsync({
+          productId: selectedProductForEdit.id,
+          variantId,
+        });
+        toast.success('Size variant removed');
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to delete variant');
+      }
     }
   };
 
@@ -536,14 +632,16 @@ export default function AdminProductsPage() {
           <p className="text-[10px] text-muted-foreground mt-0.5">Live on storefront</p>
         </Card>
 
-        <Card className="rounded-2xl border-border bg-card p-4 shadow-xs">
-          <div className="flex items-center justify-between text-muted-foreground mb-1">
-            <span className="text-[11px] font-mono font-bold uppercase">Total Stock</span>
-            <Boxes className="h-4 w-4 text-amber-500" />
-          </div>
-          <div className="text-2xl font-black text-foreground">{totalStockCount}</div>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Units in inventory</p>
-        </Card>
+        <Link href="/admin/inventory">
+          <Card className="rounded-2xl border-border bg-card p-4 shadow-xs hover:border-primary/50 transition-colors cursor-pointer group">
+            <div className="flex items-center justify-between text-muted-foreground mb-1">
+              <span className="text-[11px] font-mono font-bold uppercase group-hover:text-primary transition-colors">Total Stock</span>
+              <Boxes className="h-4 w-4 text-amber-500" />
+            </div>
+            <div className="text-2xl font-black text-foreground">{totalStockCount}</div>
+            <p className="text-[10px] text-primary mt-0.5 font-mono">Manage Warehouse &rarr;</p>
+          </Card>
+        </Link>
 
         <Card className="rounded-2xl border-border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground mb-1">
@@ -667,29 +765,35 @@ export default function AdminProductsPage() {
 
                       {/* Variants & Stock */}
                       <td className="p-3.5">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-bold text-foreground font-mono">
-                            {p.variants?.length || 0} Sizes
-                          </span>
-                          <span className="text-zinc-600">•</span>
-                          <span className={`text-[10px] font-mono font-bold ${totalStock < 20 ? 'text-amber-500' : 'text-emerald-500'}`}>
-                            {totalStock} in stock
-                          </span>
-                        </div>
-                        {p.variants && p.variants.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {p.variants.slice(0, 4).map((v) => (
-                              <span key={v.id} className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-secondary/50 text-muted-foreground">
-                                {(v.attributes as any)?.size || v.sku}
-                              </span>
-                            ))}
-                            {p.variants.length > 4 && (
-                              <span className="text-[9px] font-mono text-muted-foreground">
-                                +{p.variants.length - 4}
-                              </span>
-                            )}
+                        <Link
+                          href="/admin/inventory"
+                          className="hover:opacity-80 transition-opacity block group/stock"
+                          title="Click to manage warehouse stock"
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-foreground font-mono">
+                              {p.variants?.length || 0} Sizes
+                            </span>
+                            <span className="text-zinc-600">•</span>
+                            <span className={`text-[10px] font-mono font-bold ${totalStock < 20 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                              {totalStock} in stock
+                            </span>
                           </div>
-                        )}
+                          {p.variants && p.variants.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.variants.slice(0, 4).map((v) => (
+                                <span key={v.id} className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-secondary/50 text-muted-foreground">
+                                  {(v.attributes as any)?.size || v.sku}
+                                </span>
+                              ))}
+                              {p.variants.length > 4 && (
+                                <span className="text-[9px] font-mono text-muted-foreground">
+                                  +{p.variants.length - 4}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </Link>
                       </td>
 
                       {/* Status */}
@@ -709,6 +813,16 @@ export default function AdminProductsPage() {
                       {/* Actions */}
                       <td className="p-3.5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* EDIT PRODUCT BUTTON */}
+                          <button
+                            onClick={() => handleOpenEdit(p)}
+                            className="p-2 rounded-xl bg-secondary/60 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors"
+                            title="Edit Product & Sizes"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </button>
+
+                          {/* ADD LOOKBOOK IMAGE BUTTON */}
                           <button
                             onClick={() => setSelectedProductForImage(p)}
                             className="p-2 rounded-xl bg-secondary/40 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors"
@@ -717,6 +831,7 @@ export default function AdminProductsPage() {
                             <ImagePlus className="h-4 w-4" />
                           </button>
 
+                          {/* VIEW ON STOREFRONT BUTTON */}
                           <Link
                             href={`/products/${p.slug}`}
                             target="_blank"
@@ -726,6 +841,7 @@ export default function AdminProductsPage() {
                             <ExternalLink className="h-4 w-4" />
                           </Link>
 
+                          {/* DELETE PRODUCT BUTTON */}
                           <button
                             onClick={() => handleDelete(p.id, p.title)}
                             disabled={deleteProductMutation.isPending}
@@ -744,6 +860,216 @@ export default function AdminProductsPage() {
           </table>
         </div>
       </Card>
+
+      {/* EDIT PRODUCT & VARIANT MODAL */}
+      <Dialog open={!!selectedProductForEdit} onOpenChange={(open) => !open && setSelectedProductForEdit(null)}>
+        <DialogContent className="max-w-2xl sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 bg-card border-border shadow-2xl">
+          <DialogHeader className="p-6 pb-4 border-b border-border bg-secondary/20">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
+                <Edit3 className="h-4 w-4" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-black uppercase tracking-tight">
+                  Edit Product & Size Inventory
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Update title, pricing, category, status, and manage size variants for <strong className="text-foreground">{selectedProductForEdit?.title}</strong>.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-6">
+            <form onSubmit={handleSaveEditProduct} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="editTitle" className="text-xs font-mono font-bold uppercase">
+                  Product Title *
+                </Label>
+                <Input
+                  id="editTitle"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="text-xs h-10 bg-secondary/30 border-border"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="editPrice" className="text-xs font-mono font-bold uppercase">
+                    Base Price (PKR) *
+                  </Label>
+                  <Input
+                    id="editPrice"
+                    type="number"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    className="text-xs h-10 bg-secondary/30 border-border font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="editCategory" className="text-xs font-mono font-bold uppercase">
+                    Category *
+                  </Label>
+                  <Select value={editCategoryId} onValueChange={(val) => val && setEditCategoryId(val)}>
+                    <SelectTrigger className="text-xs h-10 bg-secondary/30 border-border">
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      {categories?.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id} className="text-xs font-medium">
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="editStatus" className="text-xs font-mono font-bold uppercase">
+                    Catalog Status
+                  </Label>
+                  <Select value={editStatus} onValueChange={(val) => val && setEditStatus(val)}>
+                    <SelectTrigger className="text-xs h-10 bg-secondary/30 border-border font-bold">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      <SelectItem value="approved" className="text-xs font-bold text-emerald-500">APPROVED (Live)</SelectItem>
+                      <SelectItem value="draft" className="text-xs font-bold text-amber-500">DRAFT (Hidden)</SelectItem>
+                      <SelectItem value="archived" className="text-xs font-bold text-muted-foreground">ARCHIVED</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="editDesc" className="text-xs font-mono font-bold uppercase">
+                  Description
+                </Label>
+                <Textarea
+                  id="editDesc"
+                  rows={3}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="text-xs bg-secondary/30 border-border"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={updateProductMutation.isPending}
+                  className="text-xs font-mono font-bold uppercase bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  {updateProductMutation.isPending ? 'Saving...' : 'Save Product Details'}
+                </Button>
+              </div>
+            </form>
+
+            {/* Size Variants & Stock Management */}
+            <div className="p-4 rounded-2xl bg-secondary/20 border border-border space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Boxes className="h-4 w-4 text-primary" />
+                  <h4 className="text-xs font-mono font-bold uppercase text-foreground">
+                    Size Variants & Stock Units
+                  </h4>
+                </div>
+                <Link
+                  href="/admin/inventory"
+                  className="text-[11px] font-mono text-primary hover:underline"
+                >
+                  Open Full Warehouse &rarr;
+                </Link>
+              </div>
+
+              {/* Current Variants List */}
+              <div className="space-y-2">
+                {selectedProductForEdit?.variants && selectedProductForEdit.variants.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {selectedProductForEdit.variants.map((v: any) => (
+                      <div
+                        key={v.id}
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border text-xs"
+                      >
+                        <div>
+                          <div className="font-mono font-bold text-foreground">
+                            Size: {(v.attributes as any)?.size || v.sku}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground font-mono">
+                            SKU: {v.sku} • {v.inventory?.quantity ?? 0} units
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteVariant(v.id)}
+                          className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                          title="Delete variant"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground py-2">
+                    No size variants found for this product. Add one below.
+                  </p>
+                )}
+              </div>
+
+              {/* Add New Size Variant Subform */}
+              <div className="pt-3 border-t border-border/80 flex flex-col sm:flex-row items-end gap-2">
+                <div className="flex-1 space-y-1 w-full">
+                  <Label className="text-[11px] font-mono text-muted-foreground">New Size Label</Label>
+                  <Input
+                    placeholder="e.g. S, M, L, XL, XXL"
+                    value={newVariantSize}
+                    onChange={(e) => setNewVariantSize(e.target.value)}
+                    className="text-xs h-9 bg-secondary/40 border-border font-mono font-bold"
+                  />
+                </div>
+                <div className="w-full sm:w-32 space-y-1">
+                  <Label className="text-[11px] font-mono text-muted-foreground">Initial Stock</Label>
+                  <Input
+                    type="number"
+                    placeholder="50"
+                    value={newVariantStock}
+                    onChange={(e) => setNewVariantStock(e.target.value)}
+                    className="text-xs h-9 bg-secondary/40 border-border font-mono font-bold"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleAddVariantToProduct}
+                  disabled={addVariantMutation.isPending || !newVariantSize}
+                  size="sm"
+                  className="h-9 font-mono text-xs font-bold gap-1 bg-secondary hover:bg-secondary/80 text-foreground border border-border"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Add Size
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="p-4 border-t border-border bg-secondary/20">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedProductForEdit(null)}
+              className="text-xs font-mono font-bold"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Attach Extra Image Dialog */}
       <Dialog open={!!selectedProductForImage} onOpenChange={(open) => !open && setSelectedProductForImage(null)}>
