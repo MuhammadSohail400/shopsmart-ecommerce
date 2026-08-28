@@ -1,4 +1,4 @@
-import { prisma } from '@config/database';
+﻿import { prisma } from '@config/database';
 import { ordersRepository } from './orders.repository';
 import { OrderStatus, Prisma } from '@prisma/client';
 import { NotFoundError, AuthorizationError, ConflictError, BusinessRuleError } from '@shared/errors';
@@ -202,7 +202,7 @@ export const ordersService = {
       if (!variantId) {
         const placeholder = await prisma.productVariant.findFirst({
           where: { deletedAt: null },
-          orderBy: { createdAt: 'asc' },
+          orderBy: { id: 'asc' },
         });
         variantId = placeholder?.id;
         if (!price) price = 2899;
@@ -236,7 +236,6 @@ export const ordersService = {
         taxAmount: 0,
         discountAmount: 0,
         totalAmount,
-        notes: input.notes || 'WhatsApp Quick Order (COD)',
         shippingAddress: {
           firstName: addr.fullName?.split(' ')[0] || 'Customer',
           lastName: addr.fullName?.split(' ').slice(1).join(' ') || '',
@@ -245,6 +244,7 @@ export const ordersService = {
           city: addr.city || 'Karachi',
           region: addr.region || 'Sindh',
           country: addr.country || 'PK',
+          notes: input.notes || 'WhatsApp Quick Order (COD)',
         } as Prisma.JsonObject,
         items: {
           create: resolvedItems.map((i) => ({
@@ -253,13 +253,6 @@ export const ordersService = {
             priceAtPurchase: i.price,
             customConfig: i.customConfig ? (i.customConfig as Prisma.JsonObject) : undefined,
           })),
-        },
-        payments: {
-          create: {
-            method: 'cod',
-            amount: totalAmount,
-            status: 'pending',
-          },
         },
       },
       select: {
@@ -277,3 +270,4 @@ export const ordersService = {
     };
   },
 };
+
