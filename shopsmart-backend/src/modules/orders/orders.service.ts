@@ -149,4 +149,131 @@ export const ordersService = {
       newStatus: status,
     });
   },
+
+  async createQuickOrder(input: {
+    userId?: string;
+    customer: {
+      fullName: string;
+      phone: string;
+      line1?: string;
+      city?: string;
+      region?: string;
+      country?: string;
+    };
+    items: Array<{
+      slug?: string;
+      title?: string;
+      quantity: number;
+      unitPrice?: number;
+      color?: string;
+      size?: string;
+      customConfig?: Record<string, any>;
+    }>;
+    shippingAmount?: number;
+    notes?: string;
+  }) {
+    const shipping = Number(input.shippingAmount || 250);
+
+    // Resolve product variants for each item
+    const resolvedItems: Array<{
+      variantId: string;
+      quantity: number;
+      price: number;
+      customConfig?: Record<string, any>;
+    }> = [];
+
+    for (const it of input.items) {
+      let variantId: string | undefined;
+      let price = Number(it.unitPrice || 0);
+
+      if (it.slug) {
+        const product = await prisma.product.findUnique({
+          where: { slug: it.slug },
+          include: { variants: true },
+        });
+        const variant = product?.variants?.[0];
+        variantId = variant?.id;
+        if (!price && product) {
+          price = Number(product.basePrice) + Number(variant?.priceModifier || 0);
+        }
+      }
+
+      // Fallback: create a placeholder variant if needed
+      if (!variantId) {
+        const placeholder = await prisma.productVariant.findFirst({
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'asc' },
+        });
+        variantId = placeholder?.id;
+        if (!price) price = 2899;
+      }
+
+      if (variantId) {
+        resolvedItems.push({
+          variantId,
+          quantity: it.quantity || 1,
+          price,
+          customConfig: it.customConfig,
+        });
+      }
+    }
+
+    if (resolvedItems.length === 0) {
+      throw new BusinessRuleError('NO_ITEMS', 'No valid items found to create order');
+    }
+
+    const subtotal = resolvedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const totalAmount = subtotal + shipping;
+
+    const addr = input.customer;
+
+    const order = await prisma.order.create({
+      data: {
+        userId: input.userId,
+        status: OrderStatus.pending,
+        subtotal,
+        shippingAmount: shipping,
+        taxAmount: 0,
+        discountAmount: 0,
+        totalAmount,
+        notes: input.notes || 'WhatsApp Quick Order (COD)',
+        shippingAddress: {
+          firstName: addr.fullName?.split(' ')[0] || 'Customer',
+          lastName: addr.fullName?.split(' ').slice(1).join(' ') || '',
+          phone: addr.phone || '03000000000',
+          streetAddress: addr.line1 || 'Address via WhatsApp',
+          city: addr.city || 'Karachi',
+          region: addr.region || 'Sindh',
+          country: addr.country || 'PK',
+        } as Prisma.JsonObject,
+        items: {
+          create: resolvedItems.map((i) => ({
+            productVariantId: i.variantId,
+            quantity: i.quantity,
+            priceAtPurchase: i.price,
+            customConfig: i.customConfig ? (i.customConfig as Prisma.JsonObject) : undefined,
+          })),
+        },
+        payments: {
+          create: {
+            method: 'cod',
+            amount: totalAmount,
+            status: 'pending',
+          },
+        },
+      },
+      select: {
+        id: true,
+        orderNumber: true,
+        totalAmount: true,
+        status: true,
+      },
+    });
+
+    return {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      totalAmount: order.totalAmount,
+    };
+  },
 };

@@ -29,4 +29,16 @@ export const ordersController = {
     await ordersService.updateStatus(String(req.params.orderId), req.body.status, req.user!.id);
     res.status(204).send();
   },
+
+  async quickOrder(req: Request, res: Response) {
+    const { customer, items, shippingAmount, notes } = req.body;
+    const result = await ordersService.createQuickOrder({
+      userId: req.user?.id,
+      customer,
+      items,
+      shippingAmount: Number(shippingAmount || 250),
+      notes,
+    });
+    sendSuccess(res, result, 201);
+  },
 };

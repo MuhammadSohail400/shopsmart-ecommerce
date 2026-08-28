@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from 'react';
 import { 
@@ -16,8 +16,8 @@ import { MessageCircle, MapPin, Truck, CheckCircle2, Phone, User, Send, Sparkles
 import { formatCurrency, formatWhatsAppUrl, getUserDisplayName } from '@/lib/utils';
 import { usePublicSettings } from '@/hooks/use-admin';
 import { useAuth } from '@/hooks/use-auth';
-import { useCreateCheckoutSession, useConfirmCheckoutSession } from '@/features/checkout/hooks/use-checkout';
 import { useClearCart } from '@/features/cart/hooks/use-cart';
+import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 
 export interface WhatsAppOrderItem {
@@ -58,8 +58,6 @@ export function WhatsAppOrderDialog({
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const createSession = useCreateCheckoutSession();
-  const confirmSession = useConfirmCheckoutSession();
   const clearCart = useClearCart();
 
   // Form State
@@ -77,7 +75,7 @@ export function WhatsAppOrderDialog({
 
     let registeredOrderNumber = '';
     try {
-      const guestAddress = {
+      const customer = {
         fullName: name.trim() || 'WhatsApp Customer',
         phone: phone.trim() || '03000000000',
         line1: address.trim() || 'Address shared via WhatsApp',
@@ -86,26 +84,39 @@ export function WhatsAppOrderDialog({
         country: 'PK',
       };
 
-      const session = await createSession.mutateAsync({
-        guestAddress,
-        shippingMethod: 'standard',
-      });
+      const payloadItems = items.map((it) => ({
+        slug: it.slugOrId,
+        title: it.title,
+        quantity: it.quantity || 1,
+        unitPrice: it.price,
+        color: it.color,
+        size: it.size,
+        customConfig: it.customConfig,
+      }));
 
-      const result = await confirmSession.mutateAsync({
-        sessionId: session.sessionId,
-        data: { paymentMethod: 'cod' },
-        idempotencyKey: crypto.randomUUID(),
-      });
+      const res = await apiClient<{ orderId: string; orderNumber: string; totalAmount: number }>(
+        '/orders/quick-order',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            customer,
+            items: payloadItems,
+            shippingAmount: 250,
+            notes: notes.trim() || 'WhatsApp Quick Order (COD)',
+          }),
+        }
+      );
 
-      if (result?.order?.orderNumber) {
-        registeredOrderNumber = result.order.orderNumber;
+      if (res?.orderNumber) {
+        registeredOrderNumber = res.orderNumber;
+        toast.success('Order ' + res.orderNumber + ' registered! Opening WhatsApp...');
       }
 
-      // Clear the cart so ordered items are marked
+      // Clear the cart so ordered items are removed
       clearCart.mutate();
-      toast.success('Order registered in ASORA database! Opening WhatsApp...');
     } catch (err) {
       console.warn('WhatsApp direct order creation warning:', err);
+      toast.info('Opening WhatsApp with your order details...');
     } finally {
       setIsSubmitting(false);
     }
@@ -325,3 +336,4 @@ Please confirm my order and share tracking/dispatch details. Thank you!`;
     </>
   );
 }
+

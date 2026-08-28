@@ -6,8 +6,13 @@ import { validate } from '@shared/middleware/validate.middleware';
 import { asyncHandler } from '@shared/middleware/error-handler.middleware';
 import { updateOrderStatusSchema, listOrdersQuerySchema, cancelOrderSchema } from './orders.validators';
 import { ROLES } from '@shared/constants/roles';
+import { optionalAuthMiddleware } from '@shared/middleware/auth.middleware';
 
 const router = Router();
+
+// Public quick-order endpoint (no cart needed - WhatsApp / Customizer direct orders)
+router.post('/quick-order', optionalAuthMiddleware, asyncHandler(ordersController.quickOrder));
+
 router.use(authMiddleware); // every order endpoint requires auth (owner or staff)
 
 router.get('/', validate(listOrdersQuerySchema, 'query'), asyncHandler(ordersController.list));
