@@ -255,6 +255,7 @@ export const ordersService = {
             customConfig: i.customConfig ? (i.customConfig as Prisma.JsonObject) : undefined,
           })),
         },
+        statusHistory: { create: { status: OrderStatus.pending } },
       },
       select: {
         id: true,
