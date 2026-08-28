@@ -229,7 +229,7 @@ export const ordersService = {
 
     const order = await prisma.order.create({
       data: {
-        userId: input.userId,
+        userId: input.userId ?? null,
         status: OrderStatus.pending,
         subtotal,
         shippingAmount: shipping,
@@ -270,4 +270,5 @@ export const ordersService = {
     };
   },
 };
+
 
