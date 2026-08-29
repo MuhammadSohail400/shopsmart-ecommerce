@@ -404,9 +404,5 @@ function OrderDetailContent() {
 }
 
 export default function OrderDetailPage() {
-  return (
-    <ProtectedRoute>
-      <OrderDetailContent />
-    </ProtectedRoute>
-  );
+  return <OrderDetailContent />;
 }

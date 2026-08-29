@@ -13,7 +13,11 @@ const router = Router();
 // Public quick-order endpoint (no cart needed - WhatsApp / Customizer direct orders)
 router.post('/quick-order', optionalAuthMiddleware, asyncHandler(ordersController.quickOrder));
 
-router.use(authMiddleware); // every order endpoint requires auth (owner or staff)
+// Public tracking and guest order management (lookup & cancel by orderNumber or ID)
+router.get('/track/:query', asyncHandler(ordersController.trackOrder));
+router.post('/track/:query/cancel', asyncHandler(ordersController.cancelTrackedOrder));
+
+router.use(authMiddleware); // every order endpoint below requires auth (owner or staff)
 
 router.get('/', validate(listOrdersQuerySchema, 'query'), asyncHandler(ordersController.list));
 router.get('/:orderId', asyncHandler(ordersController.getById));

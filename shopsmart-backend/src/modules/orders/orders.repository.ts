@@ -63,6 +63,33 @@ export const ordersRepository = {
     });
   },
 
+  findByOrderNumberOrId(query: string) {
+    return prisma.order.findFirst({
+      where: {
+        OR: [
+          { id: query },
+          { orderNumber: query },
+          { orderNumber: { equals: query, mode: 'insensitive' } },
+        ],
+      },
+      include: { 
+        items: { 
+          include: { 
+            productVariant: { 
+              include: { 
+                product: { 
+                  include: { images: true } 
+                } 
+              } 
+            } 
+          } 
+        }, 
+        statusHistory: { orderBy: { changedAt: 'asc' } }, 
+        shipment: true 
+      },
+    });
+  },
+
   findByIdForUser(id: string, userId: string) {
     return prisma.order.findFirst({
       where: { id, userId },

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Package, Clock, CheckCircle2, AlertCircle, Truck, 
   ArrowRight, ShoppingBag, Scissors, ChevronRight, Loader2
@@ -10,9 +11,9 @@ import { useOrders } from '@/features/orders/hooks/use-orders';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OrderStatus } from '@/types/checkout.types';
-import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { formatCurrency } from '@/lib/utils';
+import { CustomGarmentThumbnail } from '@/components/storefront/custom-garment-thumbnail';
 
 function getStatusConfig(status: OrderStatus) {
   const map: Record<OrderStatus, { label: string; color: string; icon: React.ElementType }> = {
@@ -40,6 +41,8 @@ const STATUS_FILTERS = [
 
 function OrdersContent() {
   const [activeFilter, setActiveFilter] = useState<OrderStatus | undefined>(undefined);
+  const [quickQuery, setQuickQuery] = useState('');
+  const router = useRouter();
 
   const { data, isLoading, isError, error } = useOrders({
     status: activeFilter,
@@ -47,6 +50,12 @@ function OrdersContent() {
   });
 
   const orders = data?.data ?? [];
+
+  const handleQuickTrack = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickQuery.trim()) return;
+    router.push(`/orders/track?order=${encodeURIComponent(quickQuery.trim())}`);
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
@@ -61,18 +70,43 @@ function OrdersContent() {
         {/* Header */}
         <div className="border-b border-zinc-850 pb-4">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-rose-400 text-[10px] font-mono font-bold uppercase tracking-widest mb-1">
-            ACCOUNT ARCHIVE
+            ORDERS & SHIPMENTS
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-100 uppercase">
-            ORDER HISTORY
+            ORDER HISTORY & TRACKING
           </h1>
           <p className="text-xs font-mono text-zinc-400 mt-0.5">
-            Track, review, and manage all your past ASORA drops and custom pieces.
+            Track live delivery, review specs, and manage your ASORA streetwear orders.
           </p>
         </div>
 
+        {/* Guest / Quick Order Tracker Bar */}
+        <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 shadow-xl space-y-2">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase text-zinc-300">
+            <Truck className="h-4 w-4 text-rose-500" />
+            <span>Track Any Order (No Login Required)</span>
+          </div>
+          <form onSubmit={handleQuickTrack} className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              placeholder="Enter Order Number (e.g. ASORA-20260829-XLCZLV)"
+              value={quickQuery}
+              onChange={(e) => setQuickQuery(e.target.value)}
+              className="flex-1 h-10 px-3.5 bg-zinc-950 border border-zinc-800 rounded font-mono text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-rose-500"
+            />
+            <Button
+              type="submit"
+              disabled={!quickQuery.trim()}
+              className="h-10 px-5 bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold text-xs uppercase tracking-wider rounded gap-2 shadow-lg shrink-0"
+            >
+              <Truck className="h-3.5 w-3.5" />
+              <span>TRACK LIVE</span>
+            </Button>
+          </form>
+        </div>
+
         {/* Status Filter Tabs */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 pt-2">
           {STATUS_FILTERS.map(({ value, label }) => (
             <button
               key={label}
@@ -98,36 +132,36 @@ function OrdersContent() {
           </div>
         )}
 
-        {/* Error State */}
+        {/* Error / Unauthenticated Prompt */}
         {isError && !isLoading && (
-          <div className="p-8 rounded bg-zinc-900 border border-zinc-800 text-center space-y-3">
-            <AlertCircle className="h-8 w-8 text-rose-500 mx-auto" />
-            <h3 className="text-sm font-mono font-bold uppercase text-zinc-100">COULD NOT LOAD ORDERS</h3>
-            <p className="text-xs font-mono text-zinc-400">
-              {error instanceof Error ? error.message : 'Please sign in to view your orders.'}
+          <div className="p-8 rounded-xl bg-zinc-900 border border-zinc-800 text-center space-y-3">
+            <Package className="h-8 w-8 text-rose-500 mx-auto" />
+            <h3 className="text-sm font-mono font-bold uppercase text-zinc-100">ACCOUNT ORDER HISTORY</h3>
+            <p className="text-xs font-mono text-zinc-400 max-w-md mx-auto">
+              You can track any individual order using the search bar above. To view your full saved account history, please sign in.
             </p>
             <Link
               href="/auth/login"
               className={buttonVariants({
-                className: "bg-rose-600 hover:bg-rose-700 text-white font-mono text-xs uppercase font-bold px-6 h-10 rounded",
+                className: "bg-rose-600 hover:bg-rose-700 text-white font-mono text-xs uppercase font-bold px-6 h-10 rounded shadow-lg",
               })}
             >
-              SIGN IN
+              SIGN IN TO ACCOUNT
             </Link>
           </div>
         )}
 
         {/* Empty Orders State */}
         {!isLoading && !isError && orders.length === 0 && (
-          <div className="p-12 rounded bg-zinc-900 border border-zinc-800 text-center space-y-4">
+          <div className="p-12 rounded-xl bg-zinc-900 border border-zinc-800 text-center space-y-4">
             <div className="h-16 w-16 rounded-full bg-zinc-950 border border-zinc-800 text-zinc-500 flex items-center justify-center mx-auto">
               <Package className="h-8 w-8 text-rose-500" />
             </div>
             <h3 className="text-base font-mono font-bold uppercase text-zinc-100">
-              NO ORDERS FOUND
+              NO SAVED ORDERS FOUND
             </h3>
             <p className="text-xs font-mono text-zinc-400 max-w-sm mx-auto">
-              {activeFilter ? 'No orders match this status filter.' : 'You haven’t placed any orders yet. Discover our latest streetwear drops!'}
+              {activeFilter ? 'No orders match this status filter.' : 'You haven’t placed any orders on this account yet. Discover our latest streetwear drops!'}
             </p>
             <Link
               href="/products"
@@ -152,7 +186,7 @@ function OrdersContent() {
               return (
                 <div
                   key={order.id}
-                  className="p-5 rounded bg-zinc-900 border border-zinc-800 space-y-4 hover:border-zinc-700 transition-colors text-left"
+                  className="p-5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-4 hover:border-zinc-700 transition-colors text-left shadow-lg"
                 >
                   {/* Order Header */}
                   <div className="flex flex-wrap justify-between items-start gap-2 border-b border-zinc-850 pb-3">
@@ -183,14 +217,16 @@ function OrdersContent() {
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2 overflow-x-auto">
                       {items.slice(0, 4).map((item: any, idx: number) => {
-                        const img = item.customConfig?.previewUrl || item.customConfig?.designUrl || item.productVariant?.product?.images?.[0]?.url || '/images/asora-hero.jpg';
+                        const isCustom = Boolean(item.customConfig);
                         return (
-                          <div
+                          <CustomGarmentThumbnail
                             key={item.id || idx}
-                            className="w-12 h-14 bg-zinc-950 rounded border border-zinc-800 shrink-0 overflow-hidden flex items-center justify-center p-0.5"
-                          >
-                            <img src={img} alt="" className="object-contain w-full h-full" />
-                          </div>
+                            imageUrl={item.productVariant?.product?.images?.[0]?.url}
+                            title="Ordered piece"
+                            isCustom={isCustom}
+                            customConfig={item.customConfig}
+                            className="w-12 h-14 shrink-0"
+                          />
                         );
                       })}
                       {items.length > 4 && (
@@ -234,9 +270,5 @@ function OrdersContent() {
 }
 
 export default function OrdersPage() {
-  return (
-    <ProtectedRoute>
-      <OrdersContent />
-    </ProtectedRoute>
-  );
+  return <OrdersContent />;
 }

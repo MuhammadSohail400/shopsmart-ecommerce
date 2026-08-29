@@ -76,6 +76,49 @@ export const ordersService = {
     return order;
   },
 
+  async trackOrder(query: string) {
+    if (!query || !query.trim()) throw new NotFoundError('Order');
+    const order = await ordersRepository.findByOrderNumberOrId(query.trim());
+    if (!order) throw new NotFoundError('Order');
+    return order;
+  },
+
+  async cancelTrackedOrder(query: string, _reason?: string) {
+    if (!query || !query.trim()) throw new NotFoundError('Order');
+    const order = await ordersRepository.findByOrderNumberOrId(query.trim());
+    if (!order) throw new NotFoundError('Order');
+
+    if (!([OrderStatus.pending, OrderStatus.confirmed] as OrderStatus[]).includes(order.status)) {
+      throw new ConflictError(
+        'CANCELLATION_WINDOW_CLOSED',
+        'This order can no longer be cancelled as it has already begun processing',
+      );
+    }
+
+    const stockWasDecremented = order.status === OrderStatus.confirmed;
+
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      if (stockWasDecremented) {
+        for (const item of order.items) {
+          await restoreStock(item.productVariantId, item.quantity, tx);
+        }
+      }
+      await tx.order.update({ where: { id: order.id }, data: { status: OrderStatus.cancelled } });
+      await tx.orderStatusHistory.create({
+        data: { orderId: order.id, status: OrderStatus.cancelled, changedBy: order.userId || 'guest_customer' },
+      });
+    });
+
+    eventBus.publish('order.status_changed', {
+      orderId: order.id,
+      userId: order.userId ?? undefined,
+      previousStatus: order.status,
+      newStatus: OrderStatus.cancelled,
+    });
+
+    return { success: true, orderId: order.id, status: OrderStatus.cancelled };
+  },
+
   async list(
     requestingUser: { id: string; role: string },
     filters: { status?: OrderStatus; cursor?: string; limit: number },
@@ -225,7 +268,7 @@ export const ordersService = {
     const subtotal = resolvedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
     const totalAmount = subtotal + shipping;
 
-    const addr = input.customer;
+    const addr = input.customer || ({} as any);
 
     const order = await prisma.order.create({
       data: {
@@ -238,8 +281,8 @@ export const ordersService = {
         discountAmount: 0,
         totalAmount,
         shippingAddress: {
-          firstName: addr.fullName?.split(' ')[0] || 'Customer',
-          lastName: addr.fullName?.split(' ').slice(1).join(' ') || '',
+          firstName: (addr.fullName || '').trim().split(' ')[0] || 'Customer',
+          lastName: (addr.fullName || '').trim().split(' ').slice(1).join(' ') || '',
           phone: addr.phone || '03000000000',
           streetAddress: addr.line1 || 'Address via WhatsApp',
           city: addr.city || 'Karachi',

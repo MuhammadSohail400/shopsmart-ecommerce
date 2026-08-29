@@ -30,6 +30,18 @@ export const ordersController = {
     res.status(204).send();
   },
 
+  async trackOrder(req: Request, res: Response) {
+    const query = String(req.params.query || req.query.orderNumber || '');
+    const order = await ordersService.trackOrder(query);
+    sendSuccess(res, order);
+  },
+
+  async cancelTrackedOrder(req: Request, res: Response) {
+    const query = String(req.params.query);
+    const result = await ordersService.cancelTrackedOrder(query, req.body?.reason);
+    sendSuccess(res, result);
+  },
+
   async quickOrder(req: Request, res: Response) {
     const { customer, items, shippingAmount, notes } = req.body;
     const result = await ordersService.createQuickOrder({

@@ -91,13 +91,7 @@ export function getUserInitial(user?: {
  */
 export function formatWhatsAppUrl(rawPhone?: string, message?: string): string {
   const defaultNumber = '923110297772';
-  if (!rawPhone) {
-    return message 
-      ? `https://wa.me/${defaultNumber}?text=${encodeURIComponent(message)}`
-      : `https://wa.me/${defaultNumber}`;
-  }
-
-  let digits = rawPhone.replace(/\D/g, '');
+  let digits = (rawPhone || defaultNumber).replace(/\D/g, '');
   if (digits.startsWith('0')) {
     digits = '92' + digits.slice(1);
   } else if (!digits.startsWith('92') && digits.length === 10) {
@@ -106,8 +100,8 @@ export function formatWhatsAppUrl(rawPhone?: string, message?: string): string {
 
   const finalNumber = digits || defaultNumber;
   return message 
-    ? `https://wa.me/${finalNumber}?text=${encodeURIComponent(message)}`
-    : `https://wa.me/${finalNumber}`;
+    ? `https://api.whatsapp.com/send?phone=${finalNumber}&text=${encodeURIComponent(message)}`
+    : `https://api.whatsapp.com/send?phone=${finalNumber}`;
 }
 
 /**

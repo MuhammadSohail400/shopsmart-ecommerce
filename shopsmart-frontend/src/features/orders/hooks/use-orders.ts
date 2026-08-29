@@ -27,14 +27,19 @@ export function useOrders(params?: {
 }
 
 export function useOrder(orderId: string | null | undefined) {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const isServer = typeof window === 'undefined';
-  const hasSession = !isServer && localStorage.getItem('has_session') === 'true';
-
   return useQuery({
     queryKey: orderKeys.detail(orderId ?? ''),
     queryFn: () => ordersService.getById(orderId!),
-    enabled: (!!accessToken || hasSession) && !!orderId,
+    enabled: !!orderId,
+    retry: false,
+  });
+}
+
+export function useTrackOrder(orderQuery: string | null | undefined) {
+  return useQuery({
+    queryKey: ['orders', 'track', orderQuery],
+    queryFn: () => ordersService.track(orderQuery!),
+    enabled: !!orderQuery && orderQuery.trim().length > 0,
     retry: false,
   });
 }

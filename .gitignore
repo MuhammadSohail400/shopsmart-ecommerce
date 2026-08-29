@@ -18,3 +18,7 @@ readmeconceptslearning.md
 # OS files
 .DS_Store
 Thumbs.db
+
+# Uploads
+uploads/
+shopsmart-backend/uploads/
