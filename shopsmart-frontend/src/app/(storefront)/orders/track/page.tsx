@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -29,7 +29,7 @@ function getStatusBadge(status: OrderStatus) {
   return map[status] ?? { label: status?.toUpperCase() || 'ORDER', color: 'bg-zinc-900 text-zinc-300 border-zinc-800', icon: Package };
 }
 
-export default function TrackOrderPage() {
+function TrackOrderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('order') || searchParams.get('id') || '';
@@ -269,5 +269,19 @@ export default function TrackOrderPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function TrackOrderPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
+        </div>
+      }
+    >
+      <TrackOrderContent />
+    </Suspense>
   );
 }
