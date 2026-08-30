@@ -121,9 +121,9 @@ function TrackOrderContent() {
             
             {/* Order Card Header */}
             <div className="p-4 sm:p-6 bg-gradient-to-r from-zinc-900 via-zinc-900 to-zinc-950 border-b border-zinc-800 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-              <div>
+              <div className="min-w-0">
                 <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">ORDER NUMBER</span>
-                <h2 className="text-lg sm:text-xl font-mono font-black text-zinc-100 tracking-tight">
+                <h2 className="text-base sm:text-xl font-mono font-black text-zinc-100 tracking-tight break-all sm:break-normal">
                   {order.orderNumber}
                 </h2>
                 <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
@@ -132,7 +132,7 @@ function TrackOrderContent() {
               </div>
 
               {statusConfig && (
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono font-bold uppercase shadow-sm ${statusConfig.color}`}>
+                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono font-bold uppercase shadow-sm self-start sm:self-auto shrink-0 ${statusConfig.color}`}>
                   <StatusIcon className="h-3.5 w-3.5" />
                   <span>{statusConfig.label}</span>
                 </div>
@@ -140,23 +140,23 @@ function TrackOrderContent() {
             </div>
 
             {/* Content Body */}
-            <div className="p-4 sm:p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
               
               {/* Shipment / Courier info if available */}
               {order.shipment && (
-                <div className="p-3.5 rounded-lg bg-purple-950/30 border border-purple-900/50 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="p-3.5 rounded-lg bg-purple-950/30 border border-purple-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0">
                     <Truck className="h-5 w-5 text-purple-400 shrink-0" />
-                    <div>
-                      <p className="text-xs font-mono font-bold text-zinc-100 uppercase">
+                    <div className="min-w-0">
+                      <p className="text-xs font-mono font-bold text-zinc-100 uppercase truncate">
                         Carrier: {order.shipment.carrier || 'TCS / Leopards Courier'}
                       </p>
-                      <p className="text-[10px] font-mono text-purple-300">
+                      <p className="text-[10px] font-mono text-purple-300 truncate">
                         Tracking No: {order.shipment.trackingNumber || 'Assigned upon dispatch'}
                       </p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-purple-900/50 text-purple-200">
+                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-purple-900/50 text-purple-200 self-start sm:self-auto shrink-0">
                     {(order.shipment as any)?.status?.toUpperCase() || 'IN TRANSIT'}
                   </span>
                 </div>
@@ -179,18 +179,18 @@ function TrackOrderContent() {
                     return (
                       <div
                         key={item.id}
-                        className="p-3 rounded-lg bg-zinc-950 border border-zinc-800/80 flex items-center gap-3 justify-between"
+                        className="p-3 rounded-lg bg-zinc-950 border border-zinc-800/80 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between"
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1 w-full sm:w-auto">
                           <CustomGarmentThumbnail
                             imageUrl={item.productVariant?.product?.images?.[0]?.url}
                             title={itemTitle}
                             isCustom={isCustom}
                             customConfig={custom}
-                            className="w-14 h-16 shrink-0"
+                            className="w-14 h-16 shrink-0 rounded"
                           />
-                          <div className="min-w-0">
-                            <h4 className="text-xs font-mono font-bold text-zinc-100 truncate">
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-xs font-mono font-bold text-zinc-100 line-clamp-2">
                               {itemTitle}
                             </h4>
                             <p className="text-[10px] font-mono text-zinc-400 mt-0.5">
@@ -200,14 +200,15 @@ function TrackOrderContent() {
                                 <>Size: {item.productVariant?.attributes?.size || 'Standard'} • Color: {item.productVariant?.attributes?.color || 'Standard'}</>
                               )}
                             </p>
-                            <span className="text-[10px] font-mono text-zinc-500">
+                            <span className="text-[10px] font-mono text-zinc-500 block pt-0.5">
                               Qty: {item.quantity} x {formatCurrency(item.priceAtPurchase || item.unitPrice || 0)}
                             </span>
                           </div>
                         </div>
 
-                        <div className="text-right shrink-0 font-mono font-bold text-xs text-zinc-100">
-                          {formatCurrency((item.priceAtPurchase || item.unitPrice || 0) * item.quantity)}
+                        <div className="font-mono font-bold text-xs text-zinc-100 self-end sm:self-center pt-1.5 sm:pt-0 border-t border-zinc-900 sm:border-t-0 w-full sm:w-auto flex sm:block justify-between sm:justify-end items-center">
+                          <span className="text-[10px] text-zinc-500 font-normal sm:hidden">Total:</span>
+                          <span className="text-rose-400 sm:text-zinc-100">{formatCurrency((item.priceAtPurchase || item.unitPrice || 0) * item.quantity)}</span>
                         </div>
                       </div>
                     );
@@ -217,12 +218,12 @@ function TrackOrderContent() {
 
               {/* Delivery Address & COD Total */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-800/80">
-                <div className="p-3 rounded bg-zinc-950 border border-zinc-800 text-xs font-mono space-y-1">
+                <div className="p-3 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono space-y-1">
                   <span className="text-[10px] text-zinc-500 uppercase tracking-wider block">DELIVERY DESTINATION</span>
                   <p className="font-bold text-zinc-200">
                     {(order.shippingAddress as any)?.firstName} {(order.shippingAddress as any)?.lastName}
                   </p>
-                  <p className="text-zinc-400 text-[11px]">
+                  <p className="text-zinc-400 text-[11px] break-words">
                     {(order.shippingAddress as any)?.streetAddress || (order.shippingAddress as any)?.line1}, {(order.shippingAddress as any)?.city}
                   </p>
                   <p className="text-zinc-500 text-[10px]">
@@ -230,7 +231,7 @@ function TrackOrderContent() {
                   </p>
                 </div>
 
-                <div className="p-3 rounded bg-zinc-950 border border-zinc-800 text-xs font-mono flex flex-col justify-between">
+                <div className="p-3 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono flex flex-col justify-between">
                   <span className="text-[10px] text-zinc-500 uppercase tracking-wider">PAYMENT SUMMARY</span>
                   <div className="space-y-1 mt-1">
                     <div className="flex justify-between text-zinc-400 text-[11px]">

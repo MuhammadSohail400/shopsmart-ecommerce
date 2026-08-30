@@ -126,7 +126,7 @@ function OrderDetailContent() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-20">
-      <div className="container max-w-4xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-6">
+      <div className="container max-w-4xl mx-auto py-5 sm:py-10 px-3.5 sm:px-6 space-y-5 sm:space-y-6">
         
         {/* Breadcrumbs */}
         <Breadcrumbs items={[
@@ -136,20 +136,20 @@ function OrderDetailContent() {
         ]} className="text-zinc-500 font-mono text-[11px]" />
 
         {/* Header Bar */}
-        <div className="flex flex-wrap justify-between items-end gap-3 border-b border-zinc-850 pb-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-rose-400 text-[10px] font-mono font-bold uppercase tracking-widest mb-1">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-3 border-b border-zinc-800 pb-4">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-rose-400 text-[10px] font-mono font-bold uppercase tracking-widest mb-1.5">
               ORDER ARCHIVE
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-100 uppercase">
+            <h1 className="text-xl sm:text-3xl font-black tracking-tight text-zinc-100 uppercase break-all sm:break-normal">
               ORDER {order.orderNumber}
             </h1>
-            <p className="text-xs font-mono text-zinc-400 mt-0.5">
+            <p className="text-xs font-mono text-zinc-400 mt-1">
               Placed on {new Date(order.createdAt).toLocaleDateString('en-PK', { dateStyle: 'full' })}
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 pt-1 sm:pt-0 shrink-0">
             <a
               href={whatsappUrl}
               target="_blank"
@@ -157,11 +157,11 @@ function OrderDetailContent() {
               className={buttonVariants({
                 variant: "outline",
                 size: "sm",
-                className: "border-emerald-900/40 bg-emerald-950/30 hover:bg-emerald-900/40 text-emerald-400 font-mono text-xs uppercase h-9 px-3 gap-1.5",
+                className: "border-emerald-900/40 bg-emerald-950/30 hover:bg-emerald-900/40 text-emerald-400 font-mono text-[11px] sm:text-xs uppercase h-9 px-2.5 sm:px-3 gap-1.5 justify-center",
               })}
             >
-              <MessageCircle className="h-4 w-4" />
-              <span>WHATSAPP SUPPORT</span>
+              <MessageCircle className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">WHATSAPP</span>
             </a>
 
             {isCancellable && (
@@ -170,7 +170,7 @@ function OrderDetailContent() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowCancelConfirm(true)}
-                className="border-zinc-800 bg-zinc-900 text-rose-400 hover:bg-zinc-850 font-mono text-xs uppercase h-9 px-3"
+                className="border-zinc-800 bg-zinc-900 text-rose-400 hover:bg-zinc-850 font-mono text-[11px] sm:text-xs uppercase h-9 px-2.5 sm:px-3 truncate justify-center"
               >
                 CANCEL ORDER
               </Button>
@@ -180,8 +180,8 @@ function OrderDetailContent() {
 
         {/* ── 5-STAGE ORDER TIMELINE ── */}
         {order.status !== 'cancelled' && order.status !== 'refunded' && (
-          <div className="p-6 rounded bg-zinc-900 border border-zinc-800 space-y-4 text-left">
-            <div className="flex justify-between items-center">
+          <div className="p-4 sm:p-6 rounded-xl bg-zinc-900 border border-zinc-800 space-y-4 text-left shadow-lg">
+            <div className="flex flex-wrap justify-between items-center gap-2">
               <span className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
                 LIVE ORDER TRACKING
               </span>
@@ -190,45 +190,54 @@ function OrderDetailContent() {
               </span>
             </div>
 
-            <div className="grid grid-cols-5 gap-2 pt-2">
-              {TIMELINE_STEPS.map((step, idx) => {
-                const isPassed = idx <= activeTimelineIdx;
-                const isCurrent = idx === activeTimelineIdx;
+            {/* Stepper with progress bar */}
+            <div className="relative pt-2 pb-1">
+              {/* Progress Line */}
+              <div className="absolute top-[22px] left-[10%] right-[10%] h-0.5 bg-zinc-800 -z-0">
+                <div 
+                  className="h-full bg-emerald-500 transition-all duration-500"
+                  style={{ width: `${(Math.max(0, activeTimelineIdx) / (TIMELINE_STEPS.length - 1)) * 100}%` }}
+                />
+              </div>
 
-                return (
-                  <div key={step.key} className="space-y-2 text-center">
-                    <div className="relative flex items-center justify-center">
+              <div className="grid grid-cols-5 gap-1 sm:gap-2 relative z-10">
+                {TIMELINE_STEPS.map((step, idx) => {
+                  const isPassed = idx <= activeTimelineIdx;
+                  const isCurrent = idx === activeTimelineIdx;
+
+                  return (
+                    <div key={step.key} className="space-y-1.5 text-center flex flex-col items-center">
                       <div
-                        className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-mono font-bold z-10 transition-all ${
+                        className={`h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-mono font-bold transition-all shadow-md ${
                           isCurrent
-                            ? 'bg-rose-600 text-white ring-4 ring-rose-950'
+                            ? 'bg-rose-600 text-white ring-4 ring-rose-950 scale-105'
                             : isPassed
                             ? 'bg-emerald-600 text-white'
                             : 'bg-zinc-950 border border-zinc-800 text-zinc-600'
                         }`}
                       >
-                        {isPassed ? <CheckCircle2 className="h-4 w-4" /> : idx + 1}
+                        {isPassed ? <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : idx + 1}
                       </div>
+                      <span className={`text-[8px] sm:text-[10px] font-mono font-bold uppercase block leading-tight tracking-tight px-0.5 ${
+                        isCurrent ? 'text-rose-400' : isPassed ? 'text-zinc-200' : 'text-zinc-600'
+                      }`}>
+                        {step.label}
+                      </span>
                     </div>
-                    <span className={`text-[10px] font-mono font-bold uppercase block leading-tight ${
-                      isCurrent ? 'text-rose-400' : isPassed ? 'text-zinc-200' : 'text-zinc-600'
-                    }`}>
-                      {step.label}
-                    </span>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
-            <p className="text-xs font-mono text-zinc-400 border-t border-zinc-850 pt-3">
+            <p className="text-[11px] sm:text-xs font-mono text-zinc-400 border-t border-zinc-800/80 pt-3">
               Status Note: <span className="text-zinc-200">{statusConfig.desc}</span>
             </p>
           </div>
         )}
 
         {/* ── ORDERED PIECES & CUSTOM DETAILS ── */}
-        <div className="p-6 rounded bg-zinc-900 border border-zinc-800 space-y-4 text-left">
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300 border-b border-zinc-850 pb-3">
+        <div className="p-4 sm:p-6 rounded-xl bg-zinc-900 border border-zinc-800 space-y-4 text-left shadow-lg">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300 border-b border-zinc-800 pb-3">
             ORDERED PIECES ({items.length})
           </h2>
 
@@ -236,32 +245,31 @@ function OrderDetailContent() {
             {items.map((item: any) => {
               const isCustom = Boolean(item.customConfig);
               const custom = item.customConfig;
-              const imageUrl = custom?.previewUrl || custom?.designUrl || item.productVariant?.product?.images?.[0]?.url || '/images/asora-hero.jpg';
 
               return (
                 <div
                   key={item.id}
-                  className="p-4 rounded bg-zinc-950 border border-zinc-800 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center"
+                  className="p-3.5 sm:p-4 rounded-lg bg-zinc-950 border border-zinc-800 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-start sm:items-center"
                 >
-                  <div className="flex gap-4 items-center">
+                  <div className="flex gap-3 sm:gap-4 items-start min-w-0 flex-1 w-full sm:w-auto">
                     <CustomGarmentThumbnail
                       imageUrl={item.productVariant?.product?.images?.[0]?.url}
                       title="Garment piece"
                       isCustom={isCustom}
                       customConfig={custom}
-                      className="w-20 h-24"
+                      className="w-16 h-20 sm:w-20 sm:h-24 shrink-0 rounded"
                     />
 
-                    <div className="space-y-1 text-left">
+                    <div className="space-y-1 text-left min-w-0 flex-1">
                       {isCustom ? (
                         <div>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-600/10 border border-rose-500/20 text-rose-400 font-mono text-[10px] font-bold uppercase tracking-wider mb-1">
-                            <Scissors className="h-3 w-3" /> CUSTOM ASORA TEE
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-600/10 border border-rose-500/20 text-rose-400 font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mb-1">
+                            <Scissors className="h-3 w-3 shrink-0" /> CUSTOM ASORA TEE
                           </span>
-                          <h3 className="text-sm font-bold font-mono text-zinc-100 uppercase">
+                          <h3 className="text-xs sm:text-sm font-bold font-mono text-zinc-100 uppercase line-clamp-2">
                             {custom?.shirtType?.toUpperCase() || 'OVERSIZED'} CUSTOM T-SHIRT
                           </h3>
-                          <div className="text-[11px] font-mono text-zinc-400 space-y-0.5 mt-1">
+                          <div className="text-[10px] sm:text-[11px] font-mono text-zinc-400 space-y-0.5 mt-1">
                             <p>Color: <span className="text-zinc-200">{custom?.color}</span> • Size: <span className="text-zinc-200">{custom?.size}</span></p>
                             <p>Print Placement: <span className="text-rose-400">{custom?.printPosition?.replace('_', ' + ').toUpperCase()}</span></p>
                             {custom?.designUrl && (
@@ -269,7 +277,7 @@ function OrderDetailContent() {
                                 href={resolveMediaUrl(custom.designUrl)}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-rose-400 hover:underline text-[10px] font-mono block pt-0.5"
+                                className="text-rose-400 hover:underline text-[10px] font-mono block pt-0.5 truncate"
                               >
                                 View Uploaded Artwork File ↗
                               </a>
@@ -278,24 +286,25 @@ function OrderDetailContent() {
                         </div>
                       ) : (
                         <div>
-                          <h3 className="text-sm font-bold font-mono text-zinc-100 uppercase">
+                          <h3 className="text-xs sm:text-sm font-bold font-mono text-zinc-100 uppercase line-clamp-2">
                             {item.productVariant?.product?.title || 'ASORA STREETWEAR PIECE'}
                           </h3>
                           {item.productVariant?.attributes && (
-                            <p className="text-[11px] font-mono text-zinc-400">
+                            <p className="text-[10px] sm:text-[11px] font-mono text-zinc-400">
                               {Object.entries(item.productVariant.attributes).map(([k, v]) => `${k}: ${v}`).join(' • ')}
                             </p>
                           )}
                         </div>
                       )}
-                      <span className="text-xs font-mono text-zinc-400 block pt-1">
+                      <span className="text-[11px] sm:text-xs font-mono text-zinc-400 block pt-1">
                         Quantity: <span className="text-zinc-200 font-bold">{item.quantity}</span> × {formatCurrency(item.priceAtPurchase)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="text-right font-mono font-bold text-sm text-zinc-100 self-end sm:self-center">
-                    {formatCurrency(item.priceAtPurchase * item.quantity)}
+                  <div className="font-mono font-bold text-xs sm:text-sm text-zinc-100 self-end sm:self-center pt-2 sm:pt-0 border-t border-zinc-900 sm:border-t-0 w-full sm:w-auto flex sm:block justify-between sm:justify-end items-center">
+                    <span className="text-[10px] text-zinc-500 font-normal sm:hidden">Item Total:</span>
+                    <span className="text-rose-400 sm:text-zinc-100">{formatCurrency(item.priceAtPurchase * item.quantity)}</span>
                   </div>
                 </div>
               );
@@ -303,7 +312,7 @@ function OrderDetailContent() {
           </div>
 
           {/* Pricing Totals */}
-          <div className="space-y-2 text-xs font-mono border-t border-zinc-850 pt-3">
+          <div className="space-y-2 text-xs font-mono border-t border-zinc-800 pt-3">
             <div className="flex justify-between text-zinc-400">
               <span>Subtotal:</span>
               <span className="text-zinc-200">{formatCurrency(order.subtotal)}</span>
@@ -328,18 +337,18 @@ function OrderDetailContent() {
         </div>
 
         {/* ── SHIPPING & PAYMENT INFO CARDS ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-left">
           {/* Destination */}
-          <div className="p-5 rounded bg-zinc-900 border border-zinc-800 space-y-2 text-xs font-mono">
+          <div className="p-4 sm:p-5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 text-xs font-mono shadow-md">
             <span className="text-[10px] text-zinc-500 uppercase block font-bold flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 text-rose-500" />
+              <MapPin className="h-3.5 w-3.5 text-rose-500 shrink-0" />
               <span>SHIPPING ADDRESS</span>
             </span>
             {shippingAddr ? (
               <div className="space-y-1">
                 <p className="text-zinc-100 font-bold">{shippingAddr.fullName}</p>
                 <p className="text-zinc-300">{shippingAddr.phone}</p>
-                <p className="text-zinc-400">{shippingAddr.line1}, {shippingAddr.city}, {shippingAddr.region}, {shippingAddr.country}</p>
+                <p className="text-zinc-400 break-words">{shippingAddr.line1}, {shippingAddr.city}, {shippingAddr.region}, {shippingAddr.country}</p>
               </div>
             ) : (
               <p className="text-zinc-500">Shipping details not recorded.</p>
@@ -347,9 +356,9 @@ function OrderDetailContent() {
           </div>
 
           {/* Payment */}
-          <div className="p-5 rounded bg-zinc-900 border border-zinc-800 space-y-2 text-xs font-mono">
+          <div className="p-4 sm:p-5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 text-xs font-mono shadow-md">
             <span className="text-[10px] text-zinc-500 uppercase block font-bold flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-rose-500" />
+              <ShieldCheck className="h-3.5 w-3.5 text-rose-500 shrink-0" />
               <span>PAYMENT DETAILS</span>
             </span>
             <div className="space-y-1">
